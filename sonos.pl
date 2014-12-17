@@ -1271,8 +1271,10 @@ sub upnp_search_cb {
     my ($search, $device, $action) = @_;
     if ($action eq 'deviceAdded') {
         Log(2, "Added name: " . $device->friendlyName . " " . $device->{UDN} . " type: " . $device->deviceType());
+        Log(2, %$device);
 
-        next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
+
+#        next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
         $main::DEVICE{$device->{LOCATION}} = $device;
 
 #                             urn:schemas-upnp-org:service:DeviceProperties:1
@@ -1795,7 +1797,7 @@ my ($zone, $updatenum) = @_;
 
     my $i = 1;
     my @loop_data = ();
-    foreach my $queue (@{@{$main::ZONES{$zone}->{QUEUE}}}) {
+    foreach my $queue (@{$main::ZONES{$zone}->{QUEUE}}) {
         my %row_data;
         if (defined $main::ZONES{$zone}->{AV}->{CurrentTrack} && $i == $main::ZONES{$zone}->{AV}->{CurrentTrack}) {
             if ($main::ZONES{$zone}->{AV}->{TransportState} eq "PLAYING") {
