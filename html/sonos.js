@@ -60,7 +60,6 @@ sonos.setVolume = function(zoneId, volume) {
     sonos.sendAction(zoneId, "SetVolume", "&volume=" + volume);
 }
 
-
 // Private Functions
 sonos._loadData = function(filename, afterFunc) {
     Http.get(filename, function (data) {
@@ -101,12 +100,18 @@ sonos._startQueue = function(zoneId, lastUpdate) {
     sonos[zoneId].queue = new Array();
     sonos[zoneId]._queueLastUpdate = lastUpdate;
 }
-
-sonos._addQueue = function(zoneId, name, id) {
+sonos._addQueue = function(zoneId, name, id, album, artist, trackNum, albumArt, playing, paused) {
     var i = sonos[zoneId].queue.length;
     var obj = {};
     obj.name = name;
     obj.id = id;
+    obj.album = album;
+    obj.artist = artist;
+    obj.trackNum = trackNum;
+    obj.albumArt = albumArt;
+    obj.playing = playing;
+    obj.paused = paused;
+    
     sonos[zoneId].queue[i] = obj;
 }
 

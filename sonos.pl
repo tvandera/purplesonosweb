@@ -610,6 +610,7 @@ sub sonos_upnp_update {
                 my $tree = XMLin(decode_entities($properties{$key}), 
                         forcearray => ["ZoneGroup", "ZoneGroupMember"]);
                 Log(4, "ZoneGroupTopology " . Dumper($tree));
+                %main::ZONES = ();
                 foreach my $group (@{$tree->{ZoneGroup}}) {
                     my %zonegroup = %{$group};
 
@@ -1710,7 +1711,7 @@ my ($zone, $updatenum, $norec) = @_;
         }
 
         if ($curtrack->{item}->{"upnp:albumArtURI"}) {
-            $activedata{ACTIVE_ALBUMART}  = encode_entities($curtrack->{item}->{"upnp:albumArtURI"});
+            $activedata{ACTIVE_ALBUMART}  = $curtrack->{item}->{"upnp:albumArtURI"};
         }
 
         if ($curtransport && $curtransport->{item}->{"upnp:class"} eq "object.item.audioItem.audioBroadcast") {
@@ -1834,9 +1835,14 @@ my ($zone, $updatenum) = @_;
             $row_data{QUEUE_PLAYING} = 0;
             $row_data{QUEUE_PAUSED}  = 0;
         }
-        $row_data{QUEUE_NAME} = encode_entities($queue->{"dc:title"});
-        $row_data{QUEUE_ARG}  = "zone=" . uri_escape($zone). "&queue=$queue->{id}";
-        $row_data{QUEUE_ID}   = $queue->{id};
+
+        $row_data{QUEUE_NAME}     = encode_entities($queue->{"dc:title"});
+        $row_data{QUEUE_ALBUM}    = encode_entities($queue->{"upnp:album"});
+        $row_data{QUEUE_ARTIST}   = encode_entities($queue->{"dc:creator"});
+        $row_data{QUEUE_TRACK_NUM}= encode_entities($queue->{"upnp:originalTrackNumber"});
+        $row_data{QUEUE_ALBUMART} = encode_entities($queue->{"upnp:albumArtURI"});
+        $row_data{QUEUE_ARG}      = "zone=" . uri_escape($zone). "&queue=$queue->{id}";
+        $row_data{QUEUE_ID}       = $queue->{id};
         push(@loop_data, \%row_data);
         $i++;
     }
@@ -2076,7 +2082,11 @@ my ($what, $thezone, $c, $r, $diskpath, $tmplhook) = @_;
                                           "&amp;mpath=" . $row_data{MUSIC_PATH};
                 }
                 $albumart = $music->{"upnp:albumArtURI"} if (defined $music->{"upnp:albumArtURI"});
-                if ($music->{"upnp:class"} =~ /^object.container/) {
+                $row_data{"MUSIC_ALBUMART"} = $albumart;
+                $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
+                $row_data{"MUSIC_ARTIST"} = encode_entities($music->{"dc:creator"});
+
+                 if ($music->{"upnp:class"} =~ /^object.container/) {
                     $row_data{MUSIC_ISSONG} = 0;
                 } else {
                     $row_data{MUSIC_ISSONG} = 1;
