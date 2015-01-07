@@ -480,15 +480,16 @@ sub sonos_containers_init {
 
     undef %main::CONTAINERS;
 
+    sonos_mkcontainer("", "object.container", "Favorites", "FV:2");
     sonos_mkcontainer("", "object.container", "Artists", "A:ARTIST");
     sonos_mkcontainer("", "object.container", "Albums", "A:ALBUM");
     sonos_mkcontainer("", "object.container", "Genres", "A:GENRE");
     sonos_mkcontainer("", "object.container", "Composers", "A:COMPOSER");
-    sonos_mkcontainer("", "object.container", "Imported Playlists", "A:PLAYLISTS");
-    sonos_mkcontainer("", "object.container", "Folders", "S:");
-    sonos_mkcontainer("", "object.container", "Radio", "R:");
-    sonos_mkcontainer("", "object.container", "Line In", "AI:");
-    sonos_mkcontainer("", "object.container", "Playlists", "SQ:");
+    #sonos_mkcontainer("", "object.container", "Imported Playlists", "A:PLAYLISTS");
+    #sonos_mkcontainer("", "object.container", "Folders", "S:");
+    sonos_mkcontainer("", "object.container", "Radio", "R:0/0");
+    # sonos_mkcontainer("", "object.container", "Line In", "AI:");
+    # sonos_mkcontainer("", "object.container", "Playlists", "SQ:");
 
     sonos_mkitem("", "object.container", "", "");
 }
