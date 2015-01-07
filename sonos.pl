@@ -600,7 +600,7 @@ sub sonos_upnp_update {
     my ($service, %properties) = @_;
 
     Log (2, "Event received for service=" . $service->{BASE} . " id = " . $service->serviceId);
-#   Log(4, Dumper(\%properties));
+    Log(4, Dumper(\%properties));
 
     # Save off the zone names
     if ($service->serviceId =~ /serviceId:ZoneGroupTopology/) {
@@ -651,6 +651,8 @@ sub sonos_upnp_update {
             }
         }
     }
+
+    Log(4, "Parsed ZoneGroupTopology " . Dumper(\%main::ZONES));
 
     my $zone = sonos_location_to_id($service->{BASE});
 
@@ -1636,9 +1638,12 @@ my ($c, $r, $path) = @_;
 }
 ###############################################################################
 sub http_build_zone_data {
-my ($zone, $updatenum) = @_;
+my ($zone, $updatenum, $norec) = @_;
 
     my %activedata;
+
+    Log(4, "------ DATA to build zone_data ---\n");
+    Log(4, Dumper $main::ZONES{$zone});
 
     $activedata{ACTIVE_ZONE}      = encode_entities($main::ZONES{$zone}->{ZoneName});
     $activedata{ACTIVE_ZONEID}    = uri_escape($zone); 
@@ -1798,6 +1803,7 @@ my ($zone, $updatenum) = @_;
     my $i = 1;
     my @loop_data = ();
     foreach my $queue (@{$main::ZONES{$zone}->{QUEUE}}) {
+        Log(4, "Build queue data for entry: " . Dumper($queue));
         my %row_data;
         if (defined $main::ZONES{$zone}->{AV}->{CurrentTrack} && $i == $main::ZONES{$zone}->{AV}->{CurrentTrack}) {
             if ($main::ZONES{$zone}->{AV}->{TransportState} eq "PLAYING") {
@@ -1973,6 +1979,7 @@ my ($what, $thezone, $c, $r, $diskpath, $tmplhook) = @_;
             push(@loop_data, \%row_data);
         }
         $template->param(ZONES_LOOP => \@loop_data);
+        Log(4, "ZONES_LOOP => " . Dumper ( \@loop_data ));
     }
     
     # There was a zone param, get the data about single zone
