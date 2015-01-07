@@ -1,0 +1,86 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<TITLE>Sonos Web Control - <TMPL_VAR NAME=VERSION></TITLE>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<LINK REL=StyleSheet HREF="style.css" TYPE="text/css" MEDIA=screen>
+<SCRIPT language="JavaScript" SRC="jquery.js"></SCRIPT>
+<SCRIPT language="JavaScript" SRC="/http.js"></SCRIPT>
+<SCRIPT language="JavaScript" SRC="/sonos.js"></SCRIPT>
+<SCRIPT language="JavaScript" SRC="/sampleapp.js"></SCRIPT>
+<SCRIPT language="JavaScript">
+app.removegif = "/x.gif";
+app.playgif = "/playing.gif";
+app.addgif = "/add.gif";
+</SCRIPT>
+<script src="simple-slider.js"></script>
+<link href="simple-slider.css" rel="stylesheet" type="text/css" />
+
+</HEAD>
+
+
+<BODY onLoad="start()">
+<div id="zone-container">
+    <h4 id="zoneslabel">ZONES</h4> 
+    <div id="zones"></div>
+</div>
+
+<div id="zone-content">
+    <div id="top-labels">
+        <h4 id="currentzonename" onClick='updateToggle("zone-content", "zone-container", 0);'>ZONE</h4>
+        <h4 id="nowplayinglabel" onClick='updateToggle("now-playing", "music", 1);
+                                          updateToggle("nowplayinglabel", "musiclabel", 0); 
+            '>NOW PLAYING</h4>
+        <h4 id="musiclabel" onClick='updateToggle("now-playing", "music", 0);
+                                     updateToggle("nowplayinglabel", "musiclabel", 1); 
+                                     updateToggle("queue", "music", 0); 
+                                     updateToggle("queuelabel", "musiclabel", 1); 
+            '>MUSIC</h4>
+    </div>
+    <div style="clear: both;"></div>
+
+    <div id="music">
+        <label id=musicpath></label><BR>
+        <A onClick="browseTo('')">Top</A> <A onClick="browseBack()">Up</A><BR>
+        <div id=rootmusicdata>Loading Music ...</div>
+        <div id=musicdata></div>
+        <img id="musicalbumart" style="display: none;" onerror="this.style.display='none'" HEIGHT=200 WIDTH=200>
+    </div>
+
+    <div id="now-playing">
+          <div id="current-track-info">
+            <img id="albumart"><br>
+            <label id="song"></label><BR>
+            <label id="album"></label><BR>
+            <label id="artist"></label><BR>
+        </div>
+        <div id="control">
+            <img src="svg/prev.svg"  id="previous" onClick="doAction('Previous')" >
+            <img src="svg/play.svg"  id="play"     onClick="doAction('Play');" >
+            <img src="svg/pause.svg" id="pause"    onClick="doAction('Pause');" >
+            <img src="svg/next.svg"  id="next"     onClick="doAction('Next')" >
+
+            <img id="queuelabel" src="svg/queue.svg" onClick='updateToggle("now-playing", "queue", 0);
+                                     updateToggle("nowplayinglabel", "musiclabel", 1); 
+             '><br>
+
+            <img src="svg/mute_off.svg" id="muteon"     onClick="doAction('MuteOn')"     class="playback-mode"/>
+            <img src="svg/mute_on.svg"  id="muteoff"    onClick="doAction('MuteOff')"    class="playback-mode" />
+            <A onClick="doAction('MuchSofter')" >--</A>
+            <A onClick="doAction('Softer')" >-</A>
+            <input id="volume" type="text" data-slider="true" data-slider-range="0,100">
+            <A onClick="doAction('Louder')" >+</A>
+            <A onClick="doAction('MuchLouder')" >++</A>
+            <BR>
+        </div>
+    </div>
+
+    <div id="queue">
+        <B>Queue:</B> <A onClick="doAction('RemoveAll')">Remove All</A><BR>
+        <div id=queuedata>Loading...</div>
+    </div>
+
+</div>
+
+</BODY>
+</HTML>

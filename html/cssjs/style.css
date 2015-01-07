@@ -1,0 +1,132 @@
+a {
+    color: #fff;
+    text-decoration: none;
+}
+
+#control
+{
+        margin: auto;
+        font-size: 28px;
+}
+
+#queuelabel { 
+        float: right;
+        height: 44px;   
+}
+
+#control #play-pause,
+#control #play,
+#control #pause,
+#control #previous,
+#control #next,
+#control #muteon,
+#control #muteoff
+{
+	height: 44px;
+	vertical-align: middle;
+}
+
+#zoneslabel,
+#nowplayinglabel,
+#musiclabel,
+#currentzonename {
+    margin: 2px;
+    padding: 10px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+#nowplayinglabel, #musiclabel { float: right; }
+#nowplayinglabel { display: none; }
+
+#current-track-info label,
+#albumart {
+	display: inline-block;
+	vertical-align: top;
+        margin: 9px;
+}
+
+#albumart {
+        width: 200px;
+}
+
+#zones ul {
+	margin: 20px;
+        padding: 20px;
+        background: #333;
+}
+
+#zones ul li {
+    list-style: none;
+    background-image: url(images/wdcr_zm_ic_bedroom.png);
+    background-repeat: no-repeat;
+    line-height: 30px;
+    padding-left: 40px;
+}
+
+
+#music,
+#queue
+{
+        display: none;
+}
+
+#musicdata ul,
+#queuedata ul {
+	margin: 2px;
+        padding: 2px;
+        background: #333;
+}
+
+#musicdata li,
+#queuedata li {
+	list-style: none;
+	margin: 0;
+	padding: 4px;
+        border-bottom-width: 1px;
+        border-bottom-style: dotted;
+        border-bottom-color: #999;
+
+}
+
+#musicdata li img,
+#queuedata li img {
+	width: 40px;
+	height: 40px;
+	vertical-align: top;
+	margin-right: 3px;
+	display: inline-block;
+}
+
+#queuedata li div {
+	display: inline-block;
+        margin: 3px;
+}
+
+#queuedata li div p {
+	margin: 0;
+	line-height: 18px;
+	font-size: 13px;
+	overflow: hidden;
+	width: 100%;
+	white-space: nowrap;
+}
+
+#queuedata li div p.artist {
+	color: #aaa;
+}
+
+#favorites-container li span {
+	padding: 3px;
+	line-height: 22px;
+}
+
+#queuedata {
+	height: calc(100% - 316px);
+}
+body {
+        max-width: 300px;
+	background: #000000;
+	color: #fff;
+	font-family: "PT Sans", Arial, sans-serif;
+}
