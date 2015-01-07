@@ -1,6 +1,4 @@
 
-var bXmlHttpSupport = (typeof XMLHttpRequest == "object" || typeof XMLHttpRequest == "function" || window.ActiveXObject);
-
 function httpPost(sURL, sParams) {
                        
     var oURL = new java.net.URL(sURL);
@@ -61,80 +59,29 @@ function httpGet(sURL) {
     return sResponseText;
 }
 
-if (typeof XMLHttpRequest == "undefined" && window.ActiveXObject) {
-
-    function XMLHttpRequest() {
-
-        var arrSignatures = ["MSXML2.XMLHTTP.5.0", "MSXML2.XMLHTTP.4.0",
-                             "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP",
-                             "Microsoft.XMLHTTP"];
-                         
-        for (var i=0; i < arrSignatures.length; i++) {
-            try {
-        
-                var oRequest = new ActiveXObject(arrSignatures[i]);
-            
-                return oRequest;
-        
-            } catch (oError) {
-                //ignore
-            }
-        }          
-
-        throw new Error("MSXML is not installed on your system.");               
-    }
-}
-
-
 var Http = new Object;
 
 Http.get = function (sURL, fnCallback) {
- 
-    if (bXmlHttpSupport) {
-   
-        var oRequest = new XMLHttpRequest();
-        oRequest.open("get", sURL, true);
-        oRequest.onreadystatechange = function () {
-            if (oRequest.readyState == 4) {
-                fnCallback(oRequest.responseText);
-            }
-        }
-        oRequest.send(null);    
-    
-    } else if (navigator.javaEnabled() && typeof java != "undefined" 
-            && typeof java.net != "undefined") {
-            
-        setTimeout(function () {
-            fnCallback(httpGet(sURL));
-        }, 10);
-    } else {
-        alert("Your browser doesn't support HTTP requests.");
-    }          
 
+    var oRequest = new XMLHttpRequest();
+    oRequest.open("get", sURL, true);
+    oRequest.onreadystatechange = function () {
+        if (oRequest.readyState == 4) {
+            fnCallback(oRequest.responseText);
+        }
+    }
+    oRequest.send(null);    
 };
 
 Http.post = function (sURL, sParams, fnCallback) {
- 
-    if (bXmlHttpSupport) {
-   
-        var oRequest = new XMLHttpRequest();
-        oRequest.open("post", sURL, true);
-        oRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        oRequest.onreadystatechange = function () {
-            if (oRequest.readyState == 4) {
-                fnCallback(oRequest.responseText);
-            }
-        }
-        oRequest.send(sParams);    
-    
-    } else if (navigator.javaEnabled() && typeof java != "undefined" 
-            && typeof java.net != "undefined") {
-            
-        setTimeout(function () {
-            fnCallback(httpPost(sURL, sParams));
-        }, 10);
-    } else {
-        alert("Your browser doesn't support HTTP requests.");
-    }          
 
+    var oRequest = new XMLHttpRequest();
+    oRequest.open("post", sURL, true);
+    oRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    oRequest.onreadystatechange = function () {
+        if (oRequest.readyState == 4) {
+            fnCallback(oRequest.responseText);
+        }
+    }
+    oRequest.send(sParams);    
 };
