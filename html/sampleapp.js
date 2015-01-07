@@ -44,14 +44,12 @@ function start() {
 }
 
 function setCurrentZone(zoneId) {
-    if (app.currentZoneId && app.currentZoneId == zoneId) {
-        return;
-    }
     app.currentZoneId = zoneId;
     drawControl(zoneId);
     drawQueue(zoneId);
     drawZones();
 }
+
 function needZone() {
     if (!app.currentZoneId) {
         alert("Please select a Zone first.");
@@ -170,31 +168,28 @@ function doUnlink(zone) {
 }
 
 function drawZones() {
-    var str = "";
+    var str = "<ul>";
     for (i=0; i < sonos.zones.length; i++) {
         var zone = sonos.zones[i];
         if (app.currentZoneId == zone) str += "<B>";
+
+        if (!sonos[zone].linked && (i != 0)) str+= "</ul><ul>";
+
+        str += "<li><A HREF=\"#\" onClick=\"setCurrentZone('" + sonos[zone].zoneId + "')\">" + sonos[zone].zoneName + "</A>";
+        
         if (sonos[zone].linked) {
-            str += "&nbsp; &nbsp;" + sonos[zone].zoneName;
-            if (app.currentZoneId && app.currentZoneId != zone) {
-                str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone+"')\">[U]</a>";
-            }
-            str += "<BR>\n";
-        } else {
-            str += "<A HREF=\"#\" onClick=\"setCurrentZone('" + sonos[zone].zoneId + "')\">" + sonos[zone].zoneName + "</A>";
-            if (app.currentZoneId && app.currentZoneId != zone) {
-                str += " <a class=ulink href=\"#\" onClick=\"doLink('"+zone+"')\">[L]</a></font>";
-            }
-            str += "<BR>\n";
+            str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone+"')\">[U]</a>";
+        } else if (app.currentZoneId && app.currentZoneId != zone) {
+            str += " <a class=ulink href=\"#\" onClick=\"doLink('"+zone+"')\">[L]</a></font>";
         }
+
+        str += "</li>\n";
+
         if (app.currentZoneId == zone) str += "</B>";
     }
-    str += "<P>";
-    if (app.currentZoneId) {
-        str += "<A HREF=\"#\" onClick=\"doAction('LinkAll')\">Party Mode</A><BR>\n";
-    }
-    str += "<hr><A HREF=\"/\" \">Home Page</A><BR>\n";
+    str += "</ul>";
     updateText("zones", str);
+    updateToggle("zone-content", "zone-container", app.currentZoneId);
 }
 
 function drawControl(zoneId) {
@@ -211,10 +206,8 @@ function drawControl(zoneId) {
     updateText('tracknum', zone.trackNum);
     updateText('tracktot', zone.trackTot);
     updateToggle("pause", "play", zone.mode == 1);
-    updateToggle("shuffleoff", "shuffleon", zone.shuffle);
-    updateToggle("repeatoff", "repeaton", zone.repeat);
     updateToggle("muteoff", "muteon", zone.muted);
-    updateText('volume', zone.volume);
+    $("#volume").simpleSlider("setValue", zone.volume);
     updateSrc('albumart', zone.albumArt);
 }
 
@@ -224,17 +217,21 @@ function drawQueue(zoneId) {
     }
 
     var str = new Array();
+    str.push("<ul>");
     for (i=0; i < sonos[app.currentZoneId].queue.length; i++) {
         var item = sonos[app.currentZoneId].queue[i];
-        str.push("<A HREF=\"#\" onClick=\"doQAction('Remove', '" + item.id + "')\"><IMG SRC="+app.removegif + "></A>");
-        str.push("<A HREF=\"#\" onClick=\"doQAction('Seek', '" + item.id + "')\">" + item.name + "</A><BR>");
+        str.push("<li onClick=\"doQAction('Seek', '" + item.id + "'>");
+        str.push("<img src='" + item.albumArt + "'><div>");
+        str.push("<p class='title'>" + item.name + "</p>");
+        str.push("<p class='artist'>" + item.artist + "</p></div>");
+        str.push("</li>");
     }
+    str.push("</ul>");
     updateText("queuedata", str.join(""));
 }
 
 function drawMusic(path) {
     if (path != app.currentMusicPath) {
-
         // Got a refresh for top, might mean we should refresh the screen
         if ((path == "") && !sonos.music[app.currentMusicPath]) {
             browseTo(app.currentMusicPath);
