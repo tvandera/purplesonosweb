@@ -730,7 +730,7 @@ sub sonos_upnp_update {
 
         if (defined $properties{MasterRadioUpdateID} && ($properties{MasterRadioUpdateID} ne $main::UPDATEID{MasterRadioUpdateID})) {
             $main::UPDATEID{MasterRadioUpdateID} = $properties{MasterRadioUpdateID};
-            sonos_containers_del("R:");
+            sonos_containers_del("R:0/0");
         }
 
         if (defined $properties{SavedQueuesUpdateID} && $properties{SavedQueuesUpdateID} ne $main::UPDATEID{SavedQueuesUpdateID}) {
@@ -783,6 +783,19 @@ sub sonos_music_entry {
 
     return $main::ITEMS{$mpath};
 }
+###############################################################################
+sub sonos_is_radio {
+    my ($mpath) = @_;
+
+    my $entry = sonos_music_entry($mpath);
+    return undef if (!defined $entry);
+    my $uri = $entry->{res}->{content};
+    return ($uri =~ m/^x-sonosapi-stream:/) ||
+           ($uri =~ m/^x-sonosapi-radio:/) || 
+           ($uri =~ m/^x-sonosapi-pndrradio:/);
+}
+
+
 ###############################################################################
 sub sonos_avtransport_set_radio {
     my ($zone, $mpath) = @_;
@@ -969,7 +982,7 @@ sub sonos_add_radio {
                $station .  '</res></item></DIDL-Lite>';
 
     my ($zone) = split(",", $main::UPDATEID{MasterRadioUpdateID});
-    return upnp_content_dir_create_object($zone, "R:0", $item);
+    return upnp_content_dir_create_object($zone, "R:0/0", $item);
 }
 
 ###############################################################################
@@ -1570,7 +1583,7 @@ my ($c, $r, $path) = @_;
         return 0;
     } elsif ($qf{action} eq "AddMusic") {
         my $class = sonos_music_class($mpath);
-        if ($class eq "object.item.audioItem.audioBroadcast") {
+        if (sonos_is_radio($mpath)) {
             sonos_avtransport_set_radio($zone, $mpath);
             return 2;
         } elsif ($class eq "object.item.audioItem") {
@@ -1588,7 +1601,7 @@ my ($c, $r, $path) = @_;
         return 0;
     } elsif ($qf{action} eq "PlayMusic") {
         my $class = sonos_music_class($mpath);
-        if ($class eq "object.item.audioItem.audioBroadcast") {
+        if (sonos_is_radio($mpath)) {
             sonos_avtransport_set_radio($zone, $mpath);
         } elsif ($class eq "object.item.audioItem") {
             sonos_avtransport_set_linein($zone, $mpath);
