@@ -1,5 +1,5 @@
 a {
-    color: #fff;
+    color: inherit;
     text-decoration: none;
 }
 
@@ -24,14 +24,25 @@ a {
 {
 	height: 44px;
 	vertical-align: middle;
+        display: inline-block;
 }
+
+#control #volume {
+        width: 120px;
+        height: 5px;
+        color: #eee;
+	vertical-align: middle;
+        background: #fff;
+        display: inline-block;
+}
+
 
 #zoneslabel,
 #nowplayinglabel,
 #musiclabel,
 #currentzonename {
     margin: 2px;
-    padding: 10px;
+    padding: 5px;
     text-transform: uppercase;
     display: inline-block;
 }
@@ -58,7 +69,7 @@ a {
 
 #zones ul li {
     list-style: none;
-    background-image: url(images/wdcr_zm_ic_bedroom.png);
+    background-image: url(images/ic_bedroom.png);
     background-repeat: no-repeat;
     line-height: 30px;
     padding-left: 40px;
@@ -66,43 +77,63 @@ a {
 
 
 #music,
-#queue
+#queue,
+#now-playing,
+#top-labels
 {
         display: none;
 }
 
-#musicdata ul,
+#music ul,
 #queuedata ul {
 	margin: 2px;
         padding: 2px;
         background: #333;
 }
 
-#musicdata li,
+#music li,
 #queuedata li {
 	list-style: none;
 	margin: 0;
-	padding: 4px;
+	padding: 2px;
         border-bottom-width: 1px;
         border-bottom-style: dotted;
         border-bottom-color: #999;
 
 }
 
-#musicdata li img,
-#queuedata li img {
+#music li.albumart img,
+#queuedata li.albumart img
+{
+    height: 200px;
+    width: 200px;
+}
+
+#music li img,
+#queuedata li img
+{
 	width: 40px;
 	height: 40px;
 	vertical-align: top;
-	margin-right: 3px;
 	display: inline-block;
 }
 
+#music li .trackno,
+#queuedata li .trackno
+{
+	width: 40px;
+        text-align: center
+	display: inline-block;
+}
+#music li div,
 #queuedata li div {
+        width: calc(100% - 55px);
 	display: inline-block;
-        margin: 3px;
+	overflow: hidden;
+        margin: 2px;
 }
 
+#music li div p,
 #queuedata li div p {
 	margin: 0;
 	line-height: 18px;
@@ -112,21 +143,30 @@ a {
 	white-space: nowrap;
 }
 
+#music li div p.artist,
 #queuedata li div p.artist {
 	color: #aaa;
 }
 
-#favorites-container li span {
-	padding: 3px;
-	line-height: 22px;
+#music li div p.buttons,
+#queuedata li div p.buttons {
+    text-align: right;
 }
 
-#queuedata {
-	height: calc(100% - 316px);
+#music li.header {
+        background: #fff;
+        color: #000;
+        font-size: 18px;
 }
+
+p#musicpath {
+    font-weight: bold;
+}
+
 body {
         max-width: 300px;
-	background: #000000;
+	background: #000;
 	color: #fff;
 	font-family: "PT Sans", Arial, sans-serif;
+        font-size: 14px;
 }

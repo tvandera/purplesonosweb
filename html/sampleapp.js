@@ -8,6 +8,14 @@
 
 var app = {};
 
+function startspin() {
+  $("#tabs").spin();
+}
+
+function stopspin() {
+  $("#tabs").spin(false);
+}
+
 function updateText(name, text) {
     var element = document.getElementById(name);
     if (element && (!element.innerHTML || element.innerHTML != text)) {
@@ -31,15 +39,53 @@ function updateToggle(first, second, doFirst) {
     document.getElementById(second).style.display  = (doFirst?"none":"inline");
 }
 
+function mZones() {
+    $("#top-labels").hide();
+    $("#zone-container").show();
+    $("#music").hide();
+    $("#now-playing").hide();
+    $("#queue").hide();
+}
+
+function mNowPlaying() {
+    $("#top-labels").show();
+    $("#zone-container").hide();
+    $("#music").hide();
+    $("#now-playing").show();
+    $("#queue").hide();
+
+    $("#currentzonename").show();
+    $("#nowplayinglabel").hide();
+    $("#musiclabel").show();
+}
+
+function mQueue() {
+    $("#top-labels").show();
+    $("#zone-container").hide();
+    $("#music").hide();
+    $("#now-playing").hide();
+    $("#queue").show();
+
+    $("#currentzonename").show();
+    $("#nowplayinglabel").show();
+    $("#musiclabel").hide();
+}
+
+function mMusic() {
+    $("#top-labels").show();
+    $("#zone-container").hide();
+    $("#music").show();
+    $("#now-playing").hide();
+    $("#queue").hide();
+
+    $("#currentzonename").show();
+    $("#nowplayinglabel").show();
+    $("#musiclabel").hide();
+}
+
 function start() {
     app.currentMusicPath = "";
     app.rootLastUpdate = 0;
-    if (!app.removegif)
-        alert("Must set app.removegif");
-    if (!app.playgif)
-        alert("Must set app.playgif");
-    if (!app.addgif)
-        alert("Must set app.addgif");
     sonos.start();
 }
 
@@ -48,6 +94,7 @@ function setCurrentZone(zoneId) {
     drawControl(zoneId);
     drawQueue(zoneId);
     drawZones();
+    mNowPlaying();
 }
 
 function needZone() {
@@ -73,73 +120,6 @@ function doMAction(action, path) {
     sonos.sendMusicAction(app.currentZoneId, action, path);
 }
 
-// Add Music - Add to the Q
-function aM (num) {
-    var item = sonos.music[app.currentMusicPath].items[num];
-    return doMAction('AddMusic', item.path);
-}
-
-// Play Music - Replace the Q
-function pM (num) {
-    var item = sonos.music[app.currentMusicPath].items[num];
-    return doMAction('PlayMusic', item.path);
-}
-
-// Browse To
-function bT (num) {
-    var item = sonos.music[app.currentMusicPath].items[num];
-    return browseTo(item.path);
-}
-
-function doPlaylistDelete(path) {
-    if (needZone()) return;
-    if (confirm("Delete " + decodeURIComponent(path) + "?")) {
-        sonos.sendMusicAction(app.currentZoneId, "DeleteMusic", path);
-    }
-}
-
-function doSaveQ() {
-    if (needZone()) return;
-    var element = document.getElementById("savequeuename");
-    if (element.value == "") {
-        alert("Please enter a name");
-        return;
-    }
-    sonos.sendSaveAction(app.currentZoneId, encodeURIComponent(element.value));
-    element.value = "";
-}
-
-function doSearch(auto) {
-    if (auto && !app.currentZoneId) {
-        return; // Don't bug the user if this is a auto search
-    }
-
-    if (needZone()) return;
-
-    var element = document.getElementById("msearch");
-    if (element.value == "") {
-        browseTo("");
-        return;
-    }
-
-    var newPath = "Search: "+ encodeURIComponent(element.value);
-    if(app.currentMusicPath == newPath) {
-        return;
-    }
-
-    if (auto && element.value.length < 2) {
-        return; // Don't auto search if 1 char, since could be slow
-    }
-
-    app.currentMusicPath = newPath;
-
-    if (sonos.music[app.currentMusicPath]) {
-        drawMusic(app.currentMusicPath);
-    } else {
-        sonos.sendMusicSearch(app.currentZoneId, encodeURIComponent(element.value));
-    }
-}
-
 function browseTo(path) {
     if (needZone()) return;
 
@@ -149,13 +129,6 @@ function browseTo(path) {
         drawMusic(app.currentMusicPath);
     } else {
         sonos.sendMusicAction(app.currentZoneId, "Browse", app.currentMusicPath);
-    }
-}
-
-function browseBack() {
-    if (needZone()) return;
-    if (sonos.music[app.currentMusicPath]) {
-        browseTo(sonos.music[app.currentMusicPath].parent);
     }
 }
 
@@ -169,61 +142,67 @@ function doUnlink(zone) {
 
 function drawZones() {
     var str = "<ul>";
-    for (i=0; i < sonos.zones.length; i++) {
-        var zone = sonos.zones[i];
-        if (app.currentZoneId == zone) str += "<B>";
+    i = 0;
+    for (z in sonos.zones) {
+        var zone = sonos.zones[z];
+        if (app.currentZoneId == zone.ZONE_ID) str += "<B>";
 
-        if (!sonos[zone].linked && (i != 0)) str+= "</ul><ul>";
+        if (!zone.ZONE_LINKED && (i != 0)) str+= "</ul><ul>";
 
-        str += "<li><A HREF=\"#\" onClick=\"setCurrentZone('" + sonos[zone].zoneId + "')\">" + sonos[zone].zoneName + "</A>";
+        str += "<li style='background-image: url(zone_icons/" + zone.ZONE_ICON + ".png);'>";
+        str += "<A HREF=\"#\" onClick=\"setCurrentZone('" + zone.ZONE_ID + "')\">" + zone.ZONE_NAME + "</A>";
         
-        if (sonos[zone].linked) {
-            str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone+"')\">[U]</a>";
-        } else if (app.currentZoneId && app.currentZoneId != zone) {
-            str += " <a class=ulink href=\"#\" onClick=\"doLink('"+zone+"')\">[L]</a></font>";
+        if (zone.ZONE_LINKED) {
+            str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone.ZONE_ID+"')\">[U]</a>";
+        } else if (app.currentZoneId && app.currentZoneId != zone.ZONE_ID) {
+            str += " <a class=ulink href=\"#\" onClick=\"doLink('"+zone.ZONE_ID+"')\">[L]</a></font>";
         }
 
         str += "</li>\n";
 
-        if (app.currentZoneId == zone) str += "</B>";
+        if (app.currentZoneId == zone.ZONE_ID) str += "</B>";
+
+        i++;
     }
     str += "</ul>";
     updateText("zones", str);
-    updateToggle("zone-content", "zone-container", app.currentZoneId);
 }
 
 function drawControl(zoneId) {
-    if (app.currentZoneId != zoneId) {
-        return;
-    }
+    var info =  sonos.zones[app.currentZoneId];
 
-    var zone = sonos[zoneId];
+    var fancyName = info.ZONE_NAME;
+    if (info.ZONE_NUMLINKED > 0) fancyName += ' + ' + info.ZONE_NUMLINKED;
 
-    updateText('currentzonename', zone.zoneName);
-    updateText('song', zone.song);
-    updateText('album', zone.album);
-    updateText('artist', zone.artist);
-    updateText('tracknum', zone.trackNum);
-    updateText('tracktot', zone.trackTot);
-    updateToggle("pause", "play", zone.mode == 1);
-    updateToggle("muteoff", "muteon", zone.muted);
-    $("#volume").simpleSlider("setValue", zone.volume);
-    updateSrc('albumart', zone.albumArt);
+    $("a[href=info-container]").text(fancyName);
+    updateText('currentzonename', fancyName);
+    updateText('song', info.ACTIVE_NAME);
+    updateText('album', info.ACTIVE_ALBUM);
+    updateText('artist', info.ACTIVE_ARTIST);
+    updateToggle("pause", "play", info.ACTIVE_MODE == 1);
+    updateToggle("muteoff", "muteon", info.ACTIVE_MUTED);
+    $("#volume").simpleSlider("setValue", info.ACTIVE_VOLUME);
+    // $("#volume").prop("value", info.ACTIVE_VOLUME);
+    updateSrc('albumart', info.ACTIVE_ALBUMART);
 }
 
-function drawQueue(zoneId) {
-    if (app.currentZoneId != zoneId) {
-        return;
-    }
+function drawQueue() {
+    if (!sonos.queue) return;
 
     var str = new Array();
     str.push("<ul>");
-    for (i=0; i < sonos[app.currentZoneId].queue.length; i++) {
-        var item = sonos[app.currentZoneId].queue[i];
-        str.push("<li onClick=\"doQAction('Seek', '" + item.id + "'>");
-        str.push("<img src='" + item.albumArt + "'><div>");
-        str.push("<p class='title'>" + item.name + "</p>");
-        str.push("<p class='artist'>" + item.artist + "</p></div>");
+    for (i=0; i < sonos.queue.length; i++) {
+        var item = sonos.queue[i];
+        //str.push("<li onClick=\"doQAction('Seek', '" + item.id + "'>");
+        str.push("<li onClick='$(this).find(\".buttons\").toggle()'>");
+        str.push("<img class='albumart' src='" + item.QUEUE_ALBUMART + "'>");
+        str.push("<div><p class='title'>" + item.QUEUE_NAME + "</p>");
+        str.push("<p class='artist'>" + item.QUEUE_ARTIST + "</p>");
+        str.push("<p class='buttons'>");
+        str.push("<A HREF=\"#\" onClick=\"doQAction('Remove', '" + item.QUEUE_ID + "')\">Remove</A>");
+        str.push(" - <A HREF=\"#\" onClick=\"doQAction('Seek', '" + item.QUEUE_ID + "')\">Seek</A>");
+        str.push("</p>");
+        str.push("</div>");
         str.push("</li>");
     }
     str.push("</ul>");
@@ -231,57 +210,43 @@ function drawQueue(zoneId) {
 }
 
 function drawMusic(path) {
-    if (path != app.currentMusicPath) {
-        // Got a refresh for top, might mean we should refresh the screen
-        if ((path == "") && !sonos.music[app.currentMusicPath]) {
-            browseTo(app.currentMusicPath);
-        }
-        return;
-    }
-
-    var isPlaylist = (path.substr(0,3) == "SQ:");
-    var isRadio = (path.substr(0,2) == "R:");
-
-    if (path == "") {
-        updateText("musicpath", "");
-        document.getElementById("rootmusicdata").style.display = "inline";
-        document.getElementById("musicdata").style.display     = "none";
-        updateSrc('musicalbumart', "");
-        if (app.rootLastUpdate == sonos.music[path].lastUpdate)
-            return;
-        app.rootLastUpdate = sonos.music[path].lastUpdate;
-    } else {
-        updateText("musicpath", decodeURIComponent(path));
-        document.getElementById("rootmusicdata").style.display = "none";
-        document.getElementById("musicdata").style.display     = "inline";
-        updateSrc('musicalbumart', sonos.music[path].albumArt);
-    }
-
+    var info = sonos.music[path];
     var str = new Array();
 
-    for (i=0; i < sonos.music[path].items.length; i++) {
-        var item = sonos.music[path].items[i];
-        str.push("<img src=" + item.icon + "> ");
-        if (path != "") {
-            if (!isRadio) {
-                str.push("<A HREF=\"#\" onClick=\"aM(" + i + ")\"><IMG SRC="+app.addgif+"></A>");
-            }
-            str.push("<A HREF=\"#\" onClick=\"pM(" + i + ")\"><IMG SRC="+app.playgif+"></A>");
-            if (isPlaylist) {
-                str.push("<A HREF=\"#\" onClick=\"doPlaylistDelete('" + encodeURIComponent(item.path) + "')\" ><IMG SRC="+app.removegif+"></A>");
-            }
+    // header with path title
+    str.push("<ul>");
+    if (path != "") {
+        str.push("<li class='header'>");
+        parent_path = decodeURIComponent(info.MUSIC_PARENT); 
+        str.push("<img onClick='browseTo(\"" + parent_path + "\")' src='tiles/back.svg'>");
+        str.push("<div><p id='musicpath'>" + info.MUSIC_NAME + "</p>");
+        if (info.MUSIC_ARTIST) str.push("<p class='artist'>" + info.MUSIC_ARTIST + "</p>");
+        str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"AddMusic\", \"" + path + "\");'>Add</A></p>");
+        str.push("</div></li>");
+
+        if (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum") {
+            str.push("<li class='albumart'><img onerror='this.src=\"tiles/missingaa_lite.svg\";' src='" + info.MUSIC_ALBUMART + "'></li>");
         }
-        if (item.isSong) {
-            str.push(item.name + "<BR>\n");
+    }
+  
+    // container items
+    for (i=0; i < info.MUSIC_LOOP.length; i++) {
+        var item = info.MUSIC_LOOP[i];
+        path = decodeURIComponent(item.MUSIC_PATH); 
+        str.push("<li onClick='browseTo(\"" + path + "\")'>");
+        if (item.MUSIC_ALBUMART && ! (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum")) { 
+            str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.MUSIC_ALBUMART) + "'>");
         } else {
-            str.push("<A HREF=\"#\" onClick=\"bT(" + i + ")\" > ");
-            str.push (item.name + "</A> <BR>\n");
+            str.push("<div class='trackno'>" + i + "</div>");
         }
+
+        str.push("<div><p class='title'>" + item.MUSIC_NAME + "</p>");
+        if (item.MUSIC_ARTIST && item.MUSIC_ARTIST != info.MUSIC_ARTIST)
+            str.push("<p class='artist'>" + item.MUSIC_ARTIST + "</p>");
+        str.push("</div>");
+        str.push("</li>");
     }
-    var text = str.join("");
-    if (path == "") {
-        updateText("rootmusicdata", text);
-    } else {
-        updateText("musicdata", text);
-    }
+
+    str.push("</ul>");
+    updateText("music", str.join(""));
 }

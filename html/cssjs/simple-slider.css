@@ -5,18 +5,12 @@
 
 .slider > .dragger {
   background: #fff;
-
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  border-radius: 10px;
-
-  width: 16px;
-  height: 16px;
+  width: 10px;
+  height: 10px;
 }
 
 .slider > .track, .slider > .highlight-track {
   background: #fff;
-
   border: 1px solid #aaa;
   height: 1px;
 }
