@@ -21,6 +21,9 @@ use SOAP::Lite maptype => {};
 use MIME::Base64;
 use strict;
 use Carp qw(cluck);
+use JSON;
+use Digest::SHA qw(sha256_hex);
+use File::Slurp;
 
 $main::VERSION        = "0.72";
 
@@ -35,6 +38,7 @@ $main::AACACHE        = 3600; # How long do we tell browser to cache album art i
 $main::MUSICDIR       = "";   # Local directory that sonos indexs that we can create music files in
 $main::PASSWORD       = "";   # Password for basic auth
 $main::IGNOREIPS      = "";   # Ignore this ip
+$main::AACACHEDIR     = "aa_cache";
 
 do "./config.pl" if (-f "./config.pl");
 foreach my $ip (split (",", $main::IGNOREIPS)) {
@@ -56,7 +60,14 @@ if ($main::MUSICDIR ne "") {
         die "Couldn't create directory '$main::MUSICDIR'" if (! -d $main::MUSICDIR);
     }
 }
-    
+
+if ($main::AACACHEDIR ne "") {
+    if (! -d $main::AACACHEDIR) {
+        mkdir ($main::AACACHEDIR);
+        die "Couldn't create directory '$main::AACACHEDIR'" if (! -d $main::AACACHEDIR);
+    }
+}
+  
 
 $SIG{INT} = "main::quit";
 $SIG{PIPE} = sub {};
@@ -448,15 +459,16 @@ sub sonos_musicdb_load {
 }
 ###############################################################################
 sub sonos_mkcontainer {
-    my ($parent, $class, $title, $id, $content) = @_;
+    my ($parent, $class, $title, $id, $icon, $content) = @_;
 
     my %data;
 
-    $data{'upnp:class'}   = $class;
-    $data{'dc:title'}     = $title;
-    $data{parentID}       = $parent;
-    $data{id}             = $id;
-    $data{res}->{content} = $content if (defined $content);
+    $data{'upnp:class'}       = $class;
+    $data{'dc:title'}         = $title;
+    $data{parentID}           = $parent;
+    $data{id}                 = $id;
+    $data{'upnp:albumArtURI'} = $icon;
+    $data{res}->{content}     = $content if (defined $content);
 
     push (@{$main::CONTAINERS{$parent}},  \%data);
 
@@ -480,22 +492,22 @@ sub sonos_containers_init {
 
     undef %main::CONTAINERS;
 
-    sonos_mkcontainer("", "object.container", "Favorites", "FV:2");
-    sonos_mkcontainer("", "object.container", "Artists", "A:ARTIST");
-    sonos_mkcontainer("", "object.container", "Albums", "A:ALBUM");
-    sonos_mkcontainer("", "object.container", "Genres", "A:GENRE");
-    sonos_mkcontainer("", "object.container", "Composers", "A:COMPOSER");
-    #sonos_mkcontainer("", "object.container", "Imported Playlists", "A:PLAYLISTS");
-    #sonos_mkcontainer("", "object.container", "Folders", "S:");
-    sonos_mkcontainer("", "object.container", "Radio", "R:0/0");
-    # sonos_mkcontainer("", "object.container", "Line In", "AI:");
-    # sonos_mkcontainer("", "object.container", "Playlists", "SQ:");
+    sonos_mkcontainer("", "object.container", "Favorites", "FV:2", "tiles/favorites.svg");
+    sonos_mkcontainer("", "object.container", "Artists", "A:ARTIST", "tiles/artists.svg");
+    sonos_mkcontainer("", "object.container", "Albums", "A:ALBUM", "tiles/album.svg");
+    sonos_mkcontainer("", "object.container", "Genres", "A:GENRE", "tiles/genre.svg");
+    sonos_mkcontainer("", "object.container", "Composers", "A:COMPOSER", "tiles/composers.svg");
+    #sonos_mkcontainer("", "object.container", "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg");
+    #sonos_mkcontainer("", "object.container", "Folders", "S:", "tiles/folder.svg");
+    sonos_mkcontainer("", "object.container", "Radio", "R:0/0", "tiles/radio_logo.svg");
+    # sonos_mkcontainer("", "object.container", "Line In", "AI:", "tiles/linein.svg");
+    # sonos_mkcontainer("", "object.container", "Playlists", "SQ:", "tiles/sonos_playlists.svg");
 
-    sonos_mkitem("", "object.container", "", "");
+    sonos_mkitem("", "object.container", "Music", "");
 }
 ###############################################################################
 sub sonos_containers_get {
-    my ($what) = @_;
+    my ($what, $item) = @_;
 
     my ($zone) = split(",", $main::UPDATEID{ShareListUpdateID});
     if (!defined $zone) {
@@ -511,7 +523,7 @@ sub sonos_containers_get {
 
     if (exists $main::CONTAINERS{$what}) {
         Log (2, "Using cache for $what");
-    } elsif ($what eq "AI:") {
+    } elsif ($what eq "AI:") { # line-in
         $main::CONTAINERS{$what} = ();
         foreach my $zone (keys %main::ZONES) {
             my $linein =  upnp_content_dir_browse($zone, "AI:");
@@ -613,13 +625,17 @@ sub sonos_upnp_update {
                 %main::ZONES = ();
                 foreach my $group (@{$tree->{ZoneGroup}}) {
                     my %zonegroup = %{$group};
+                    my $coordinator = $zonegroup{Coordinator};
+                    my @members = @{$zonegroup{ZoneGroupMember}};
 
-                    foreach my $member (@{$zonegroup{ZoneGroupMember}}) {
+                    foreach my $member (@members) {
                         my $zkey = $member->{UUID};
                         foreach my $mkey (keys %{$member}) {
                             $main::ZONES{$zkey}->{$mkey} = $member->{$mkey};
                         }
-                        $main::ZONES{$zkey}->{Coordinator} = $zonegroup{Coordinator};
+                        $main::ZONES{$zkey}->{Coordinator} = $coordinator;
+                        push @{ $main::ZONES{$coordinator}->{Members} }, $zkey;
+
                         my @ip = split(/\//, $member->{Location});
                         $main::ZONES{$zkey}->{IPPORT} = $ip[2];
                         $main::ZONES{$zkey}->{AV}->{LASTUPDATE} = 1 if (!defined $main::ZONES{$zkey}->{AV}->{LASTUPDATE});
@@ -761,6 +777,20 @@ sub sonos_upnp_update {
 }
 
 ###############################################################################
+sub sonos_music_realpath {
+    my ($mpath) = @_;
+
+    my $entry = sonos_music_entry($mpath);
+    return $mpath if (!defined $entry);
+    return $mpath if (!$entry->{'r:resMD'});
+    my $meta = XMLin($entry->{'r:resMD'});
+    Log(2, "   " . Dumper($meta));
+
+    return $mpath if (!$meta->{item}->{id});
+    Log(2, "Converting to real path: $mpath -> " . $meta->{item}->{id});
+    return $meta->{item}->{id};
+}
+###############################################################################
 sub sonos_music_class {
     my ($mpath) = @_;
 
@@ -784,6 +814,17 @@ sub sonos_music_entry {
     }
 
     return $main::ITEMS{$mpath};
+}
+###############################################################################
+sub sonos_music_albumart {
+    my ($mpath) = @_;
+    my $entry = sonos_music_entry ($mpath);
+
+    my $art = $entry->{"upnp:albumArtURI"};
+    return $art if $art;
+    my $parent = $entry->{parentID};
+    return sonos_music_albumart($parent) if $parent;
+    return "";
 }
 ###############################################################################
 sub sonos_is_radio {
@@ -841,6 +882,8 @@ sub sonos_avtransport_set_linein {
 ###############################################################################
 sub sonos_avtransport_add {
     my ($zone, $mpath, $queueSlot) = @_;
+
+    $mpath = sonos_music_realpath($mpath);
 
     my $entry = sonos_music_entry($mpath);
     Log(3, "before mpath = $mpath entry = " . Dumper($entry));
@@ -1316,7 +1359,6 @@ sub upnp_search_cb {
 ###############################################################################
 
 %main::HTTP_HANDLERS   = ();
-$main::HTTP_COUNTER    = 0;
 
 ###############################################################################
 sub http_register_handler  {
@@ -1331,33 +1373,42 @@ sub http_albumart_request {
 
     my $uri = $r->uri;
     my %qf = $uri->query_form;
+    my $sha = sha256_hex($uri);
+    my $response;
+
+
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
 
-    my @zones = keys (%main::ZONES);
-    my $zone = $main::ZONES{$zones[0]}->{Coordinator};
-    my $ipport = $main::ZONES{$zone}->{IPPORT};
+    if (($main::AACACHEDIR ne "") and ( -r $main::AACACHEDIR . "/" . $sha)) {
+        my $text = read_file($main::AACACHEDIR . "/" . $sha);
+        $response = HTTP::Response->parse($text)
+    } else {
+        my @zones = keys (%main::ZONES);
+        my $zone = $main::ZONES{$zones[0]}->{Coordinator};
+        my $ipport = $main::ZONES{$zone}->{IPPORT};
 
-    # Get the album art given the mpath instead of the albumart path
-    if ($uri->path eq "/getAA") {
-        my $mpath = decode("UTF-8", $qf{mpath});
-        my @parts = split("/", $mpath);
+        # Get the album art given the mpath instead of the albumart path
+        if ($uri->path eq "/getAA") {
+            my $mpath = decode("UTF-8", $qf{mpath});
+            my @parts = split("/", $mpath);
 
-        if ($#parts == 2) {
-            $uri = "/getaa?uri=" . (values %{$main::MUSIC{$parts[1]}{$parts[2]}} ) [0]->{res}->{content};
-        } elsif ($#parts == 3) {
-            $uri = "/getaa?uri=" . $main::MUSIC{$parts[1]}{$parts[2]}{$parts[3]}->{res}->{content};
-        } else {
-            $c->send_error(HTTP::Status::RC_NOT_FOUND);
-            $c->force_last_request;
+            if ($#parts == 2) {
+                $uri = "/getaa?uri=" . (values %{$main::MUSIC{$parts[1]}{$parts[2]}} ) [0]->{res}->{content};
+            } elsif ($#parts == 3) {
+                $uri = "/getaa?uri=" . $main::MUSIC{$parts[1]}{$parts[2]}{$parts[3]}->{res}->{content};
+            } else {
+                $c->send_error(HTTP::Status::RC_NOT_FOUND);
+                $c->force_last_request;
+            }
+        }
+
+        my $request = "http://$ipport" . $uri;
+        $response = $main::useragent->get($request);
+
+        if ($response->is_success() and ($main::AACACHEDIR ne "")) {
+            write_file($main::AACACHEDIR . "/" . $sha, $response->as_string());
         }
     }
-
-    my $request = "http://$ipport" . $uri;
-    my $response = $main::useragent->get($request);
-
-    # Cache album art
-    $response->header( "Cache-Control" => "max-age=" . $main::AACACHE );
-    $response->header( "Expires" => time() + $main::AACACHE );
 
     Log(3, "Sending response to " . $r->url);
     $c->send_response($response);
@@ -1374,6 +1425,8 @@ sub http_base_url {
     } else {
         $baseurl = "http://".$r->header("host");
     }
+
+    return $baseurl;
 }
 ###############################################################################
 sub http_check_password {
@@ -1490,15 +1543,15 @@ sub http_handle_request {
     }
 
     if ($response == 2) {
-        sonos_add_waiting("AV", "*", \&http_send_response, $c, $r, $diskpath, $tmplhook);
+        sonos_add_waiting("AV", "*", \&http_send_tmpl_response, $c, $r, $diskpath, $tmplhook);
     } elsif ($response == 3) {
-        sonos_add_waiting("RENDER", "*", \&http_send_response, $c, $r, $diskpath, $tmplhook);
+        sonos_add_waiting("RENDER", "*", \&http_send_tmpl_response, $c, $r, $diskpath, $tmplhook);
     } elsif ($response == 4) {
-        sonos_add_waiting("QUEUE", "*", \&http_send_response, $c, $r, $diskpath, $tmplhook);
+        sonos_add_waiting("QUEUE", "*", \&http_send_tmpl_response, $c, $r, $diskpath, $tmplhook);
     } elsif ($response == 5) {
-        sonos_add_waiting("*", "*", \&http_send_response, $c, $r, $diskpath, $tmplhook);
+        sonos_add_waiting("*", "*", \&http_send_tmpl_response, $c, $r, $diskpath, $tmplhook);
     } else {
-        http_send_response("*", "*", $c, $r, $diskpath, $tmplhook);
+        http_send_tmpl_response("*", "*", $c, $r, $diskpath, $tmplhook);
     }
 }
 
@@ -1651,18 +1704,15 @@ my ($c, $r, $path) = @_;
     }
     return 1;
 }
+
 ###############################################################################
 sub http_build_zone_data {
 my ($zone, $updatenum, $norec) = @_;
-
     my %activedata;
-
-    Log(4, "------ DATA to build zone_data ---\n");
-    Log(4, Dumper $main::ZONES{$zone});
 
     $activedata{ACTIVE_ZONE}      = encode_entities($main::ZONES{$zone}->{ZoneName});
     $activedata{ACTIVE_ZONEID}    = uri_escape($zone); 
-    $activedata{ACTIVE_VOLUME}    = $main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val};
+    $activedata{ACTIVE_VOLUME}    = 0 + $main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val};
 
     my $lastupdate;
     if ($main::ZONES{$zone}->{RENDER}->{LASTUPDATE} > $main::ZONES{$zone}->{AV}->{LASTUPDATE}) {
@@ -1786,8 +1836,13 @@ my ($zone, $updatenum, $norec) = @_;
     $activedata{ZONE_NAME}          = $activedata{ACTIVE_ZONE};
     $activedata{ZONE_VOLUME}        = $activedata{ACTIVE_VOLUME};
     $activedata{ZONE_ARG}           = "zone=".uri_escape($zone);
-    $activedata{ZONE_ICON}          = $main::ZONES{$zone}->{Icon};
+
+    my $icon = $main::ZONES{$zone}->{Icon};
+    $icon =~ s/^x-rincon-roomicon://;
+    $activedata{ZONE_ICON}          = $icon;
+    
     $activedata{ZONE_LASTUPDATE}    = $lastupdate;
+    $activedata{ZONE_NUMLINKED}     = $#{$main::ZONES{$zone}->{Members}};
 
     if ($main::ZONES{$zone}->{Coordinator} eq $zone) {
         $activedata{ZONE_LINKED}    = 0;
@@ -1799,7 +1854,7 @@ my ($zone, $updatenum, $norec) = @_;
         $activedata{ZONE_LINK_NAME} = encode_entities($main::ZONES{$main::ZONES{$zone}->{Coordinator}}->{ZoneName});
     }
 
-    return %activedata;
+    return \%activedata;
 }
 
 ###############################################################################
@@ -1813,29 +1868,19 @@ my ($zone, $updatenum) = @_;
     $queuedata{QUEUE_LASTUPDATE} = $main::QUEUEUPDATE{$zone};
     $queuedata{QUEUE_UPDATED}    = ($main::QUEUEUPDATE{$zone} > $updatenum);
 
-    return %queuedata if (!$main::ZONES{$zone}->{QUEUE} || ! (@{$main::ZONES{$zone}->{QUEUE}}));
-
     my $i = 1;
     my @loop_data = ();
-    foreach my $queue (@{$main::ZONES{$zone}->{QUEUE}}) {
-        Log(4, "Build queue data for entry: " . Dumper($queue));
-        my %row_data;
-        if (defined $main::ZONES{$zone}->{AV}->{CurrentTrack} && $i == $main::ZONES{$zone}->{AV}->{CurrentTrack}) {
-            if ($main::ZONES{$zone}->{AV}->{TransportState} eq "PLAYING") {
-                $row_data{QUEUE_IMG}     = "/playing.gif";
-                $row_data{QUEUE_PLAYING} = 1;
-                $row_data{QUEUE_PAUSED}  = 0;
-            } else {
-                $row_data{QUEUE_IMG}     = "/paused.gif";
-                $row_data{QUEUE_PLAYING} = 0;
-                $row_data{QUEUE_PAUSED}  = 1;
-            }
-        } else {
-            $row_data{QUEUE_IMG}     = "/blank.gif";
-            $row_data{QUEUE_PLAYING} = 0;
-            $row_data{QUEUE_PAUSED}  = 0;
-        }
+    my $q = $main::ZONES{$zone}->{QUEUE};
+    $q = () unless $q;
 
+    foreach my $queue (@$q) {
+        my %row_data;
+        my $av = $main::ZONES{$zone}->{AV};
+        my $playing = ($av->{TransportState} eq "PLAYING");
+        my $track = (defined $av->{CurrentTrack} && $i == $av->{CurrentTrack});
+
+        $row_data{QUEUE_PLAYING} = int($playing);
+        $row_data{QUEUE_PAUSED}  = int($track && !$playing);
         $row_data{QUEUE_NAME}     = encode_entities($queue->{"dc:title"});
         $row_data{QUEUE_ALBUM}    = encode_entities($queue->{"upnp:album"});
         $row_data{QUEUE_ARTIST}   = encode_entities($queue->{"dc:creator"});
@@ -1845,12 +1890,86 @@ my ($zone, $updatenum) = @_;
         $row_data{QUEUE_ID}       = $queue->{id};
         push(@loop_data, \%row_data);
         $i++;
-    }
+    };
+
     $queuedata{QUEUE_LOOP}       = \@loop_data;
 
-    return %queuedata;
+    return \%queuedata;
 }
 
+sub http_build_music_data {
+    my $qf = shift;
+    my $updatenum = shift;
+    my %musicdata;
+
+    my @loop_data = ();
+    my $sortsub = sub {};
+    my $firstsearch = ($qf->{firstsearch}?$qf->{firstsearch}:0);
+    my $maxsearch = 5000;
+
+    if ($qf->{msearch}) {
+        $maxsearch   = ($qf->{maxsearch}?$qf->{maxsearch}:$main::MAX_SEARCH);
+
+        @loop_data = http_do_search($qf->{zone}, $qf->{msearch}, $firstsearch + $maxsearch);
+
+        $musicdata{"MUSIC_PATH"} = "Search: ". uri_escape(uri_escape($qf->{msearch}));
+        $musicdata{"MUSIC_SEARCH"} = $qf->{msearch};
+        $musicdata{"MUSIC_UPDATED"} = 1;
+        $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
+        $musicdata{"MUSIC_PARENT"} = "";
+        $musicdata{"MUSIC_ALBUMART"} = "";
+
+    } else {
+        my $mpath = "";
+        my $albumart = "";
+        $maxsearch   = $qf->{maxsearch} if ($qf->{maxsearch});
+
+        $mpath = $qf->{mpath} if (defined $qf->{mpath});
+        $mpath = "" if ($mpath eq "/");
+        my $realpath = sonos_music_realpath($mpath);
+
+
+        my $item = sonos_music_entry($mpath);
+        my $realitem = sonos_music_entry($realpath);
+
+        $musicdata{"MUSIC_ROOT"} = ($mpath eq "");
+        $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
+        $musicdata{"MUSIC_PATH"} = uri_escape($realpath);
+        $musicdata{"MUSIC_NAME"} = encode_entities($realitem->{'dc:title'});
+        $musicdata{"MUSIC_ARTIST"} = encode_entities($realitem->{'dc:creator'});
+        $musicdata{"MUSIC_ALBUM"} = encode_entities($realitem->{'upnp:album'});
+        $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
+        $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
+        $musicdata{"MUSIC_ALBUMART"} = sonos_music_albumart($realitem->{id});
+        $musicdata{"MUSIC_CLASS"} = encode_entities($realitem->{'upnp:class'});
+
+        my $elements = sonos_containers_get($realpath, $realitem);
+        foreach my $music (@{$elements}) {
+            my %row_data;
+            $row_data{MUSIC_NAME} = encode_entities($music->{"dc:title"});
+            $row_data{MUSIC_CLASS} = encode_entities($music->{"upnp:class"});
+            $row_data{MUSIC_PATH} = uri_escape_utf8($music->{id}, "^A-Za-z0-9");
+            $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) . 
+                                    "&amp;mpath=" . $row_data{MUSIC_PATH} if (exists $qf->{zone});
+            $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music->{id});
+            $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
+            $row_data{"MUSIC_ARTIST"} = encode_entities($music->{"dc:creator"});
+            $row_data{MUSIC_ISSONG} = !($music->{"upnp:class"} =~ /^object.container/);
+
+            push(@loop_data, \%row_data);
+            last if ($#loop_data > $firstsearch + $maxsearch);
+        }
+    }
+
+    splice(@loop_data, 0, $firstsearch) if ($firstsearch > 0);
+    if ($#loop_data > $maxsearch) {
+        $musicdata{"MUSIC_ERROR"} = "More then $maxsearch matching items.<BR>";
+    }
+
+    $musicdata{"MUSIC_LOOP"} = \@loop_data;
+    
+    return \%musicdata;
+}
 ###############################################################################
 # Sort items by coordinators first, for linked zones sort under their coordinator
 sub http_zone_sort_linked () {
@@ -1917,7 +2036,7 @@ sub http_do_search {
                 $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
                                       "&amp;mpath=" . $row_data{MUSIC_PATH};
             }
-            $row_data{MUSIC_ICON} = "/artist.gif";
+            $row_data{MUSIC_ALBUMART} = sonos_music_albumart($row_data{MUSIC_PATH});
             $row_data{MUSIC_ISSONG} = 0;
             push(@loop_data, \%row_data);
             last if ($#loop_data > $maxsearch);
@@ -1932,7 +2051,7 @@ sub http_do_search {
                     $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
                                           "&amp;mpath=" . $row_data{MUSIC_PATH};
                 }
-                $row_data{MUSIC_ICON} = "/album.gif";
+                $row_data{MUSIC_ALBUMART} = sonos_music_albumart($row_data{MUSIC_PATH});
                 $row_data{MUSIC_ISSONG} = 0;
                 push(@loop_data, \%row_data);
                 last if ($#loop_data > $maxsearch);
@@ -1948,7 +2067,7 @@ sub http_do_search {
                         $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
                                               "&amp;mpath=" . $row_data{MUSIC_PATH};
                     }
-                    $row_data{MUSIC_ICON} = "/song.gif";
+                    $row_data{MUSIC_ALBUMART} = sonos_music_albumart($row_data{MUSIC_PATH});
                     $row_data{MUSIC_ISSONG} = 1;
                     push(@loop_data, \%row_data);
                     last if ($#loop_data > $maxsearch);
@@ -1962,175 +2081,70 @@ sub http_do_search {
 }
 
 ###############################################################################
-sub http_send_response {
-my ($what, $thezone, $c, $r, $diskpath, $tmplhook) = @_;
-
-    my %qf = $r->uri->query_form;
-    delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
+sub http_build_map {
+my ($qf, $params) = @_;
 
     my $updatenum = 0;
+    $updatenum = $qf->{lastupdate} if ($qf->{lastupdate});
 
-    $updatenum = $qf{lastupdate} if ($qf{lastupdate});
+    my %map = ();
+ 
+    # globals
+    {
+        my $globals = {};
+        my $host = UPnP::Common::getLocalIP().":".$main::HTTP_PORT; 
+        $globals->{"BASE_URL"} = "http://$host";
+        $globals->{"VERSION"    } = $main::VERSION;
+        $globals->{"LAST_UPDATE"} = $main::LASTUPDATE;
 
-    # One of ours templates, now fill in the parts we know
-    my $template = HTML::Template->new(filename => $diskpath,
-                                       die_on_bad_params => 0,
-                                       global_vars => 1,
-                                       cache => 1,
-                                       loop_context_vars => 1);
+        my @keys = grep !/action|rand|mpath|msearch|link/, (keys %$qf);
+        my $all_arg = "";
+        $all_arg .= "$_=$qf->{$_}&" for @keys;
+        $globals->{"ALL_ARG"} = $all_arg;
 
-    $template->param("VERSION"     => $main::VERSION);
-    $template->param("LAST_UPDATE" => $main::LASTUPDATE);
-
-    if ($r->header("host")) {
-        $template->param("BASE_URL" => "http://".$r->header("host"));
-    } else {
-        $template->param("BASE_URL" => "http://". UPnP::Common::getLocalIP().":".$main::HTTP_PORT);
+        $globals->{"MUSICDIR_AVAILABLE"} = !($main::MUSICDIR eq "");
+        $globals->{"ZONES_LASTUPDATE"} = $main::ZONESUPDATE;
+        $globals->{"ZONES_UPDATED"} = ($main::ZONESUPDATE > $updatenum);
+        
+        $map{GLOBALS_JSON} = to_json($globals, { pretty => 1}, { pretty => 1});
+        %map = (%map, %$globals);
     }
 
-    # There is a ZONES_LOOP so gather all the information about the zones
-    if ($template->query(name => "ZONES_LOOP")) {
-        $template->param("ZONES_LASTUPDATE" => $main::ZONESUPDATE);
-        $template->param("ZONES_UPDATED" => ($main::ZONESUPDATE > $updatenum));
-        my @loop_data = ();
-        foreach my $zone (main::http_zones(1)) {
-            my %row_data = http_build_zone_data($zone, $updatenum);
-            $row_data{ZONE_ACTIVE} = (exists $qf{zone} && $zone eq $qf{zone});
-            push(@loop_data, \%row_data);
-        }
-        $template->param(ZONES_LOOP => \@loop_data);
-        Log(4, "ZONES_LOOP => " . Dumper ( \@loop_data ));
-    }
-    
-    # There was a zone param, get the data about single zone
-    if (exists $qf{zone}) {
-        my %activedata = http_build_zone_data($qf{zone}, $updatenum);
-        $template->param(%activedata);
+    if (grep /^ZONES_/i, @$params) {
+        my @zones = map { http_build_zone_data($_, $updatenum, $qf->{zone}); } main::http_zones(1);
+        $map{ZONES_LOOP} = \@zones;
+       
+        # make it a hash for JSON
+        my %zones_as_hash;
+        map { $zones_as_hash{$_->{ZONE_ID}} = $_ } @zones;
+        $map{ZONES_JSON} = to_json(\%zones_as_hash, { pretty => 1});
     }
 
-    my $all_arg = "";
-    $all_arg = $r->uri->query if ($r->uri->query);
-    $all_arg =~ s/[&]*action=[^&]+//;
-    $all_arg =~ s/[&]*rand=[^&]+//;
-    $all_arg =~ s/[&]*mpath=[^&]+//;
-    $all_arg =~ s/[&]*msearch=[^&]+//;
-    $all_arg =~ s/[&]*link=[^&]+//;
-    $template->param("ALL_ARG" => "$all_arg&rand=$$.$main::HTTP_COUNTER&");
-    $main::HTTP_COUNTER++;
-
-    if ($template->query(name => "ALL_QUEUE_LOOP")) {
-        my @loop_data = ();
-        foreach my $zone (keys %main::ZONES) {
-            my %row_data = http_build_queue_data($zone, $updatenum);
-
-            push(@loop_data, \%row_data);
-        }
-        $template->param(ALL_QUEUE_LOOP => \@loop_data);
+    if (grep /^ALL_QUEUE_/i, @$params) {
+        my @queues = map { http_build_queue_data($_, $updatenum); } main::http_zones(1);
+        $map{ALL_QUEUE_LOOP} = \@queues;
+        $map{ALL_QUEUE_JSON} = to_json(\@queues, { pretty => 1});
     }
 
-    if ($template->query(name => "QUEUE_LOOP") && 
-        exists $qf{zone} &&
-        $main::ZONES{$qf{zone}}->{QUEUE} && 
-        @{$main::ZONES{$qf{zone}}->{QUEUE}}) {
-
-        my %queuedata = http_build_queue_data($qf{zone}, $updatenum);
-        $template->param(%queuedata);
+    if (exists $qf->{zone}) {
+        my $queue = http_build_queue_data($qf->{zone}, $updatenum);
+        $map{QUEUE_JSON} = to_json($queue, { pretty => 1});
+        %map = (%map, %$queue);
     }
 
-    if ($template->query(name => "MUSIC_LOOP") && ((exists $qf{zone} && $main::ZONES{$qf{zone}}->{QUEUE}) || $qf{lastupdate})) {
-        my @loop_data = ();
-
-        my $sortsub = sub {};
-        my $firstsearch = ($qf{firstsearch}?$qf{firstsearch}:0);
-        my $maxsearch = 5000;
-
-        if ($qf{msearch}) {
-            $maxsearch   = ($qf{maxsearch}?$qf{maxsearch}:$main::MAX_SEARCH);
-
-            @loop_data = http_do_search($qf{zone}, $qf{msearch}, $firstsearch + $maxsearch);
-
-            $template->param("MUSIC_PATH" => "Search: ". uri_escape(uri_escape($qf{msearch})));
-            $template->param("MUSIC_SEARCH" => $qf{msearch});
-            $template->param("MUSIC_UPDATED" => 1);
-            $template->param("MUSIC_LASTUPDATE" => $main::MUSICUPDATE);
-            $template->param("MUSIC_PARENT" => "");
-            $template->param("MUSIC_ALBUMART" => "");
-
-        } else {
-            my $mpath = "";
-            my $albumart = "";
-            $maxsearch   = $qf{maxsearch} if ($qf{maxsearch});
-
-            $mpath = join("&",decode("UTF-8", $qf{mpath})) if (defined $qf{mpath});
-            $mpath = "" if ($mpath eq "/");
-
-            $template->param("MUSIC_ROOT" => ($mpath eq ""));
-
-            my $elements = sonos_containers_get($mpath);
-            my $item = sonos_music_entry($mpath);
-            $template->param("MUSIC_LASTUPDATE" => $main::MUSICUPDATE);
-            $template->param("MUSIC_PATH" => uri_escape($mpath));
-            $template->param("MUSIC_UPDATED" => ($mpath ne "" || (!$qf{NoWait} && ($main::MUSICUPDATE > $updatenum))));
-            $template->param("MUSIC_PARENT" => uri_escape($item->{parentID})) if (defined $item && defined $item->{parentID});
-
-            foreach my $music (@{$elements}) {
-                my %row_data;
-                $row_data{MUSIC_NAME} = encode_entities($music->{"dc:title"});
-                $row_data{MUSIC_PATH} = uri_escape_utf8($music->{id}, "^A-Za-z0-9");
-                if (exists $qf{zone}) {
-                    $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf{zone}) . 
-                                          "&amp;mpath=" . $row_data{MUSIC_PATH};
-                }
-                $albumart = $music->{"upnp:albumArtURI"} if (defined $music->{"upnp:albumArtURI"});
-                $row_data{"MUSIC_ALBUMART"} = $albumart;
-                $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
-                $row_data{"MUSIC_ARTIST"} = encode_entities($music->{"dc:creator"});
-
-                 if ($music->{"upnp:class"} =~ /^object.container/) {
-                    $row_data{MUSIC_ISSONG} = 0;
-                } else {
-                    $row_data{MUSIC_ISSONG} = 1;
-                }
-
-                if ($music->{"upnp:class"} eq "object.container.album.musicAlbum") {
-                    $row_data{MUSIC_ICON} = "/album.gif";
-                } elsif ($music->{"upnp:class"} eq "object.container.person.musicArtist" ||
-                         $music->{parentID} eq "A:ARTIST") {
-                    $row_data{MUSIC_ICON} = "/artist.gif";
-                } elsif ($music->{"upnp:class"} eq "object.container.genre.musicGenre" ||
-                         $music->{parentID} eq "A:GENRE") {
-                    $row_data{MUSIC_ICON} = "/genre.gif";
-                } elsif ($music->{parentID} eq "A:COMPOSER") {
-                    $row_data{MUSIC_ICON} = "/composer.gif";
-                } elsif ($music->{"upnp:class"} eq "object.container.playlist") {
-                    $row_data{MUSIC_ICON} = "/playlist.gif";
-                } elsif ($music->{"upnp:class"} eq "object.item.audioItem.audioBroadcast") {
-                    $row_data{MUSIC_ICON} = "/radio.gif";
-                } elsif ($music->{"upnp:class"} eq "object.container") {
-                    $row_data{MUSIC_ICON} = "/folder.gif";
-                } elsif ($music->{"upnp:class"} eq "object.item.audioItem.musicTrack") {
-                    $row_data{MUSIC_ICON} = "/song.gif";
-                } elsif ($music->{"upnp:class"} eq "object.item.audioItem") {
-                    $row_data{MUSIC_ICON} = "/linein.gif";
-                } else {
-                    Log (1, "Unknown class " . $music->{"upnp:class"});
-                }
-
-                push(@loop_data, \%row_data);
-                last if ($#loop_data > $firstsearch + $maxsearch);
-            }
-            $template->param("MUSIC_ALBUMART" => $albumart);
-        }
-
-        splice(@loop_data, 0, $firstsearch) if ($firstsearch > 0);
-        if ($#loop_data > $maxsearch) {
-            $template->param("MUSIC_ERROR" => "More then $maxsearch matching items.<BR>");
-        }
-
-        $template->param("MUSIC_LOOP" => \@loop_data);
+    if (grep /^MUSIC_/i, @$params) {
+        my $music = http_build_music_data($qf, $updatenum);
+        $map{MUSIC_JSON} = to_json($music, { pretty => 1});
+        %map = (%map, %$music);
     }
 
-    if ($template->query(name => "PLUGIN_LOOP")) {
+    if (exists $qf->{zone}) {
+        my $zone = http_build_zone_data($qf->{zone}, $updatenum, $qf->{zone});
+        $map{ACTIVE_JSON} = to_json($zone, { pretty => 1});
+        %map = (%map, %$zone);
+    }
+
+    if (grep /^PLUGIN_/i, @$params) {
         my @loop_data = ();
 
         foreach my $plugin (sort (keys %main::PLUGINS)) {
@@ -2142,19 +2156,44 @@ my ($what, $thezone, $c, $r, $diskpath, $tmplhook) = @_;
             push(@loop_data, \%row_data);
         }
 
-        $template->param("PLUGIN_LOOP" => \@loop_data);
+        $map{"PLUGIN_LOOP"} = \@loop_data;
+        $map{"PLUGIN_JZON"} = to_json(\@loop_data, { pretty => 1});
     }
 
-    $template->param("MUSICDIR_AVAILABLE" => !($main::MUSICDIR eq ""));
+    Log(4, "\nParams = " . Dumper($params));
+    Log(4, "\nData = " . Dumper(\%map) . "\n");
+
+    return \%map;
+
+}
+
+###############################################################################
+sub http_send_tmpl_response {
+my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
+
+    my %qf = $r->uri->query_form;
+    delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
+
+    # One of ours templates, now fill in the parts we know
+    my $template = HTML::Template->new(filename => $diskpath,
+                                       die_on_bad_params => 0,
+                                       global_vars => 1,
+                                       cache => 1,
+                                       loop_context_vars => 1);
+    my @params = $template->param();
+    my $map = http_build_map(\%qf, \@params);
+    $template->param(%$map);
 
     &$tmplhook($c, $r, $diskpath, $template) if ($tmplhook);
     
     my $content_type = "text/html; charset=ISO-8859-1";
     if ($r->uri->path =~ /\.xml/) { $content_type = "text/xml; charset=ISO-8859-1"; }
     if ($r->uri->path =~ /\.json/) { $content_type = "application/json"; }
-        
-    my $response = HTTP::Response->new(200, undef, [Connection => "close", "Content-Type" => $content_type, "Pragma" => "no-cache", "Cache-Control" => "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"], $template->output);
-    Log(3, "Sending response to " . $r->url);
+
+    my $response = HTTP::Response->new(200, undef, [Connection => "close",
+            "Content-Type" => $content_type, "Pragma" => "no-cache",
+            "Cache-Control" => "no-store, no-cache, must-revalidate,
+            post-check=0, pre-check=0"], $template->output);
     $c->send_response($response);
     $c->force_last_request;
     $c->close;
