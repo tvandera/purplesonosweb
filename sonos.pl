@@ -412,6 +412,7 @@ sub sonos_fetch_music_callback {
         $main::MUSICUPDATE = $main::SONOS_UPDATENUM++;
         sonos_containers_del("A:");
         sonos_process_waiting("MUSIC");
+        unlink glob $main::AACACHEDIR . "/*" if ($main::AACACHEDIR ne "");
     } else {
         add_timeout (time(), \&sonos_fetch_music_callback);
     }
@@ -622,11 +623,11 @@ sub sonos_upnp_update {
                 my $tree = XMLin(decode_entities($properties{$key}), 
                         forcearray => ["ZoneGroup", "ZoneGroupMember"]);
                 Log(4, "ZoneGroupTopology " . Dumper($tree));
-                %main::ZONES = ();
                 foreach my $group (@{$tree->{ZoneGroup}}) {
                     my %zonegroup = %{$group};
                     my $coordinator = $zonegroup{Coordinator};
                     my @members = @{$zonegroup{ZoneGroupMember}};
+                    $main::ZONES{$coordinator}->{Members} = [];
 
                     foreach my $member (@members) {
                         my $zkey = $member->{UUID};
@@ -1750,7 +1751,6 @@ my ($zone, $updatenum, $norec) = @_;
     $activedata{ACTIVE_PLAYING}   = 0;
     $activedata{ACTIVE_SHUFFLE}   = 0;
     $activedata{ACTIVE_REPEAT}    = 0;
-    $activedata{ACTIVE_POSITION}  = 0;
     $activedata{ACTIVE_LENGTH}    = 0;
     $activedata{ACTIVE_ALBUMART}  = "";
     $activedata{ACTIVE_CONTENT}   = "";
@@ -1775,7 +1775,7 @@ my ($zone, $updatenum, $norec) = @_;
                 $activedata{ACTIVE_NAME}      = encode_entities($curtrack->{item}->{"dc:title"});
                 $activedata{ACTIVE_ARTIST}    = encode_entities($curtrack->{item}->{"dc:creator"});
                 $activedata{ACTIVE_ALBUM}     = encode_entities($curtrack->{item}->{"upnp:album"});
-                $activedata{ACTIVE_TRACK_NUM} = "";
+                $activedata{ACTIVE_TRACK_NUM} = -1;
                 $activedata{ACTIVE_TRACK_TOT} = $curtransport->{item}->{"dc:title"} . " \/";
             }
 
@@ -1854,6 +1854,8 @@ my ($zone, $updatenum, $norec) = @_;
         $activedata{ZONE_LINK_NAME} = encode_entities($main::ZONES{$main::ZONES{$zone}->{Coordinator}}->{ZoneName});
     }
 
+    $activedata{ACTIVE_JSON} = to_json(\%activedata, { pretty => 1});
+
     return \%activedata;
 }
 
@@ -1879,8 +1881,6 @@ my ($zone, $updatenum) = @_;
         my $playing = ($av->{TransportState} eq "PLAYING");
         my $track = (defined $av->{CurrentTrack} && $i == $av->{CurrentTrack});
 
-        $row_data{QUEUE_PLAYING} = int($playing);
-        $row_data{QUEUE_PAUSED}  = int($track && !$playing);
         $row_data{QUEUE_NAME}     = encode_entities($queue->{"dc:title"});
         $row_data{QUEUE_ALBUM}    = encode_entities($queue->{"upnp:album"});
         $row_data{QUEUE_ARTIST}   = encode_entities($queue->{"dc:creator"});
@@ -1892,7 +1892,8 @@ my ($zone, $updatenum) = @_;
         $i++;
     };
 
-    $queuedata{QUEUE_LOOP}       = \@loop_data;
+    $queuedata{QUEUE_LOOP} = \@loop_data;
+    $queuedata{QUEUE_JSON} = to_json(\@loop_data, { pretty => 1});
 
     return \%queuedata;
 }
@@ -2096,6 +2097,7 @@ my ($qf, $params) = @_;
         $globals->{"BASE_URL"} = "http://$host";
         $globals->{"VERSION"    } = $main::VERSION;
         $globals->{"LAST_UPDATE"} = $main::LASTUPDATE;
+        $globals->{"LAST_UPDATE_READABLE"} = localtime $main::LASTUPDATE;
 
         my @keys = grep !/action|rand|mpath|msearch|link/, (keys %$qf);
         my $all_arg = "";
@@ -2140,7 +2142,6 @@ my ($qf, $params) = @_;
 
     if (exists $qf->{zone}) {
         my $zone = http_build_zone_data($qf->{zone}, $updatenum, $qf->{zone});
-        $map{ACTIVE_JSON} = to_json($zone, { pretty => 1});
         %map = (%map, %$zone);
     }
 
@@ -2192,8 +2193,8 @@ my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
 
     my $response = HTTP::Response->new(200, undef, [Connection => "close",
             "Content-Type" => $content_type, "Pragma" => "no-cache",
-            "Cache-Control" => "no-store, no-cache, must-revalidate,
-            post-check=0, pre-check=0"], $template->output);
+            "Cache-Control" => "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"],
+        $template->output);
     $c->send_response($response);
     $c->force_last_request;
     $c->close;
