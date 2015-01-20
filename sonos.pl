@@ -90,6 +90,25 @@ sub sigchld {
     $SIG{CHLD} = \&main::sigchld;
 }
 ###############################################################################
+sub wakeup_nas {
+        my $mac = '00:17:a4:15:78:cf';
+	# Remove colons
+	$mac =~ tr/://d;
+	# Magic packet is 6 bytes of FF followed by the MAC address 16 times
+	my $magic = ("\xff" x 6) . (pack('H12', $mac) x 16);
+	# Create socket
+	socket(S, PF_INET, SOCK_DGRAM, getprotobyname('udp'))
+		or die "socket: $!\n";
+	# Enable broadcast
+	setsockopt(S, SOL_SOCKET, SO_BROADCAST, 1)
+		or die "setsockopt: $!\n";
+	# Send the wakeup packet
+	defined(send(S, $magic, 0, sockaddr_in(0x2fff, INADDR_BROADCAST)))
+		or print "send: $!\n";
+	close(S);
+}
+
+###############################################################################
 sub doconfig {
     print  "Configure the defaults for sonos.pl by creating a config.pl file.\n";
     print  "Press return or enter key to keep current values.\n";
@@ -785,10 +804,7 @@ sub sonos_music_realpath {
     return $mpath if (!defined $entry);
     return $mpath if (!$entry->{'r:resMD'});
     my $meta = XMLin($entry->{'r:resMD'});
-    Log(2, "   " . Dumper($meta));
-
     return $mpath if (!$meta->{item}->{id});
-    Log(2, "Converting to real path: $mpath -> " . $meta->{item}->{id});
     return $meta->{item}->{id};
 }
 ###############################################################################
@@ -1384,6 +1400,8 @@ sub http_albumart_request {
         my $text = read_file($main::AACACHEDIR . "/" . $sha);
         $response = HTTP::Response->parse($text)
     } else {
+        wakeup_nas();
+
         my @zones = keys (%main::ZONES);
         my $zone = $main::ZONES{$zones[0]}->{Coordinator};
         my $ipport = $main::ZONES{$zone}->{IPPORT};
@@ -1927,35 +1945,36 @@ sub http_build_music_data {
 
         $mpath = $qf->{mpath} if (defined $qf->{mpath});
         $mpath = "" if ($mpath eq "/");
-        my $realpath = sonos_music_realpath($mpath);
-
-
         my $item = sonos_music_entry($mpath);
-        my $realitem = sonos_music_entry($realpath);
 
         $musicdata{"MUSIC_ROOT"} = ($mpath eq "");
         $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
-        $musicdata{"MUSIC_PATH"} = uri_escape($realpath);
-        $musicdata{"MUSIC_NAME"} = encode_entities($realitem->{'dc:title'});
-        $musicdata{"MUSIC_ARTIST"} = encode_entities($realitem->{'dc:creator'});
-        $musicdata{"MUSIC_ALBUM"} = encode_entities($realitem->{'upnp:album'});
+        $musicdata{"MUSIC_PATH"} = uri_escape($mpath);
+        $musicdata{"MUSIC_NAME"} = encode_entities($item->{'dc:title'});
+        $musicdata{"MUSIC_ARTIST"} = encode_entities($item->{'dc:creator'});
+        $musicdata{"MUSIC_ALBUM"} = encode_entities($item->{'upnp:album'});
         $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
         $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
-        $musicdata{"MUSIC_ALBUMART"} = sonos_music_albumart($realitem->{id});
-        $musicdata{"MUSIC_CLASS"} = encode_entities($realitem->{'upnp:class'});
+        $musicdata{"MUSIC_ALBUMART"} = sonos_music_albumart($item->{id});
+        $musicdata{"MUSIC_CLASS"} = encode_entities($item->{'upnp:class'});
 
-        my $elements = sonos_containers_get($realpath, $realitem);
+        my $elements = sonos_containers_get($mpath, $item);
         foreach my $music (@{$elements}) {
             my %row_data;
+            my $row_item = sonos_music_entry(sonos_music_realpath($music->{id}));
+
             $row_data{MUSIC_NAME} = encode_entities($music->{"dc:title"});
             $row_data{MUSIC_CLASS} = encode_entities($music->{"upnp:class"});
             $row_data{MUSIC_PATH} = uri_escape_utf8($music->{id}, "^A-Za-z0-9");
+            $row_data{MUSIC_REALCLASS} = encode_entities($row_item->{"upnp:class"});
+            $row_data{MUSIC_REALPATH} = uri_escape_utf8($row_item->{id}, "^A-Za-z0-9");
             $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) . 
                                     "&amp;mpath=" . $row_data{MUSIC_PATH} if (exists $qf->{zone});
             $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music->{id});
             $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
             $row_data{"MUSIC_ARTIST"} = encode_entities($music->{"dc:creator"});
-            $row_data{MUSIC_ISSONG} = !($music->{"upnp:class"} =~ /^object.container/);
+            $row_data{"MUSIC_DESC"} = encode_entities($music->{"r:description"});
+            $row_data{MUSIC_ISSONG} = !($row_item->{"upnp:class"} =~ /^object.container/);
 
             push(@loop_data, \%row_data);
             last if ($#loop_data > $firstsearch + $maxsearch);
