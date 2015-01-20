@@ -4,18 +4,19 @@ drawZones();
 stopspin();
 </TMPL_IF>
 
-<TMPL_IF NAME=ACTIVE_UPDATED>
-sonos.zones["<TMPL_VAR NAME=ACTIVE_ZONEID>"] = <TMPL_VAR NAME=ACTIVE_JSON>;
-drawControl();
-stopspin();
-</TMPL_IF>
+<TMPL_LOOP NAME=ZONES_LOOP> <TMPL_IF NAME=ACTIVE_UPDATED>
+zone = "<TMPL_VAR NAME=ACTIVE_ZONEID>";
+sonos.zones[zone] = <TMPL_VAR NAME=ACTIVE_JSON>;
+drawControl(zone);
+drawQueue(zone);
+</TMPL_IF></TMPL_LOOP>
 
-<TMPL_IF NAME=QUEUE_UPDATED>
-var queue_data = <TMPL_VAR NAME=QUEUE_JSON>;
-sonos.queue = queue_data.QUEUE_LOOP;
-drawQueue();
+<TMPL_LOOP NAME=ALL_QUEUE_LOOP><TMPL_IF NAME=QUEUE_UPDATED>
+zone = "<TMPL_VAR NAME=QUEUE_ZONEID>";
+sonos.queues[zone] = <TMPL_VAR NAME=QUEUE_JSON>;
+drawQueue(zone);
 stopspin();
-</TMPL_IF>
+</TMPL_IF></TMPL_LOOP>
 
 <TMPL_IF NAME=MUSIC_UPDATED>
 path = decodeURIComponent("<TMPL_VAR NAME=MUSIC_PATH>");
@@ -24,4 +25,4 @@ drawMusic(path);
 stopspin();
 </TMPL_IF>
 
-sonos._setLastUpdate(<TMPL_VAR NAME=LAST_UPDATE>);
+sonos._setLastUpdate(<TMPL_VAR NAME=LAST_UPDATE>); // <TMPL_VAR NAME=LAST_UPDATE_READABLE>  

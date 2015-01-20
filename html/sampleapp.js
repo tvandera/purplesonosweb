@@ -169,6 +169,7 @@ function drawZones() {
 }
 
 function drawControl(zoneId) {
+    if (zoneId != app.currentZoneId) return;
     var info =  sonos.zones[app.currentZoneId];
 
     var fancyName = info.ZONE_NAME;
@@ -182,26 +183,50 @@ function drawControl(zoneId) {
     updateToggle("pause", "play", info.ACTIVE_MODE == 1);
     updateToggle("muteoff", "muteon", info.ACTIVE_MUTED);
     $("#volume").simpleSlider("setValue", info.ACTIVE_VOLUME);
+    //$("#volume").bind("slider:changed", function (event, data) {
+    //    alert(data.value);
+    //    sonos.setVolume(app.currentZoneId,data.value);
+    //});
     // $("#volume").prop("value", info.ACTIVE_VOLUME);
     updateSrc('albumart', info.ACTIVE_ALBUMART);
+    drawQueue(zoneId);
 }
 
-function drawQueue() {
-    if (!sonos.queue) return;
+function drawQueue(zoneId) {
+    if (zoneId != app.currentZoneId) return;
+    if (!sonos.queues[zoneId]) return;
+    var queue = sonos.queues[zoneId]; 
+    var cur_track = sonos.zones[zoneId].ACTIVE_TRACK_NUM;
+    var zone_paused = sonos.zones[zoneId].ACTIVE_PAUSED;
+    var zone_playing = sonos.zones[zoneId].ACTIVE_PLAYING;
 
     var str = new Array();
     str.push("<ul>");
-    for (i=0; i < sonos.queue.length; i++) {
-        var item = sonos.queue[i];
-        //str.push("<li onClick=\"doQAction('Seek', '" + item.id + "'>");
-        str.push("<li onClick='$(this).find(\".buttons\").toggle()'>");
-        str.push("<img class='albumart' src='" + item.QUEUE_ALBUMART + "'>");
+
+    //header
+    str.push("<li class='header'>");
+    str.push("<img src='svg/queue.svg'>");
+    str.push("<div><p>&nbsp;</p>");
+    str.push("<p class='buttons'><a onclick=\"doAction('RemoveAll')\">Remove All</a></p>");
+    str.push("</div></li>");
+
+    for (i=0; i < queue.length; i++) {
+        var item = queue[i];
+        var paused = (cur_track == item.QUEUE_TRACK_NUM) && zone_paused;
+        var playing = (cur_track == item.QUEUE_TRACK_NUM) && zone_playing;
+
+        if (paused)       action = "doAction('Play');";
+        else if (playing) action = "doAction('Pause');"
+        else              action = "doAction('Play'); doQAction('Seek', '" + item.QUEUE_ID + "');";
+        str.push("<li onClick=\"" + action + "\">");
+
+        if (paused) img = 'svg/pause.svg';
+        else if (playing) img = 'svg/pause.svg';
+        else img = item.QUEUE_ALBUMART;
+        str.push("<img class='albumart' src='" + img + "'>");
+
         str.push("<div><p class='title'>" + item.QUEUE_NAME + "</p>");
         str.push("<p class='artist'>" + item.QUEUE_ARTIST + "</p>");
-        str.push("<p class='buttons'>");
-        str.push("<A HREF=\"#\" onClick=\"doQAction('Remove', '" + item.QUEUE_ID + "')\">Remove</A>");
-        str.push(" - <A HREF=\"#\" onClick=\"doQAction('Seek', '" + item.QUEUE_ID + "')\">Seek</A>");
-        str.push("</p>");
         str.push("</div>");
         str.push("</li>");
     }
@@ -221,7 +246,9 @@ function drawMusic(path) {
         str.push("<img onClick='browseTo(\"" + parent_path + "\")' src='tiles/back.svg'>");
         str.push("<div><p id='musicpath'>" + info.MUSIC_NAME + "</p>");
         if (info.MUSIC_ARTIST) str.push("<p class='artist'>" + info.MUSIC_ARTIST + "</p>");
-        str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"AddMusic\", \"" + path + "\");'>Add</A></p>");
+        if (info.MUSIC_CLASS == "object.container.album.musicAlbum") { 
+            str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"AddMusic\", \"" + path + "\");'>Add</A></p>");
+        }
         str.push("</div></li>");
 
         if (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum") {
@@ -243,6 +270,9 @@ function drawMusic(path) {
         str.push("<div><p class='title'>" + item.MUSIC_NAME + "</p>");
         if (item.MUSIC_ARTIST && item.MUSIC_ARTIST != info.MUSIC_ARTIST)
             str.push("<p class='artist'>" + item.MUSIC_ARTIST + "</p>");
+        if (item.MUSIC_CLASS == "object.item.audioItem.audioBroadcast") { 
+            str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A></p>");
+        }
         str.push("</div>");
         str.push("</li>");
     }

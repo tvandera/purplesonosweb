@@ -28,12 +28,14 @@ sonos.start = function() {
     sonos.music = {};
     sonos._lastUpdate = 1;
     sonos._fetch();
+    sonos.zones = {};
+    sonos.queues = {};
 }
 
 sonos.sendAction = function(zoneId, action, other) {
     if (!other) other = "";
     startspin();
-    sonos._loadData("/data.html?NoWait=1&action=" + action + "&zone=" + zoneId + other);
+    sonos._loadData("/action.html?NoWait=1&action=" + action + "&zone=" + zoneId + other);
 }
 
 sonos.sendControlAction = function(zoneId, action) {
@@ -53,7 +55,7 @@ sonos.sendMusicAction = function(zoneId, action, path) {
 }
 
 sonos.sendMusicSearch = function(zoneId, str) {
-    sonos._loadData("/data.html?zone=" + zoneId + "&lastupdate="+sonos._lastUpdate + "&msearch="+str);
+    sonos._loadData("/action.html?zone=" + zoneId + "&lastupdate="+sonos._lastUpdate + "&msearch="+str);
 }
 
 sonos.setVolume = function(zoneId, volume) {
