@@ -85,6 +85,7 @@ function mMusic() {
 
 function start() {
     app.currentMusicPath = "";
+    app.musicPathStack = [];
     app.rootLastUpdate = 0;
     sonos.start();
 }
@@ -120,9 +121,15 @@ function doMAction(action, path) {
     sonos.sendMusicAction(app.currentZoneId, action, path);
 }
 
-function browseTo(path) {
+function browseBack() {
+    if (app.musicPathStack.length == 0) return;
+    browseTo(app.musicPathStack.pop(), true);
+}
+
+function browseTo(path,nobreadcrumbs) {
     if (needZone()) return;
 
+    if (!nobreadcrumbs) app.musicPathStack.push(app.currentMusicPath);
     app.currentMusicPath = path;
 
     if (sonos.music[app.currentMusicPath]) {
@@ -210,14 +217,16 @@ function drawQueue(zoneId) {
     str.push("<p class='buttons'><a onclick=\"doAction('RemoveAll')\">Remove All</a></p>");
     str.push("</div></li>");
 
-    for (i=0; i < queue.length; i++) {
+    if (queue.length == 0) {
+        str.push("<li>The queue is emtpy</li>");
+    } else for (i=0; i < queue.length; i++) {
         var item = queue[i];
         var paused = (cur_track == item.QUEUE_TRACK_NUM) && zone_paused;
         var playing = (cur_track == item.QUEUE_TRACK_NUM) && zone_playing;
 
         if (paused)       action = "doAction('Play');";
         else if (playing) action = "doAction('Pause');"
-        else              action = "doAction('Play'); doQAction('Seek', '" + item.QUEUE_ID + "');";
+        else              action = "doQAction('Seek', '" + item.QUEUE_ID + "'); doAction('Play');";
         str.push("<li onClick=\"" + action + "\">");
 
         if (paused) img = 'svg/pause.svg';
@@ -239,11 +248,10 @@ function drawMusic(path) {
     var str = new Array();
 
     // header with path title
-    str.push("<ul>");
+    str.push("<ul id='musiclist' data-role='listview' data-autodividers='true'>");
     if (path != "") {
         str.push("<li class='header'>");
-        parent_path = decodeURIComponent(info.MUSIC_PARENT); 
-        str.push("<img onClick='browseTo(\"" + parent_path + "\")' src='tiles/back.svg'>");
+        str.push("<img onClick='browseBack()' src='tiles/back.svg'>");
         str.push("<div><p id='musicpath'>" + info.MUSIC_NAME + "</p>");
         if (info.MUSIC_ARTIST) str.push("<p class='artist'>" + info.MUSIC_ARTIST + "</p>");
         if (info.MUSIC_CLASS == "object.container.album.musicAlbum") { 
@@ -259,9 +267,9 @@ function drawMusic(path) {
     // container items
     for (i=0; i < info.MUSIC_LOOP.length; i++) {
         var item = info.MUSIC_LOOP[i];
-        path = decodeURIComponent(item.MUSIC_PATH); 
+        path = decodeURIComponent(item.MUSIC_REALPATH); 
         str.push("<li onClick='browseTo(\"" + path + "\")'>");
-        if (item.MUSIC_ALBUMART && ! (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum")) { 
+        if (item.MUSIC_ALBUMART && ! (info.MUSIC_ALBUMART && info.MUSIC_REALCLASS == "object.container.album.musicAlbum")) { 
             str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.MUSIC_ALBUMART) + "'>");
         } else {
             str.push("<div class='trackno'>" + i + "</div>");
@@ -270,7 +278,9 @@ function drawMusic(path) {
         str.push("<div><p class='title'>" + item.MUSIC_NAME + "</p>");
         if (item.MUSIC_ARTIST && item.MUSIC_ARTIST != info.MUSIC_ARTIST)
             str.push("<p class='artist'>" + item.MUSIC_ARTIST + "</p>");
-        if (item.MUSIC_CLASS == "object.item.audioItem.audioBroadcast") { 
+        if (item.MUSIC_DESC)
+            str.push("<p class='description'>" + item.MUSIC_DESC + "</p>");
+        if (item.MUSIC_REALCLASS == "object.item.audioItem.audioBroadcast") { 
             str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A></p>");
         }
         str.push("</div>");
@@ -279,4 +289,6 @@ function drawMusic(path) {
 
     str.push("</ul>");
     updateText("music", str.join(""));
+    // $( '#musiclist' ).listview( 'refresh' ).alphascroll();
+    
 }

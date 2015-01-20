@@ -144,7 +144,10 @@ a {
 }
 
 #music li div p.artist,
-#queuedata li div p.artist {
+#queuedata li div p.artist,
+#music li div p.description,
+#queuedata li div p.description
+{
 	color: #aaa;
 }
 
