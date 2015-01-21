@@ -9,11 +9,6 @@ a {
         font-size: 28px;
 }
 
-#queuelabel { 
-        float: right;
-        height: 44px;   
-}
-
 #control #play-pause,
 #control #play,
 #control #pause,
@@ -37,18 +32,13 @@ a {
 }
 
 
-#zoneslabel,
-#nowplayinglabel,
-#musiclabel,
-#currentzonename {
+h4 {
     margin: 2px;
     padding: 5px;
     text-transform: uppercase;
     display: inline-block;
+    font-size: 13px;
 }
-
-#nowplayinglabel, #musiclabel { float: right; }
-#nowplayinglabel { display: none; }
 
 #current-track-info label,
 #albumart {

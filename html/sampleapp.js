@@ -47,6 +47,16 @@ function mZones() {
     $("#queue").hide();
 }
 
+function mSelectLabel(name) {
+    var labels = [ "currentzone", "nowplaying", "music", "queue" ];
+    for (i=0; i < labels.length; i++) {
+        var n = labels[i];
+        if (name == n) $('#' + n + "label").css("background", "#666");
+        else $('#' + n + "label").css("background", "#000");
+    }
+}
+
+
 function mNowPlaying() {
     $("#top-labels").show();
     $("#zone-container").hide();
@@ -54,10 +64,9 @@ function mNowPlaying() {
     $("#now-playing").show();
     $("#queue").hide();
 
-    $("#currentzonename").show();
-    $("#nowplayinglabel").hide();
-    $("#musiclabel").show();
+    mSelectLabel("nowplaying");
 }
+
 
 function mQueue() {
     $("#top-labels").show();
@@ -66,9 +75,7 @@ function mQueue() {
     $("#now-playing").hide();
     $("#queue").show();
 
-    $("#currentzonename").show();
-    $("#nowplayinglabel").show();
-    $("#musiclabel").hide();
+    mSelectLabel("queue");
 }
 
 function mMusic() {
@@ -78,9 +85,7 @@ function mMusic() {
     $("#now-playing").hide();
     $("#queue").hide();
 
-    $("#currentzonename").show();
-    $("#nowplayinglabel").show();
-    $("#musiclabel").hide();
+    mSelectLabel("music");
 }
 
 function start() {
@@ -269,7 +274,7 @@ function drawMusic(path) {
         var item = info.MUSIC_LOOP[i];
         path = decodeURIComponent(item.MUSIC_REALPATH); 
         str.push("<li onClick='browseTo(\"" + path + "\")'>");
-        if (item.MUSIC_ALBUMART && ! (info.MUSIC_ALBUMART && info.MUSIC_REALCLASS == "object.container.album.musicAlbum")) { 
+        if (item.MUSIC_ALBUMART && ! (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum")) { 
             str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.MUSIC_ALBUMART) + "'>");
         } else {
             str.push("<div class='trackno'>" + i + "</div>");

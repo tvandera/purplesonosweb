@@ -17,9 +17,10 @@
 <body onload="start()">
 <div id="tabs">
     <div id="top-labels">
-        <h4 id="currentzonename" onclick='mZones()'>ZONE</h4>
-        <h4 id="nowplayinglabel" onclick='mNowPlaying()'>NOW PLAYING</h4>
-        <h4 id="musiclabel" onclick='mMusic()'>MUSIC</h4>
+        <h4 id="currentzonename" onclick='mZones()'>ZONE</h4>:
+        <h4 id="queuelabel" onclick='mQueue()'>QUEUE</h4>
+        <h4 id="nowplayinglabel" onclick='mNowPlaying()'>PLAYING</h4>
+        <h4 id="musiclabel" onclick='mMusic()'>MUSIC</h4> 
     </div>
 
     <div id="zone-container">
@@ -43,7 +44,6 @@
             <img src="svg/pause.svg" id="pause"    onclick="doAction('Pause');" >
             <img src="svg/next.svg"  id="next"     onclick="doAction('Next')" >
 
-            <img id="queuelabel" src="svg/queue.svg" onclick='mQueue()'><br>
 
             <img src="svg/mute_off.svg" id="muteon"     onclick="doAction('MuteOn')"     class="playback-mode"/>
             <img src="svg/mute_on.svg"  id="muteoff"    onclick="doAction('MuteOff')"    class="playback-mode" />
