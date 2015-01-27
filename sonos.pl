@@ -24,8 +24,6 @@ use Carp qw(cluck);
 use JSON;
 use Digest::SHA qw(sha256_hex);
 use File::Slurp;
-use Time::HiRes qw(  gettimeofday );
-
 
 $main::VERSION        = "0.72";
 
@@ -33,7 +31,7 @@ $main::VERSION        = "0.72";
 # Default config if config.pl doesn't exist
 $main::MAX_LOG_LEVEL  = 0;    # Lower, the less output
 $main::HTTP_PORT      = 8001; # Port our fake http server listens on
-$main::MAX_SEARCH     = 20;  # Default max search results to return
+$main::MAX_SEARCH     = 500;  # Default max search results to return
 $main::RENEW_SUB_TIME = 1800; # How often do we do a UPnP renew in seconds
 $main::DEFAULT        = "index.html";
 $main::AACACHE        = 3600; # How long do we tell browser to cache album art in secs
@@ -81,22 +79,6 @@ $main::SONOS_UPDATENUM = time();
 %main::PREFS           = ();
 %main::CHLD            = ();
 $main::ZONESUPDATE     = 0;
-
-@main::profiles = ();
-
-sub sonos_profile_print {
-    print "Profiling info:\n";
-    my $prev = 0;
-    foreach (@main::profiles) {
-        printf "%d;%f\n", $_->{line}, $_->{time} - $prev;
-        $prev = $_->{time};
-    }
-}
-
-sub sonos_profile {
-    my ($line) = @_;
-    push @main::profiles, { "time" => scalar gettimeofday, "line" => $line };
-}
 
 ###############################################################################
 use POSIX ":sys_wait_h";           
@@ -210,7 +192,6 @@ sub quit {
     plugin_quit();
     http_quit();
     sonos_quit();
-    sonos_profile_print();
     Log (0, "Shutting Down");
     exit 0;
 }
@@ -1493,8 +1474,6 @@ my ($c, $r) = @_;
 sub http_handle_request {
     my ($c, $r) = @_;
 
-    sonos_profile(__LINE__);
-
     # No r, just return
     if (!$r || !$r->uri) {
         Log (1, "Missing Request");
@@ -1593,8 +1572,6 @@ sub http_handle_request {
     } else {
         http_send_tmpl_response("*", "*", $c, $r, $diskpath, $tmplhook);
     }
-
-    sonos_profile(__LINE__);
 }
 
 ###############################################################################
@@ -1749,7 +1726,7 @@ my ($c, $r, $path) = @_;
 
 ###############################################################################
 sub http_build_zone_data {
-my ($zone, $updatenum) = @_;
+my ($zone, $updatenum, $norec) = @_;
     my %activedata;
 
     $activedata{ACTIVE_ZONE}      = encode_entities($main::ZONES{$zone}->{ZoneName});
@@ -2157,7 +2134,11 @@ my ($qf, $params) = @_;
     if (grep /^ZONES_/i, @$params) {
         my @zones = map { http_build_zone_data($_, $updatenum, $qf->{zone}); } main::http_zones(1);
         $map{ZONES_LOOP} = \@zones;
-        $map{ZONES_JSON} = to_json(\@zones, { pretty => 1});
+       
+        # make it a hash for JSON
+        my %zones_as_hash;
+        map { $zones_as_hash{$_->{ZONE_ID}} = $_ } @zones;
+        $map{ZONES_JSON} = to_json(\%zones_as_hash, { pretty => 1});
     }
 
     if (grep /^ALL_QUEUE_/i, @$params) {
@@ -2210,8 +2191,6 @@ my ($qf, $params) = @_;
 sub http_send_tmpl_response {
 my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
 
-    sonos_profile(__LINE__);
-
     my %qf = $r->uri->query_form;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
 
@@ -2222,32 +2201,22 @@ my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
                                        cache => 1,
                                        loop_context_vars => 1);
     my @params = $template->param();
-    sonos_profile(__LINE__);
     my $map = http_build_map(\%qf, \@params);
-    sonos_profile(__LINE__);
     $template->param(%$map);
-    sonos_profile(__LINE__);
 
     &$tmplhook($c, $r, $diskpath, $template) if ($tmplhook);
-    sonos_profile(__LINE__);
     
     my $content_type = "text/html; charset=ISO-8859-1";
     if ($r->uri->path =~ /\.xml/) { $content_type = "text/xml; charset=ISO-8859-1"; }
     if ($r->uri->path =~ /\.json/) { $content_type = "application/json"; }
 
-    sonos_profile(__LINE__);
-    my $output = $template->output;
-    sonos_profile(__LINE__);
     my $response = HTTP::Response->new(200, undef, [Connection => "close",
             "Content-Type" => $content_type, "Pragma" => "no-cache",
             "Cache-Control" => "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"],
-        $output);
-    sonos_profile(__LINE__);
+        $template->output);
     $c->send_response($response);
-    sonos_profile(__LINE__);
     $c->force_last_request;
     $c->close;
-    sonos_profile(__LINE__);
 }
 
 ###############################################################################
