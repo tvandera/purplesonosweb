@@ -153,16 +153,18 @@ function doUnlink(zone) {
 }
 
 function drawZones() {
-    var str = "<ul>";
-    i = 0;
-    for (z in sonos.zones) {
-        var zone = sonos.zones[z];
-        if (app.currentZoneId == zone.ZONE_ID) str += "<B>";
+    var str = "";
+    for (i = 0; i<sonos.zones.length; i++) {
+        var zone = sonos.zones[i];
 
-        if (!zone.ZONE_LINKED && (i != 0)) str+= "</ul><ul>";
+        if (!zone.ZONE_LINKED) {
+            if (i != 0) str+= "</ul>";
+            str+= "<ul onClick=\"setCurrentZone('" + zone.ZONE_ID + "')\">";
+        }
 
-        str += "<li style='background-image: url(zone_icons/" + zone.ZONE_ICON + ".png);'>";
-        str += "<A HREF=\"#\" onClick=\"setCurrentZone('" + zone.ZONE_ID + "')\">" + zone.ZONE_NAME + "</A>";
+        if (app.currentZoneId == zone.ZONE_ID) str += "<b>";
+
+        str += "<li style='background-image: url(zone_icons/" + zone.ZONE_ICON + ".png);'>" + zone.ZONE_NAME;
         
         if (zone.ZONE_LINKED) {
             str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone.ZONE_ID+"')\">[U]</a>";
@@ -172,35 +174,41 @@ function drawZones() {
 
         str += "</li>\n";
 
-        if (app.currentZoneId == zone.ZONE_ID) str += "</B>";
-
-        i++;
+        if (app.currentZoneId == zone.ZONE_ID) str += "</b>";
     }
     str += "</ul>";
     updateText("zones", str);
 }
 
+function curZoneInfo() {
+    for (z in sonos.zones) {
+        var zone = sonos.zones[z];
+        if (zone.ZONE_ID != app.currentZoneId) continue;
+        return zone;
+    }
+}
+
 function drawControl(zoneId) {
     if (zoneId != app.currentZoneId) return;
-    var info =  sonos.zones[app.currentZoneId];
+    var info = curZoneInfo();
 
     var fancyName = info.ZONE_NAME;
     if (info.ZONE_NUMLINKED > 0) fancyName += ' + ' + info.ZONE_NUMLINKED;
 
     $("a[href=info-container]").text(fancyName);
     updateText('currentzonename', fancyName);
-    updateText('song', info.ACTIVE_NAME);
+    var name = info.ACTIVE_NAME;
+    if (!name && !info.ACTIVE_ALBUM && !info.ACTIVE_ARTIST)
+        name = "<em>Not playing</em>";
+    updateText('song', name);
     updateText('album', info.ACTIVE_ALBUM);
     updateText('artist', info.ACTIVE_ARTIST);
     updateToggle("pause", "play", info.ACTIVE_MODE == 1);
     updateToggle("muteoff", "muteon", info.ACTIVE_MUTED);
     $("#volume").simpleSlider("setValue", info.ACTIVE_VOLUME);
-    //$("#volume").bind("slider:changed", function (event, data) {
-    //    alert(data.value);
-    //    sonos.setVolume(app.currentZoneId,data.value);
-    //});
-    // $("#volume").prop("value", info.ACTIVE_VOLUME);
-    updateSrc('albumart', info.ACTIVE_ALBUMART);
+    var image = info.ACTIVE_ALBUMART;
+    if (!image) image = "tiles/missingaa_lite.svg";
+    updateSrc('albumart', image);
     drawQueue(zoneId);
 }
 
@@ -208,9 +216,9 @@ function drawQueue(zoneId) {
     if (zoneId != app.currentZoneId) return;
     if (!sonos.queues[zoneId]) return;
     var queue = sonos.queues[zoneId]; 
-    var cur_track = sonos.zones[zoneId].ACTIVE_TRACK_NUM;
-    var zone_paused = sonos.zones[zoneId].ACTIVE_PAUSED;
-    var zone_playing = sonos.zones[zoneId].ACTIVE_PLAYING;
+    var cur_track = curZoneInfo().ACTIVE_TRACK_NUM;
+    var zone_paused = curZoneInfo().ACTIVE_PAUSED;
+    var zone_playing = curZoneInfo().ACTIVE_PLAYING;
 
     var str = new Array();
     str.push("<ul>");
@@ -273,7 +281,12 @@ function drawMusic(path) {
     for (i=0; i < info.MUSIC_LOOP.length; i++) {
         var item = info.MUSIC_LOOP[i];
         path = decodeURIComponent(item.MUSIC_REALPATH); 
-        str.push("<li onClick='browseTo(\"" + path + "\")'>");
+        str.push("<li");
+        if (item.MUSIC_REALCLASS == "object.item.audioItem.audioBroadcast")
+            str.push(" onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>");
+        else 
+            str.push(" onClick='browseTo(\"" + path + "\")'>");
+
         if (item.MUSIC_ALBUMART && ! (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum")) { 
             str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.MUSIC_ALBUMART) + "'>");
         } else {
@@ -285,9 +298,6 @@ function drawMusic(path) {
             str.push("<p class='artist'>" + item.MUSIC_ARTIST + "</p>");
         if (item.MUSIC_DESC)
             str.push("<p class='description'>" + item.MUSIC_DESC + "</p>");
-        if (item.MUSIC_REALCLASS == "object.item.audioItem.audioBroadcast") { 
-            str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A></p>");
-        }
         str.push("</div>");
         str.push("</li>");
     }

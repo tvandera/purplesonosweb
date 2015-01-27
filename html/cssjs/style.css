@@ -5,36 +5,21 @@ a {
 
 #control
 {
-        margin: auto;
-        font-size: 28px;
+    width: 150px;
+    margin: auto;
 }
 
-#control #play-pause,
-#control #play,
-#control #pause,
-#control #previous,
-#control #next,
-#control #muteon,
-#control #muteoff
+#control img,
+#volumes img
 {
 	height: 44px;
 	vertical-align: middle;
         display: inline-block;
 }
 
-#control #volume {
-        width: 120px;
-        height: 5px;
-        color: #eee;
-	vertical-align: middle;
-        background: #fff;
-        display: inline-block;
-}
-
-
 h4 {
     margin: 2px;
-    padding: 5px;
+    padding: 2px;
     text-transform: uppercase;
     display: inline-block;
     font-size: 13px;

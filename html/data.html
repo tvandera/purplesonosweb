@@ -1,15 +1,21 @@
 <TMPL_IF NAME=ZONES_UPDATED>
-sonos.zones = <TMPL_VAR NAME=ZONES_JSON>;
-drawZones();
-stopspin();
-</TMPL_IF>
+    sonos.zones = <TMPL_VAR NAME=ZONES_JSON>;
+    drawZones();
+    stopspin();
 
-<TMPL_LOOP NAME=ZONES_LOOP> <TMPL_IF NAME=ACTIVE_UPDATED>
-zone = "<TMPL_VAR NAME=ACTIVE_ZONEID>";
-sonos.zones[zone] = <TMPL_VAR NAME=ACTIVE_JSON>;
-drawControl(zone);
-drawQueue(zone);
-</TMPL_IF></TMPL_LOOP>
+<TMPL_ELSE>
+
+    var i = 0;
+    <TMPL_LOOP NAME=ZONES_LOOP>
+      <TMPL_IF NAME=ACTIVE_UPDATED>
+        zone = "<TMPL_VAR NAME=ACTIVE_ZONEID>";
+        sonos.zones[i] = <TMPL_VAR NAME=ACTIVE_JSON>;
+        drawControl(zone);
+        drawQueue(zone);
+      </TMPL_IF>
+      i++;
+    </TMPL_LOOP>
+</TMPL_IF>
 
 <TMPL_LOOP NAME=ALL_QUEUE_LOOP><TMPL_IF NAME=QUEUE_UPDATED>
 zone = "<TMPL_VAR NAME=QUEUE_ZONEID>";

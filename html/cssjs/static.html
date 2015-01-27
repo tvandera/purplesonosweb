@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Web SONOS Controller</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+<meta http-equiv="refresh" content="3000;URL=index.html?" />
+</head>
+<body>
+
+<h4 id="zoneslabel">ZONES</h4>
+<div id="zones">
+<TMPL_LOOP name="ZONES_LOOP"> 
+   <ul>
+       <li style="background-image: url(zone_icons/<TMPL_VAR name="ZONE_ICON">.png);">
+
+    <TMPL_IF name="ZONE_ACTIVE">
+        <b><a href="static.html?<TMPL_VAR name="ZONE_ARG">"><TMPL_VAR name="ZONE_NAME" ></a></b>
+    <TMPL_ELSE>
+        <a href="static.html?<TMPL_VAR name="ZONE_ARG">"><TMPL_VAR name="ZONE_NAME" ></a>
+    </TMPL_IF>
+    </li>
+</ul>
+</TMPL_LOOP>
+</div>
+
+<TMPL_IF name="ACTIVE_ZONE"> 
+<a href="static.html?<TMPL_VAR name="ALL_ARG">">Refresh</a><br />
+
+<div id="current-track-info">
+    <img class="albumart" id="albumart" src="<TMPL_VAR name="ACTIVE_ALBUMART">" width="200" height="200"><br>
+    <label id="song"><TMPL_VAR name="ACTIVE_NAME"></label><br>
+    <label id="album"><TMPL_VAR name="ACTIVE_ALBUM"></label><br>
+    <label id="artist"><TMPL_VAR name="ACTIVE_ARTIST"></label><br>
+</div>
+</TMPL_IF>
+
+<hr />
+
+<div id="control">
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=Previous">
+        <img width="44" height="44" src="svg/prev.svg" id="previous">
+    </a>
+    <TMPL_IF name="ACTIVE_PLAYING">
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=Pause">
+        <img width="44" height="44" src="svg/pause.svg" id="pause">
+    </a>
+    <TMPL_ELSE>
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=Play">
+        <img width="44" height="44" src="svg/play.svg" id="play">
+    </a>
+    </TMPL_IF>
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=Next">
+        <img width="44" height="44" src="svg/next.svg" id="next">
+    </a>
+</div>
+
+<div id="volumes">
+    <TMPL_IF name="ACTIVE_MUTED">
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=MuteOff">
+        <img width="44" height="44" src="svg/mute_on.svg" id="muteoff">
+    </a>
+     <TMPL_ELSE>
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=MuteOn">
+        <img width="44" height="44" src="svg/mute_off.svg" id="muteon">
+    </a>
+   </TMPL_IF>
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=MuchSofter">
+        <img width="44" height="44" src="svg/minus.svg" id="muchsofter">
+    </a>
+    <!-- input id="volume-slider" data-slider="true" data-slider-range="0,100" -->
+    <TMPL_VAR name="ACTIVE_VOLUME">%
+
+    <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=MuchLouder">
+        <img width="44" height="44" src="svg/plus.svg" id="muchlouder">
+    </a>
+<br />
+
+<hr />
+
+<b><TMPL_VAR name="MUSIC_ERROR" ></b>
+<TMPL_LOOP name="MUSIC_LOOP"> 
+    <a href="static.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">&action=AddMusic">+</a>
+    <a href="static.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">&action=PlayMusic">|></a>
+    <TMPL_IF name="MUSIC_ISSONG">
+    <TMPL_VAR name="MUSIC_NAME">
+    <TMPL_ELSE>
+    <a href="static.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">&action=Browse"><TMPL_VAR name="MUSIC_NAME" ></a>
+    </TMPL_IF>
+    <br />
+</TMPL_LOOP>
+
+<hr/>
+
+<form action="static.html?<TMPL_VAR name="ALL_ARG">" METHOD="get">
+Regex:
+<input name="zone" value="<TMPL_VAR name="ACTIVE_ZONEID">" TYPE=HIDDEN>
+<input name="msearch" value="<TMPL_VAR name="MUSIC_SEARCH">" TYPE=text>
+<input value="Search" type="submit" />
+</form>
+
+</body></html>
