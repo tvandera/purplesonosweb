@@ -12,10 +12,11 @@ use HTML::Entities;
 use URI::Escape;
 use XML::Simple;
 use HTTP::Daemon;
-use HTML::Template;
+use HTML::Template::Compiled;
 use LWP::MediaTypes qw(add_type);
 use POSIX qw(strftime);
 use Encode qw(encode decode);
+use IO::Compress::Gzip qw(gzip);
 use LWP::UserAgent;
 use SOAP::Lite maptype => {}; 
 use MIME::Base64;
@@ -33,7 +34,7 @@ $main::VERSION        = "0.72";
 # Default config if config.pl doesn't exist
 $main::MAX_LOG_LEVEL  = 0;    # Lower, the less output
 $main::HTTP_PORT      = 8001; # Port our fake http server listens on
-$main::MAX_SEARCH     = 20;  # Default max search results to return
+$main::MAX_SEARCH     = 500;  # Default max search results to return
 $main::RENEW_SUB_TIME = 1800; # How often do we do a UPnP renew in seconds
 $main::DEFAULT        = "index.html";
 $main::AACACHE        = 3600; # How long do we tell browser to cache album art in secs
@@ -210,7 +211,7 @@ sub quit {
     plugin_quit();
     http_quit();
     sonos_quit();
-    sonos_profile_print();
+    # sonos_profile_print();
     Log (0, "Shutting Down");
     exit 0;
 }
@@ -814,6 +815,11 @@ sub sonos_upnp_update {
         }
     }
 }
+###############################################################################
+sub sonos_music_isfav {
+    my ($mpath) = @_;
+    return $mpath =~ /^FV:/;
+}
 
 ###############################################################################
 sub sonos_music_realpath {
@@ -853,14 +859,15 @@ sub sonos_music_entry {
 }
 ###############################################################################
 sub sonos_music_albumart {
-    my ($mpath) = @_;
-    my $entry = sonos_music_entry ($mpath);
-
+    my ($entry) = @_;
     my $art = $entry->{"upnp:albumArtURI"};
     return $art if $art;
+
     my $parent = $entry->{parentID};
-    return sonos_music_albumart($parent) if $parent;
-    return "";
+    $art = sonos_music_albumart(sonos_music_entry($parent)) if $parent;
+    $entry->{"upnp:albumArtURI"} = $art;
+
+    return $art
 }
 ###############################################################################
 sub sonos_is_radio {
@@ -1493,7 +1500,6 @@ my ($c, $r) = @_;
 sub http_handle_request {
     my ($c, $r) = @_;
 
-    sonos_profile(__LINE__);
 
     # No r, just return
     if (!$r || !$r->uri) {
@@ -1594,7 +1600,6 @@ sub http_handle_request {
         http_send_tmpl_response("*", "*", $c, $r, $diskpath, $tmplhook);
     }
 
-    sonos_profile(__LINE__);
 }
 
 ###############################################################################
@@ -1920,7 +1925,6 @@ my ($zone, $updatenum) = @_;
         my %row_data;
         my $av = $main::ZONES{$zone}->{AV};
         my $playing = ($av->{TransportState} eq "PLAYING");
-        my $track = (defined $av->{CurrentTrack} && $i == $av->{CurrentTrack});
 
         $row_data{QUEUE_NAME}     = encode_entities($queue->{"dc:title"});
         $row_data{QUEUE_ALBUM}    = encode_entities($queue->{"upnp:album"});
@@ -1978,22 +1982,26 @@ sub http_build_music_data {
         $musicdata{"MUSIC_ALBUM"} = encode_entities($item->{'upnp:album'});
         $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
         $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
-        $musicdata{"MUSIC_ALBUMART"} = sonos_music_albumart($item->{id});
+        $musicdata{"MUSIC_ALBUMART"} = sonos_music_albumart($item);
         $musicdata{"MUSIC_CLASS"} = encode_entities($item->{'upnp:class'});
 
         my $elements = sonos_containers_get($mpath, $item);
+        my $need_redirect = sonos_music_isfav($mpath);
         foreach my $music (@{$elements}) {
             my %row_data;
-            my $row_item = sonos_music_entry(sonos_music_realpath($music->{id}));
+
+            my $row_item = $need_redirect ?
+                sonos_music_entry(sonos_music_realpath($music->{id})):
+                $music;
 
             $row_data{MUSIC_NAME} = encode_entities($music->{"dc:title"});
             $row_data{MUSIC_CLASS} = encode_entities($music->{"upnp:class"});
-            $row_data{MUSIC_PATH} = uri_escape_utf8($music->{id}, "^A-Za-z0-9");
+            $row_data{MUSIC_PATH} = encode_entities($music->{id});
             $row_data{MUSIC_REALCLASS} = encode_entities($row_item->{"upnp:class"});
-            $row_data{MUSIC_REALPATH} = uri_escape_utf8($row_item->{id}, "^A-Za-z0-9");
+            $row_data{MUSIC_REALPATH} = encode_entities($row_item->{id});
             $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) . 
                                     "&amp;mpath=" . $row_data{MUSIC_PATH} if (exists $qf->{zone});
-            $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music->{id});
+            $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
             $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
             $row_data{"MUSIC_ARTIST"} = encode_entities($music->{"dc:creator"});
             $row_data{"MUSIC_DESC"} = encode_entities($music->{"r:description"});
@@ -2079,7 +2087,7 @@ sub http_do_search {
                 $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
                                       "&amp;mpath=" . $row_data{MUSIC_PATH};
             }
-            $row_data{MUSIC_ALBUMART} = sonos_music_albumart($row_data{MUSIC_PATH});
+            $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
             $row_data{MUSIC_ISSONG} = 0;
             push(@loop_data, \%row_data);
             last if ($#loop_data > $maxsearch);
@@ -2094,7 +2102,7 @@ sub http_do_search {
                     $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
                                           "&amp;mpath=" . $row_data{MUSIC_PATH};
                 }
-                $row_data{MUSIC_ALBUMART} = sonos_music_albumart($row_data{MUSIC_PATH});
+                $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
                 $row_data{MUSIC_ISSONG} = 0;
                 push(@loop_data, \%row_data);
                 last if ($#loop_data > $maxsearch);
@@ -2110,7 +2118,7 @@ sub http_do_search {
                         $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
                                               "&amp;mpath=" . $row_data{MUSIC_PATH};
                     }
-                    $row_data{MUSIC_ALBUMART} = sonos_music_albumart($row_data{MUSIC_PATH});
+                    $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
                     $row_data{MUSIC_ISSONG} = 1;
                     push(@loop_data, \%row_data);
                     last if ($#loop_data > $maxsearch);
@@ -2174,7 +2182,7 @@ my ($qf, $params) = @_;
 
     if (grep /^MUSIC_/i, @$params) {
         my $music = http_build_music_data($qf, $updatenum);
-        $map{MUSIC_JSON} = to_json($music, { pretty => 1});
+        # $map{MUSIC_JSON} = to_json($music, { pretty => 1});
         %map = (%map, %$music);
     }
 
@@ -2199,8 +2207,10 @@ my ($qf, $params) = @_;
         $map{"PLUGIN_JZON"} = to_json(\@loop_data, { pretty => 1});
     }
 
-    Log(4, "\nParams = " . Dumper($params));
-    Log(4, "\nData = " . Dumper(\%map) . "\n");
+
+    # Log(4, "\nParams = " . Dumper($params));
+    # Log(4, "\nData = " . Dumper(\%map) . "\n");
+
 
     return \%map;
 
@@ -2210,44 +2220,37 @@ my ($qf, $params) = @_;
 sub http_send_tmpl_response {
 my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
 
-    sonos_profile(__LINE__);
 
     my %qf = $r->uri->query_form;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
 
     # One of ours templates, now fill in the parts we know
-    my $template = HTML::Template->new(filename => $diskpath,
+    my $template = HTML::Template::Compiled->new(filename => $diskpath,
                                        die_on_bad_params => 0,
                                        global_vars => 1,
                                        cache => 1,
+                                       use_query => 1,
                                        loop_context_vars => 1);
     my @params = $template->param();
-    sonos_profile(__LINE__);
     my $map = http_build_map(\%qf, \@params);
-    sonos_profile(__LINE__);
     $template->param(%$map);
-    sonos_profile(__LINE__);
 
     &$tmplhook($c, $r, $diskpath, $template) if ($tmplhook);
-    sonos_profile(__LINE__);
     
     my $content_type = "text/html; charset=ISO-8859-1";
     if ($r->uri->path =~ /\.xml/) { $content_type = "text/xml; charset=ISO-8859-1"; }
     if ($r->uri->path =~ /\.json/) { $content_type = "application/json"; }
 
-    sonos_profile(__LINE__);
     my $output = $template->output;
-    sonos_profile(__LINE__);
+    my $gzoutput; 
+    my $status = gzip \$output => \$gzoutput;
     my $response = HTTP::Response->new(200, undef, [Connection => "close",
-            "Content-Type" => $content_type, "Pragma" => "no-cache",
+            "Content-Type" => $content_type, "Pragma" => "no-cache", "Content-Encoding" => "gzip",
             "Cache-Control" => "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"],
-        $output);
-    sonos_profile(__LINE__);
+        $gzoutput);
     $c->send_response($response);
-    sonos_profile(__LINE__);
     $c->force_last_request;
     $c->close;
-    sonos_profile(__LINE__);
 }
 
 ###############################################################################
