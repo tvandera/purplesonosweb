@@ -3,12 +3,6 @@ a {
     text-decoration: none;
 }
 
-#control
-{
-    width: 150px;
-    margin: auto;
-}
-
 #control img,
 #volumes img
 {
@@ -48,15 +42,6 @@ h4 {
     background-repeat: no-repeat;
     line-height: 30px;
     padding-left: 40px;
-}
-
-
-#music,
-#queue,
-#now-playing,
-#top-labels
-{
-        display: none;
 }
 
 #music ul,

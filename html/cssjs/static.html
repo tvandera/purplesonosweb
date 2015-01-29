@@ -77,29 +77,85 @@
     <a href="static.html?<TMPL_VAR name="ALL_ARG">&action=MuchLouder">
         <img width="44" height="44" src="svg/plus.svg" id="muchlouder">
     </a>
-<br />
+</div>
 
+<hr />
+<div id="queue" style="display: block;">
+    <div id="queuedata">
+        <ul>
+            <li class="header">
+            <img width="44" height="44" src="svg/queue.svg" />
+            <div>
+                <p>&nbsp;</p>
+                <p class="buttons">
+                <a onclick="doAction(&apos;RemoveAll&apos;)">Remove All</a>
+                </p>
+            </div>
+            </li>
+            <TMPL_LOOP NAME=QUEUE_LOOP>
+            <li>
+            <img width="44" height="44" class="albumart" src="<TMPL_VAR name="QUEUE_ALBUMART">" />
+            <div>
+                <p class="title"><TMPL_VAR name="QUEUE_NAME"></p>
+                <p class="artist"><TMPL_VAR name="QUEUE_ARTIST"></p>
+            </div>
+            </li>
+            </TMPL_LOOP>
+        </ul>
+    </div>
 <hr />
 
 <b><TMPL_VAR name="MUSIC_ERROR" ></b>
-<TMPL_LOOP name="MUSIC_LOOP"> 
-    <a href="static.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">&action=AddMusic">+</a>
-    <a href="static.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">&action=PlayMusic">|></a>
-    <TMPL_IF name="MUSIC_ISSONG">
-    <TMPL_VAR name="MUSIC_NAME">
-    <TMPL_ELSE>
-    <a href="static.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">&action=Browse"><TMPL_VAR name="MUSIC_NAME" ></a>
-    </TMPL_IF>
-    <br />
-</TMPL_LOOP>
+<div id="music">
+    <ul id='musiclist'>
+        <TMPL_IF name="MUSIC_PATH">
+            <li class='header'>
+                <img onClick='browseBack()' src='tiles/back.svg'>
+                <div>
+                    <p id='musicpath'><TMPL_VAR name="MUSIC_NAME"></p>
+                    <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
+                    <TMPL_IF name="MUSIC_ISALBUM">
+                       <p class='buttons'><a HREF='#'>Play</A> - <a HREF='#'>Add</A></p>
+                    </TMPL_IF>
+                </div>
+            </li>
+        </TMPL_IF>
+        <TMPL_IF name="MUSIC_ISALBUM">
+            <TMPL_IF name="MUSIC_ALBUMART">
+            <li class='albumart'><img width="200" height="200" src='<TMPL_VAR name="MUSIC_ALBUMART">'></li>
+            </TMPL_IF>
+        </TMPL_IF>
+    
+
+    <TMPL_LOOP name="MUSIC_LOOP"> 
+        <TMPL_IF name="MUSIC_ISRADIO">
+            <li onClick='doMAction("PlayMusic", "<TMPL_VAR name="MUSIC_NAME">");'>
+        <TMPL_ELSE>
+            <li onClick='browseTo("<TMPL_VAR name="MUSIC_NAME">");'>
+        </TMPL_IF>
+
+        <TMPL_IF name="MUSIC_ISSONG">
+            <div class='trackno'><TMPL_VAR name="MUSIC_TRACK_NUM"></div>
+        <TMPL_ELSE>
+            <img width="44" height="44" src='<TMPL_VAR name="MUSIC_ALBUMART">'>
+        </TMPL_IF>
+        <div>
+            <p class='title'><TMPL_VAR name="MUSIC_NAME"></p>
+            <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
+            <p class='description'><TMPL_VAR name="MUSIC_DESC"></p>
+        </div>
+    </li>
+    </TMPL_LOOP>
+
+</ul>
+</div>
 
 <hr/>
 
 <form action="static.html?<TMPL_VAR name="ALL_ARG">" METHOD="get">
-Regex:
-<input name="zone" value="<TMPL_VAR name="ACTIVE_ZONEID">" TYPE=HIDDEN>
-<input name="msearch" value="<TMPL_VAR name="MUSIC_SEARCH">" TYPE=text>
-<input value="Search" type="submit" />
+    <input name="zone" value="<TMPL_VAR name="ACTIVE_ZONEID">" TYPE=HIDDEN>
+    <input name="msearch" value="<TMPL_VAR name="MUSIC_SEARCH">" TYPE=text>
+    <input value="Search" type="submit" />
 </form>
 
 </body></html>
