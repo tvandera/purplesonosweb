@@ -12,6 +12,7 @@ use HTML::Entities;
 use URI::Escape;
 use XML::Simple;
 use HTTP::Daemon;
+use HTML::Template;
 use HTML::Template::Compiled;
 use LWP::MediaTypes qw(add_type);
 use POSIX qw(strftime);
@@ -1974,7 +1975,7 @@ sub http_build_music_data {
         $mpath = "" if ($mpath eq "/");
         my $item = sonos_music_entry($mpath);
 
-        $musicdata{"MUSIC_ROOT"} = ($mpath eq "");
+        $musicdata{"MUSIC_ROOT"} = int($mpath eq "");
         $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
         $musicdata{"MUSIC_PATH"} = uri_escape($mpath);
         $musicdata{"MUSIC_NAME"} = encode_entities($item->{'dc:title'});
@@ -1982,8 +1983,13 @@ sub http_build_music_data {
         $musicdata{"MUSIC_ALBUM"} = encode_entities($item->{'upnp:album'});
         $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
         $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
-        $musicdata{"MUSIC_ALBUMART"} = sonos_music_albumart($item);
-        $musicdata{"MUSIC_CLASS"} = encode_entities($item->{'upnp:class'});
+
+        my $class = encode_entities($item->{'upnp:class'});
+        $musicdata{"MUSIC_CLASS"} = encode_entities($class);
+
+        $musicdata{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
+        $musicdata{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
+        $musicdata{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
 
         my $elements = sonos_containers_get($mpath, $item);
         my $need_redirect = sonos_music_isfav($mpath);
@@ -1993,19 +1999,25 @@ sub http_build_music_data {
             my $row_item = $need_redirect ?
                 sonos_music_entry(sonos_music_realpath($music->{id})):
                 $music;
+            my $class = $row_item->{"upnp:class"}; 
 
             $row_data{MUSIC_NAME} = encode_entities($music->{"dc:title"});
             $row_data{MUSIC_CLASS} = encode_entities($music->{"upnp:class"});
             $row_data{MUSIC_PATH} = encode_entities($music->{id});
-            $row_data{MUSIC_REALCLASS} = encode_entities($row_item->{"upnp:class"});
+            $row_data{MUSIC_REALCLASS} = encode_entities($class);
             $row_data{MUSIC_REALPATH} = encode_entities($row_item->{id});
             $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) . 
                                     "&amp;mpath=" . $row_data{MUSIC_PATH} if (exists $qf->{zone});
             $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
+            $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"} unless $musicdata{"MUSIC_ALBUMART"};
             $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
             $row_data{"MUSIC_ARTIST"} = encode_entities($music->{"dc:creator"});
             $row_data{"MUSIC_DESC"} = encode_entities($music->{"r:description"});
-            $row_data{MUSIC_ISSONG} = !($row_item->{"upnp:class"} =~ /^object.container/);
+            $row_data{MUSIC_TRACK_NUM}= encode_entities($music->{"upnp:originalTrackNumber"});
+
+            $row_data{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
+            $row_data{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
+            $row_data{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
 
             push(@loop_data, \%row_data);
             last if ($#loop_data > $firstsearch + $maxsearch);
@@ -2182,7 +2194,7 @@ my ($qf, $params) = @_;
 
     if (grep /^MUSIC_/i, @$params) {
         my $music = http_build_music_data($qf, $updatenum);
-        # $map{MUSIC_JSON} = to_json($music, { pretty => 1});
+        $map{MUSIC_JSON} = to_json($music, { pretty => 1});
         %map = (%map, %$music);
     }
 
@@ -2225,10 +2237,9 @@ my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
 
     # One of ours templates, now fill in the parts we know
-    my $template = HTML::Template::Compiled->new(filename => $diskpath,
+    my $template = HTML::Template->new(filename => $diskpath,
                                        die_on_bad_params => 0,
                                        global_vars => 1,
-                                       cache => 1,
                                        use_query => 1,
                                        loop_context_vars => 1);
     my @params = $template->param();
