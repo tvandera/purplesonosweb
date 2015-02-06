@@ -1983,6 +1983,7 @@ sub http_build_music_data {
         $musicdata{"MUSIC_ALBUM"} = encode_entities($item->{'upnp:album'});
         $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
         $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
+        $musicdata{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) .  "&amp;mpath=" . $musicdata{MUSIC_PATH} if (exists $qf->{zone});
 
         my $class = encode_entities($item->{'upnp:class'});
         $musicdata{"MUSIC_CLASS"} = encode_entities($class);
@@ -2006,8 +2007,7 @@ sub http_build_music_data {
             $row_data{MUSIC_PATH} = encode_entities($music->{id});
             $row_data{MUSIC_REALCLASS} = encode_entities($class);
             $row_data{MUSIC_REALPATH} = encode_entities($row_item->{id});
-            $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) . 
-                                    "&amp;mpath=" . $row_data{MUSIC_PATH} if (exists $qf->{zone});
+            $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) .  "&amp;mpath=" . $row_data{MUSIC_PATH} if (exists $qf->{zone});
             $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
             $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"} unless $musicdata{"MUSIC_ALBUMART"};
             $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
