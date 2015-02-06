@@ -3,6 +3,12 @@ a {
     text-decoration: none;
 }
 
+#control
+{
+    width: 150px;
+    margin: auto;
+}
+
 #control img,
 #volumes img
 {
@@ -43,6 +49,7 @@ h4 {
     line-height: 30px;
     padding-left: 40px;
 }
+
 
 #music ul,
 #queuedata ul {

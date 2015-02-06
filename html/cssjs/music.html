@@ -1,0 +1,52 @@
+<TMPL_INCLUDE name="header.tmpl">
+
+<b><TMPL_VAR name="MUSIC_ERROR" ></b>
+<div id="music">
+    <ul id='musiclist'>
+        <TMPL_IF name="MUSIC_PATH">
+            <li class='header'>
+            <a href="music.html?zone=<TMPL_VAR NAME=ACTIVE_ZONEID>&mpath=<TMPL_VAR NAME=MUSIC_PARENT>">
+                <img onClick='browseBack()' src='tiles/back.svg'>
+                <div>
+                    <p id='musicpath'><TMPL_VAR name="MUSIC_NAME"></p>
+                    <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
+                    <TMPL_IF name="MUSIC_ISALBUM">
+                       <p class='buttons'>
+                         <a href='music.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic'>Play</A> - 
+                         <a href='music.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic'>Add</A></p>
+                    </TMPL_IF>
+                </div>
+            </a>
+            </li>
+        </TMPL_IF>
+        <TMPL_IF name="MUSIC_ISALBUM">
+            <TMPL_IF name="MUSIC_ALBUMART">
+            <li class='albumart'><img width="200" height="200" src='<TMPL_VAR name="MUSIC_ALBUMART">'></li>
+            </TMPL_IF>
+        </TMPL_IF>
+    
+
+    <TMPL_LOOP name="MUSIC_LOOP"> 
+     <li>
+        <TMPL_IF name="MUSIC_ISRADIO">
+          <a href="playing.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic">
+        <TMPL_ELSE>
+          <a href="music.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=Browse">
+        </TMPL_IF>
+        <TMPL_IF name="MUSIC_ISSONG">
+            <div class='trackno'><TMPL_VAR name="MUSIC_TRACK_NUM"></div>
+        <TMPL_ELSE>
+            <img width="44" height="44" src='<TMPL_VAR name="MUSIC_ALBUMART">'>
+        </TMPL_IF>
+        <div>
+            <p class='title'><TMPL_VAR name="MUSIC_NAME"></p>
+            <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
+            <p class='description'><TMPL_VAR name="MUSIC_DESC"></p>
+        </div>
+    </a></li>
+    </TMPL_LOOP>
+
+</ul>
+</div>
+
+<TMPL_INCLUDE name="footer.tmpl">

@@ -1,0 +1,30 @@
+<TMPL_INCLUDE name="header.tmpl">
+
+<div id="queue">
+    <div id="queuedata">
+        <ul>
+            <li class="header">
+            <img width="44" height="44" src="svg/queue.svg" />
+            <div>
+                <p>&nbsp;</p>
+                <p class="buttons">
+                <a href="queue.html?<TMPL_VAR NAME=ALL_ARG>&action=RemoveAll">Remove All</a>
+                </p>
+            </div>
+            </li>
+            <TMPL_LOOP NAME=QUEUE_LOOP>
+                <li>
+                  <a href="queue.html?<TMPL_VAR NAME=QUEUE_ARG>&action=Seek">
+                    <img width="44" height="44" class="albumart" src="<TMPL_VAR name="QUEUE_ALBUMART">" />
+                    <div>
+                        <p class="title"><TMPL_VAR name="QUEUE_NAME"></p>
+                        <p class="artist"><TMPL_VAR name="QUEUE_ARTIST"></p>
+                    </div>
+                  </a>
+                </li>
+            </TMPL_LOOP>
+        </ul>
+    </div>
+<hr />
+
+<TMPL_INCLUDE name="footer.tmpl">

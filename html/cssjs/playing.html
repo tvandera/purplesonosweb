@@ -1,0 +1,54 @@
+<TMPL_INCLUDE name="header.tmpl">
+
+<TMPL_IF name="ACTIVE_ZONE"> 
+<div id="current-track-info">
+    <img class="albumart" id="albumart" src="<TMPL_VAR name="ACTIVE_ALBUMART">" width="200" height="200"><br>
+    <label id="song"><TMPL_VAR name="ACTIVE_NAME"></label><br>
+    <label id="album"><TMPL_VAR name="ACTIVE_ALBUM"></label><br>
+    <label id="artist"><TMPL_VAR name="ACTIVE_ARTIST"></label><br>
+</div>
+
+<hr />
+
+<div id="control">
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Previous">
+        <img width="44" height="44" src="svg/prev.svg" id="previous">
+    </a>
+    <TMPL_IF name="ACTIVE_PLAYING">
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Pause">
+        <img width="44" height="44" src="svg/pause.svg" id="pause">
+    </a>
+    <TMPL_ELSE>
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Play">
+        <img width="44" height="44" src="svg/play.svg" id="play">
+    </a>
+    </TMPL_IF>
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Next">
+        <img width="44" height="44" src="svg/next.svg" id="next">
+    </a>
+</div>
+
+<div id="volumes">
+    <TMPL_IF name="ACTIVE_MUTED">
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuteOff">
+        <img width="44" height="44" src="svg/mute_on.svg" id="muteoff">
+    </a>
+     <TMPL_ELSE>
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuteOn">
+        <img width="44" height="44" src="svg/mute_off.svg" id="muteon">
+    </a>
+   </TMPL_IF>
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuchSofter">
+        <img width="44" height="44" src="svg/minus.svg" id="muchsofter">
+    </a>
+    <!-- input id="volume-slider" data-slider="true" data-slider-range="0,100" -->
+    <TMPL_VAR name="ACTIVE_VOLUME">%
+
+    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuchLouder">
+        <img width="44" height="44" src="svg/plus.svg" id="muchlouder">
+    </a>
+</div>
+</TMPL_IF>
+
+<TMPL_INCLUDE name="footer.tmpl">
+

@@ -93,6 +93,7 @@ function start() {
     app.musicPathStack = [];
     app.rootLastUpdate = 0;
     sonos.start();
+    mZones();
 }
 
 function setCurrentZone(zoneId) {

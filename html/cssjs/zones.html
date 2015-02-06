@@ -1,0 +1,19 @@
+<TMPL_INCLUDE name="header.tmpl">
+
+<h4 id="zoneslabel">ZONES</h4>
+<div id="zones">
+<TMPL_LOOP name="ZONES_LOOP"> 
+   <ul>
+       <li style="background-image: url(zone_icons/<TMPL_VAR name="ZONE_ICON">.png);">
+
+    <TMPL_IF name="ZONE_ACTIVE">
+        <b><a href="playing.html?<TMPL_VAR name="ZONE_ARG">"><TMPL_VAR name="ZONE_NAME" ></a></b>
+    <TMPL_ELSE>
+        <a href="playing.html?<TMPL_VAR name="ZONE_ARG">"><TMPL_VAR name="ZONE_NAME" ></a>
+    </TMPL_IF>
+    </li>
+</ul>
+</TMPL_LOOP>
+</div>
+
+<TMPL_INCLUDE name="footer.tmpl">
