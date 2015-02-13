@@ -100,6 +100,12 @@ sub sonos_profile {
     push @main::profiles, { "time" => scalar gettimeofday, "line" => $line };
 }
 
+sub enc {
+    my $ent = shift;
+    $ent = "" if ref $ent;
+    return encode_entities($ent);
+}
+
 ###############################################################################
 use POSIX ":sys_wait_h";           
 sub sigchld {               
@@ -1019,7 +1025,10 @@ sub sonos_link_zone {
     return if ($main::ZONES{$linkedzone}->{Coordinator} eq $masterzone);
 
     my $result = upnp_avtransport_set_uri($linkedzone, "x-rincon:" . $masterzone, "");
-    $main::ZONES{$linkedzone}->{Coordinator} = $masterzone if ($result->isSuccessful);
+    if ($result->isSuccessful) {
+        $main::ZONES{$linkedzone}->{Coordinator} = $masterzone ;
+        push @{$main::ZONES{$masterzone}->{Members}}, $linkedzone ;
+    }
     return $result;
 }
 
@@ -1038,6 +1047,8 @@ sub sonos_unlink_zone {
                 upnp_avtransport_standalone_coordinator($zone);
                 upnp_avtransport_set_uri($zone, "x-rincon-queue:" . $zone . "#0", "");
                 $main::ZONES{$zone}->{Coordinator} = $zone;
+                $main::ZONES{$zone}->{Members} = [ $zone ];
+                $main::ZONES{$linkedzone}->{Members} = [ $linkedzone ];
                 $newcoord = $zone
             }
         }
@@ -1061,7 +1072,7 @@ sub sonos_add_radio {
     Log(3, "Adding radio name:$name, station:$station");
 
     $station = substr($station, 5) if (substr($station, 0, 5) eq "http:");
-    $name = encode_entities($name);
+    $name = enc($name);
 
     my $item = '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" ' .
                'xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" ' .
@@ -1150,7 +1161,6 @@ sub upnp_content_dir_browse {
         $start += $result->getValue("NumberReturned");
 
         my $results = $result->getValue("Result");
-
         my $tree = XMLin($results, forcearray => ["item", "container"], keyattr=>{"item" => "ID"});
 
         push(@data, @{$tree->{item}}) if (defined $tree->{item});
@@ -1521,6 +1531,8 @@ sub http_handle_request {
 
     my %qf = $uri->query_form;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
+    
+
     Log (1, "URI: $uri");
 
     if ($main::HTTP_HANDLERS{$path}) {
@@ -1741,6 +1753,8 @@ my ($c, $r, $path) = @_;
 
     if ($qf{action} eq "ReIndex") {
         sonos_reindex();
+    } elsif ($qf{action} eq "Unlink") {
+        sonos_unlink_zone($qf{link});
     } elsif ($qf{action} eq "Wait" && $qf{lastupdate}) {
         if ($main::LASTUPDATE > $qf{lastupdate}) {
             return 1;
@@ -1755,12 +1769,14 @@ my ($c, $r, $path) = @_;
 
 ###############################################################################
 sub http_build_zone_data {
-my ($zone, $updatenum) = @_;
+my ($zone, $updatenum, $active_zone) = @_;
     my %activedata;
 
-    $activedata{ACTIVE_ZONE}      = encode_entities($main::ZONES{$zone}->{ZoneName});
+    $activedata{HAS_ACTIVE_ZONE}  = int(defined $active_zone);
+    $activedata{ACTIVE_ZONE}      = enc($main::ZONES{$zone}->{ZoneName});
     $activedata{ACTIVE_ZONEID}    = uri_escape($zone); 
-    $activedata{ACTIVE_VOLUME}    = 0 + $main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val};
+    $activedata{ACTIVE_VOLUME}    = int($main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val});
+    $activedata{ZONE_ACTIVE}      = int($zone eq $active_zone);
 
     my $lastupdate;
     if ($main::ZONES{$zone}->{RENDER}->{LASTUPDATE} > $main::ZONES{$zone}->{AV}->{LASTUPDATE}) {
@@ -1813,15 +1829,15 @@ my ($zone, $updatenum) = @_;
 
         if ($curtransport && $curtransport->{item}->{"upnp:class"} eq "object.item.audioItem.audioBroadcast") {
             if (!ref($curtrack->{item}->{"r:streamContent"})) {
-                $activedata{ACTIVE_NAME}  = encode_entities($curtrack->{item}->{"r:streamContent"});
+                $activedata{ACTIVE_NAME}  = enc($curtrack->{item}->{"r:streamContent"});
             }
 
-            if (encode_entities($curtrack->{item}->{"dc:creator"}) eq "") {
-                $activedata{ACTIVE_ALBUM}     = encode_entities($curtransport->{item}->{"dc:title"});
+            if (enc($curtrack->{item}->{"dc:creator"}) eq "") {
+                $activedata{ACTIVE_ALBUM}     = enc($curtransport->{item}->{"dc:title"});
             } else{
-                $activedata{ACTIVE_NAME}      = encode_entities($curtrack->{item}->{"dc:title"});
-                $activedata{ACTIVE_ARTIST}    = encode_entities($curtrack->{item}->{"dc:creator"});
-                $activedata{ACTIVE_ALBUM}     = encode_entities($curtrack->{item}->{"upnp:album"});
+                $activedata{ACTIVE_NAME}      = enc($curtrack->{item}->{"dc:title"});
+                $activedata{ACTIVE_ARTIST}    = enc($curtrack->{item}->{"dc:creator"});
+                $activedata{ACTIVE_ALBUM}     = enc($curtrack->{item}->{"upnp:album"});
                 $activedata{ACTIVE_TRACK_NUM} = -1;
                 $activedata{ACTIVE_TRACK_TOT} = $curtransport->{item}->{"dc:title"} . " \/";
             }
@@ -1830,16 +1846,15 @@ my ($zone, $updatenum) = @_;
             $activedata{ACTIVE_ISRADIO}   = 1;
         } else {
 
-            $activedata{ACTIVE_NAME}      = encode_entities($curtrack->{item}->{"dc:title"});
-            $activedata{ACTIVE_ARTIST}    = encode_entities($curtrack->{item}->{"dc:creator"});
-            $activedata{ACTIVE_ALBUM}     = encode_entities($curtrack->{item}->{"upnp:album"});
+            $activedata{ACTIVE_NAME}      = enc($curtrack->{item}->{"dc:title"});
+            $activedata{ACTIVE_ARTIST}    = enc($curtrack->{item}->{"dc:creator"});
+            $activedata{ACTIVE_ALBUM}     = enc($curtrack->{item}->{"upnp:album"});
             $activedata{ACTIVE_TRACK_NUM} = $main::ZONES{$zone}->{AV}->{CurrentTrack};
             $activedata{ACTIVE_TRACK_TOT} = $main::ZONES{$zone}->{AV}->{NumberOfTracks};
             $activedata{ACTIVE_TRACK_TOT_0} = ($main::ZONES{$zone}->{AV}->{NumberOfTracks} == 0);
             $activedata{ACTIVE_TRACK_TOT_1} = ($main::ZONES{$zone}->{AV}->{NumberOfTracks} == 1);
             $activedata{ACTIVE_TRACK_TOT_GT_1} = ($main::ZONES{$zone}->{AV}->{NumberOfTracks} > 1);
         }
-
         if ($main::ZONES{$zone}->{AV}->{TransportState} eq "PAUSED_PLAYBACK") {
             $activedata{ACTIVE_MODE}      = 2;
             $activedata{ACTIVE_PAUSED}    = 1;
@@ -1871,9 +1886,9 @@ my ($zone, $updatenum) = @_;
 
     my $nexttrack = $main::ZONES{$zone}->{AV}->{"r:NextTrackMetaData"};
     if ($nexttrack) {
-        $activedata{NEXT_NAME}      = encode_entities($nexttrack->{item}->{"dc:title"});
-        $activedata{NEXT_ARTIST}    = encode_entities($nexttrack->{item}->{"dc:creator"});
-        $activedata{NEXT_ALBUM}     = encode_entities($nexttrack->{item}->{"upnp:album"});
+        $activedata{NEXT_NAME}      = enc($nexttrack->{item}->{"dc:title"});
+        $activedata{NEXT_ARTIST}    = enc($nexttrack->{item}->{"dc:creator"});
+        $activedata{NEXT_ALBUM}     = enc($nexttrack->{item}->{"upnp:album"});
         $activedata{NEXT_ISSONG}    = 1;
     }
 
@@ -1882,14 +1897,30 @@ my ($zone, $updatenum) = @_;
     $activedata{ZONE_ID}            = $activedata{ACTIVE_ZONEID};
     $activedata{ZONE_NAME}          = $activedata{ACTIVE_ZONE};
     $activedata{ZONE_VOLUME}        = $activedata{ACTIVE_VOLUME};
-    $activedata{ZONE_ARG}           = "zone=".uri_escape($zone);
+    $activedata{ZONE_ARG}           = "zone=".uri_escape($zone)."&";
 
     my $icon = $main::ZONES{$zone}->{Icon};
     $icon =~ s/^x-rincon-roomicon://;
     $activedata{ZONE_ICON}          = $icon;
     
     $activedata{ZONE_LASTUPDATE}    = $lastupdate;
-    $activedata{ZONE_NUMLINKED}     = $#{$main::ZONES{$zone}->{Members}};
+    my $num_linked                  = $#{$main::ZONES{$zone}->{Members}};
+    $activedata{ZONE_NUMLINKED}     = $num_linked;
+    $activedata{ZONE_FANCYNAME}     = $activedata{ZONE_NAME};
+    $activedata{ZONE_FANCYNAME}     .= " + " . $num_linked if $num_linked;
+
+    my @members;
+    foreach (@{$main::ZONES{$zone}->{Members}}) { 
+        my %memberdata;
+        $memberdata{"ZONE_NAME"}   = $main::ZONES{$_}->{ZoneName};
+        $memberdata{"ZONE_ID"}     = $_;
+        $memberdata{"ZONE_LINKED"} = int($main::ZONES{$_}->{Coordinator} ne $_);
+        $memberdata{"ZONE_ICON"}   = $main::ZONES{$_}->{Icon};
+        $memberdata{"ZONE_ICON"}   =~ s/^x-rincon-roomicon://;
+        push @members, \%memberdata;
+    }
+    $activedata{ZONE_MEMBERS}     = \@members;
+
 
     if ($main::ZONES{$zone}->{Coordinator} eq $zone) {
         $activedata{ZONE_LINKED}    = 0;
@@ -1898,7 +1929,7 @@ my ($zone, $updatenum) = @_;
     } else {
         $activedata{ZONE_LINKED}    = 1;
         $activedata{ZONE_LINK}      = $main::ZONES{$zone}->{Coordinator};
-        $activedata{ZONE_LINK_NAME} = encode_entities($main::ZONES{$main::ZONES{$zone}->{Coordinator}}->{ZoneName});
+        $activedata{ZONE_LINK_NAME} = enc($main::ZONES{$main::ZONES{$zone}->{Coordinator}}->{ZoneName});
     }
 
     $activedata{ACTIVE_JSON} = to_json(\%activedata, { pretty => 1});
@@ -1912,7 +1943,7 @@ my ($zone, $updatenum) = @_;
 
     my %queuedata;
 
-    $queuedata{QUEUE_ZONE}       = encode_entities($main::ZONES{$zone}->{ZoneName});
+    $queuedata{QUEUE_ZONE}       = enc($main::ZONES{$zone}->{ZoneName});
     $queuedata{QUEUE_ZONEID}     = uri_escape($zone);
     $queuedata{QUEUE_LASTUPDATE} = $main::QUEUEUPDATE{$zone};
     $queuedata{QUEUE_UPDATED}    = ($main::QUEUEUPDATE{$zone} > $updatenum);
@@ -1927,11 +1958,11 @@ my ($zone, $updatenum) = @_;
         my $av = $main::ZONES{$zone}->{AV};
         my $playing = ($av->{TransportState} eq "PLAYING");
 
-        $row_data{QUEUE_NAME}     = encode_entities($queue->{"dc:title"});
-        $row_data{QUEUE_ALBUM}    = encode_entities($queue->{"upnp:album"});
-        $row_data{QUEUE_ARTIST}   = encode_entities($queue->{"dc:creator"});
-        $row_data{QUEUE_TRACK_NUM}= encode_entities($queue->{"upnp:originalTrackNumber"});
-        $row_data{QUEUE_ALBUMART} = encode_entities($queue->{"upnp:albumArtURI"});
+        $row_data{QUEUE_NAME}     = enc($queue->{"dc:title"});
+        $row_data{QUEUE_ALBUM}    = enc($queue->{"upnp:album"});
+        $row_data{QUEUE_ARTIST}   = enc($queue->{"dc:creator"});
+        $row_data{QUEUE_TRACK_NUM}= enc($queue->{"upnp:originalTrackNumber"});
+        $row_data{QUEUE_ALBUMART} = enc($queue->{"upnp:albumArtURI"});
         $row_data{QUEUE_ARG}      = "zone=" . uri_escape($zone). "&queue=$queue->{id}";
         $row_data{QUEUE_ID}       = $queue->{id};
         push(@loop_data, \%row_data);
@@ -1950,7 +1981,6 @@ sub http_build_music_data {
     my %musicdata;
 
     my @loop_data = ();
-    my $sortsub = sub {};
     my $firstsearch = ($qf->{firstsearch}?$qf->{firstsearch}:0);
     my $maxsearch = 5000;
 
@@ -1975,18 +2005,19 @@ sub http_build_music_data {
         $mpath = "" if ($mpath eq "/");
         my $item = sonos_music_entry($mpath);
 
+
         $musicdata{"MUSIC_ROOT"} = int($mpath eq "");
         $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
         $musicdata{"MUSIC_PATH"} = uri_escape($mpath);
-        $musicdata{"MUSIC_NAME"} = encode_entities($item->{'dc:title'});
-        $musicdata{"MUSIC_ARTIST"} = encode_entities($item->{'dc:creator'});
-        $musicdata{"MUSIC_ALBUM"} = encode_entities($item->{'upnp:album'});
+        $musicdata{"MUSIC_NAME"} = enc($item->{'dc:title'});
+        $musicdata{"MUSIC_ARTIST"} = enc($item->{'dc:creator'});
+        $musicdata{"MUSIC_ALBUM"} = enc($item->{'upnp:album'});
         $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
         $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
-        $musicdata{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) .  "&amp;mpath=" . $musicdata{MUSIC_PATH} if (exists $qf->{zone});
+        $musicdata{MUSIC_ARG} = "mpath=" . $musicdata{MUSIC_PATH};
 
-        my $class = encode_entities($item->{'upnp:class'});
-        $musicdata{"MUSIC_CLASS"} = encode_entities($class);
+        my $class = $item->{'upnp:class'};
+        $musicdata{"MUSIC_CLASS"} = enc($class);
 
         $musicdata{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
         $musicdata{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
@@ -2001,19 +2032,21 @@ sub http_build_music_data {
                 sonos_music_entry(sonos_music_realpath($music->{id})):
                 $music;
             my $class = $row_item->{"upnp:class"}; 
+            my $name = $music->{"dc:title"};
+            next if ($qf->{'mfilter'} && $name !~ $qf->{'mfilter'});
 
-            $row_data{MUSIC_NAME} = encode_entities($music->{"dc:title"});
-            $row_data{MUSIC_CLASS} = encode_entities($music->{"upnp:class"});
-            $row_data{MUSIC_PATH} = encode_entities($music->{id});
-            $row_data{MUSIC_REALCLASS} = encode_entities($class);
-            $row_data{MUSIC_REALPATH} = encode_entities($row_item->{id});
-            $row_data{MUSIC_ARG} = "zone=" . uri_escape($qf->{zone}) .  "&amp;mpath=" . $row_data{MUSIC_PATH} if (exists $qf->{zone});
+            $row_data{MUSIC_NAME} = enc($name);
+            $row_data{MUSIC_CLASS} = enc($music->{"upnp:class"});
+            $row_data{MUSIC_PATH} = enc($music->{id});
+            $row_data{MUSIC_REALCLASS} = enc($class);
+            $row_data{MUSIC_REALPATH} = enc($row_item->{id});
+            $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_REALPATH};
             $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
             $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"} unless $musicdata{"MUSIC_ALBUMART"};
-            $row_data{"MUSIC_ALBUM"} = encode_entities($music->{"upnp:album"});
-            $row_data{"MUSIC_ARTIST"} = encode_entities($music->{"dc:creator"});
-            $row_data{"MUSIC_DESC"} = encode_entities($music->{"r:description"});
-            $row_data{MUSIC_TRACK_NUM}= encode_entities($music->{"upnp:originalTrackNumber"});
+            $row_data{"MUSIC_ALBUM"} = enc($music->{"upnp:album"});
+            $row_data{"MUSIC_ARTIST"} = enc($music->{"dc:creator"});
+            $row_data{"MUSIC_DESC"} = enc($music->{"r:description"});
+            $row_data{MUSIC_TRACK_NUM}= enc($music->{"upnp:originalTrackNumber"});
 
             $row_data{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
             $row_data{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
@@ -2093,14 +2126,13 @@ sub http_do_search {
 
         if ($searchartist && ($artist =~ /$msearch/i)) {
             my %row_data;
-            $row_data{MUSIC_NAME} = encode_entities($artist);
-            $row_data{MUSIC_PATH} = "A%3AARTIST%2F" . uri_escape(uri_escape_utf8($artist, "^A-Za-z0-9"));
-            if (defined $zone) {
-                $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
-                                      "&amp;mpath=" . $row_data{MUSIC_PATH};
-            }
+            $row_data{MUSIC_NAME} = enc($artist);
+            $row_data{MUSIC_REALPATH} = $row_data{MUSIC_PATH} = "A%3AARTIST%2F" . uri_escape(uri_escape_utf8($artist, "^A-Za-z0-9"));
+            $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_PATH};
             $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
             $row_data{MUSIC_ISSONG} = 0;
+            $row_data{MUSIC_ISALBUM} = 0;
+            $row_data{MUSIC_ISRADIO} = 0;
             push(@loop_data, \%row_data);
             last if ($#loop_data > $maxsearch);
         }
@@ -2108,14 +2140,13 @@ sub http_do_search {
         foreach my $album (sort {$a cmp $b} keys %{$main::MUSIC{$artist}}) {
             if ($searchalbum && ($album =~ /$msearch/i)) {
                 my %row_data;
-                $row_data{MUSIC_NAME} = encode_entities($album);
-                $row_data{MUSIC_PATH} = "A%3AALBUM%2F" . uri_escape(uri_escape_utf8($album, "^A-Za-z0-9"));
-                if (defined $zone) {
-                    $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
-                                          "&amp;mpath=" . $row_data{MUSIC_PATH};
-                }
+                $row_data{MUSIC_NAME} = enc($album);
+                $row_data{MUSIC_REALPATH} = $row_data{MUSIC_PATH} = "A%3AALBUM%2F" . uri_escape(uri_escape_utf8($album, "^A-Za-z0-9"));
+                $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_PATH};
                 $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
                 $row_data{MUSIC_ISSONG} = 0;
+                $row_data{MUSIC_ISALBUM} = 1;
+                $row_data{MUSIC_ISRADIO} = 0;
                 push(@loop_data, \%row_data);
                 last if ($#loop_data > $maxsearch);
             }
@@ -2124,14 +2155,13 @@ sub http_do_search {
             foreach my $song (sort {$a cmp $b} keys %{$main::MUSIC{$artist}{$album}}) {
                 if ($searchsong && ($song =~ /$msearch/i)) {
                     my %row_data;
-                    $row_data{MUSIC_NAME} = encode_entities($song);
-                    $row_data{MUSIC_PATH} = uri_escape($main::MUSIC{$artist}{$album}{$song});
-                    if (defined $zone) {
-                        $row_data{MUSIC_ARG} = "zone=" . uri_escape($zone) . 
-                                              "&amp;mpath=" . $row_data{MUSIC_PATH};
-                    }
+                    $row_data{MUSIC_NAME} = enc($song);
+                    $row_data{MUSIC_REALPATH} = $row_data{MUSIC_PATH} = uri_escape($main::MUSIC{$artist}{$album}{$song});
+                    $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_PATH};
                     $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
                     $row_data{MUSIC_ISSONG} = 1;
+                    $row_data{MUSIC_ISALBUM} = 0;
+                    $row_data{MUSIC_ISRADIO} = 0;
                     push(@loop_data, \%row_data);
                     last if ($#loop_data > $maxsearch);
                 }
