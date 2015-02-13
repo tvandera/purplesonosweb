@@ -2,7 +2,13 @@
 
 <TMPL_IF name="ACTIVE_ZONE"> 
 <div id="current-track-info">
-    <img class="albumart" id="albumart" src="<TMPL_VAR name="ACTIVE_ALBUMART">" width="200" height="200"><br>
+    <img class="albumart" id="albumart" 
+      <TMPL_IF name="ACTIVE_ALBUMART">
+         src="<TMPL_VAR name="ACTIVE_ALBUMART">"
+      <TMPL_ELSE>
+         src="tiles/missingaa_lite.svg"
+      </TMPL_IF>
+    width="200" height="200"><br> 
     <label id="song"><TMPL_VAR name="ACTIVE_NAME"></label><br>
     <label id="album"><TMPL_VAR name="ACTIVE_ALBUM"></label><br>
     <label id="artist"><TMPL_VAR name="ACTIVE_ARTIST"></label><br>
@@ -11,42 +17,34 @@
 <hr />
 
 <div id="control">
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Previous">
-        <img width="44" height="44" src="svg/prev.svg" id="previous">
-    </a>
-    <TMPL_IF name="ACTIVE_PLAYING">
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Pause">
-        <img width="44" height="44" src="svg/pause.svg" id="pause">
-    </a>
-    <TMPL_ELSE>
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Play">
-        <img width="44" height="44" src="svg/play.svg" id="play">
-    </a>
-    </TMPL_IF>
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=Next">
-        <img width="44" height="44" src="svg/next.svg" id="next">
-    </a>
+    <img onclick="send('Previous');" width="44" height="44" src="svg/prev.svg" id="previous">
+    <img onclick="send('Pause');" width="44" height="44" src="svg/pause.svg" id="pause"
+      <TMPL_UNLESS name="ACTIVE_PLAYING">
+            style="display: none;"
+      </TMPL_UNLESS>
+    >
+    <img onclick="send('Play');" width="44" height="44" src="svg/play.svg" id="play"
+      <TMPL_IF name="ACTIVE_PLAYING">
+            style="display: none;"
+      </TMPL_IF>
+    >
+    <img onclick="send('Next');" width="44" height="44" src="svg/next.svg" id="next">
 </div>
 
 <div id="volumes">
-    <TMPL_IF name="ACTIVE_MUTED">
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuteOff">
-        <img width="44" height="44" src="svg/mute_on.svg" id="muteoff">
-    </a>
-     <TMPL_ELSE>
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuteOn">
-        <img width="44" height="44" src="svg/mute_off.svg" id="muteon">
-    </a>
-   </TMPL_IF>
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuchSofter">
-        <img width="44" height="44" src="svg/minus.svg" id="muchsofter">
-    </a>
-    <!-- input id="volume-slider" data-slider="true" data-slider-range="0,100" -->
-    <TMPL_VAR name="ACTIVE_VOLUME">%
-
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG">&action=MuchLouder">
-        <img width="44" height="44" src="svg/plus.svg" id="muchlouder">
-    </a>
+    <img onclick="send('MuteOn');" width="44" height="44" src="svg/mute_off.svg" id="muteon"
+      <TMPL_IF name="ACTIVE_MUTED">
+            style="display: none;"
+      </TMPL_IF>
+    >
+    <img onclick="send('MuteOff');" width="44" height="44" src="svg/mute_on.svg" id="muteoff"
+      <TMPL_UNLESS name="ACTIVE_MUTED">
+            style="display: none;"
+      </TMPL_UNLESS>
+    >
+    <img onclick="send('MuchSofter');" width="44" height="44" src="svg/minus.svg" id="muchsofter">
+    <label id="volume"><TMPL_VAR name="ACTIVE_VOLUME">%</label>
+    <img onclick="send('MuchLouder');" width="44" height="44" src="svg/plus.svg" id="muchlouder">
 </div>
 </TMPL_IF>
 

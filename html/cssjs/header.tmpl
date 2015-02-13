@@ -6,25 +6,28 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="apple-touch-icon" href="favicon.png">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable = no" />
 <link rel="stylesheet" type="text/css" href="style.css" />
-<meta http-equiv="refresh" content="3000;URL=index.html?" />
+<script>
+var zone_arg = "<TMPL_VAR name="ZONE_ARG">";
+var music_arg = "<TMPL_VAR name="MUSIC_ARG">";
+var last_update = "<TMPL_VAR name="LAST_UPDATE">";
+</script>
+<script language="javascript" src="/simple.js"></script>
 </head>
-<body>
+<body onload='reload();'>
 
 <TMPL_IF NAME="ACTIVE_ZONE">
   <div id="top-labels" style="display: block;">
-    <a href="zones.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">">
-     <h4 id="currentzonename" onclick="mZones()"><TMPL_VAR NAME="ACTIVE_ZONE"></h4>:
-    </a>
-    <a href="queue.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">">
-     <h4 id="queuelabel" onclick="mQueue()">QUEUE</h4>
-    </a>
-    <a href="playing.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">">
-     <h4 id="nowplayinglabel" onclick="mNowPlaying()">PLAYING</h4>
-    </a>
-    <a href="music.html?<TMPL_VAR name="ALL_ARG"><TMPL_VAR name="MUSIC_ARG">">
-     <h4 id="musiclabel" onclick="mMusic()">MUSIC</h4> 
+     |
+     <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
+     |
+     <h4 id="queuelabel"      onclick="goto('queue')">QUEUE</h4>
+     |
+     <h4 id="nowplayinglabel" onclick="goto('playing')">PLAYING</h4>
+     |
+     <h4 id="musiclabel"      onclick="goto('music')">MUSIC</h4> 
+     |
     </a>
   </div>
 </TMPL_IF>

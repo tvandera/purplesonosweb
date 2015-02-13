@@ -1,18 +1,47 @@
 <TMPL_INCLUDE name="header.tmpl">
 
-<h4 id="zoneslabel">ZONES</h4>
 <div id="zones">
 <TMPL_LOOP name="ZONES_LOOP"> 
-   <ul>
-       <li style="background-image: url(zone_icons/<TMPL_VAR name="ZONE_ICON">.png);">
+ <div 
+     <TMPL_IF name="ZONE_ACTIVE">
+        class="active"
+     <TMPL_ELSE>
+        class="normal"
+     </TMPL_IF>
+ >
+ <TMPL_UNLESS NAME=ZONE_LINKED>
+   <TMPL_IF name="HAS_ACTIVE_ZONE">
+   <TMPL_UNLESS NAME="ZONE_ACTIVE">
+       <img style='float: right;' onclick="goto('zones', '&action=Link&link=<TMPL_VAR name="ACTIVE_ZONEID">'); return true;" width="44" height="44" src="svg/link.svg">
+   </TMPL_UNLESS>
+   </TMPL_IF>
+ 
+   <TMPL_IF NAME="ZONE_NUMLINKED">
+       <img style='float: right;' onclick="goto('zones', '&action=Unlink&link=<TMPL_VAR name="ZONE_ID">');" width="44" height="44" src="svg/unlink.svg">
+   </TMPL_IF>
 
-    <TMPL_IF name="ZONE_ACTIVE">
-        <b><a href="playing.html?<TMPL_VAR name="ZONE_ARG">"><TMPL_VAR name="ZONE_NAME" ></a></b>
-    <TMPL_ELSE>
-        <a href="playing.html?<TMPL_VAR name="ZONE_ARG">"><TMPL_VAR name="ZONE_NAME" ></a>
-    </TMPL_IF>
-    </li>
-</ul>
+   <ul 
+       onclick="zone('<TMPL_VAR name="ZONE_ID">');">
+    <TMPL_LOOP name="ZONE_MEMBERS"> 
+       <li style="background-image: url(zone_icons/<TMPL_VAR name="ZONE_ICON">.png);">
+         <TMPL_VAR name="ZONE_NAME" >
+      </li>
+    </TMPL_LOOP> 
+  </ul>
+
+  <div class="zoneinfo">
+    <span>
+        <TMPL_IF name="ACTIVE_PLAYING">
+           <img width="22" height="22" src="svg/play.svg">
+        <TMPL_ELSE>
+           <img width="22" height="22" src="svg/pause.svg">
+        </TMPL_IF>
+        <TMPL_VAR name="ACTIVE_ALBUM">
+    </span>
+  </div>
+ </TMPL_UNLESS>
+</div>
+
 </TMPL_LOOP>
 </div>
 

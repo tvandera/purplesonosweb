@@ -5,18 +5,16 @@
     <ul id='musiclist'>
         <TMPL_IF name="MUSIC_PATH">
             <li class='header'>
-            <a href="music.html?zone=<TMPL_VAR NAME=ACTIVE_ZONEID>&mpath=<TMPL_VAR NAME=MUSIC_PARENT>">
-                <img onClick='browseBack()' src='tiles/back.svg'>
-                <div>
-                    <p id='musicpath'><TMPL_VAR name="MUSIC_NAME"></p>
-                    <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
-                    <TMPL_IF name="MUSIC_ISALBUM">
-                       <p class='buttons'>
-                         <a href='music.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic'>Play</A> - 
-                         <a href='music.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic'>Add</A></p>
-                    </TMPL_IF>
-                </div>
-            </a>
+            <img onClick="browse('<TMPL_VAR NAME=MUSIC_PARENT>')" src='tiles/back.svg'>
+            <div>
+                <p id='musicpath'><TMPL_VAR name="MUSIC_NAME"></p>
+                <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
+                <TMPL_IF name="MUSIC_ISALBUM">
+                <p class='buttons'>
+                <a onclick="play('<TMPL_VAR NAME=MUSIC_PATH>');">Play</A> - 
+                <a onclick="add('<TMPL_VAR NAME=MUSIC_PATH>');">Add</A></p>
+                </TMPL_IF>
+            </div>
             </li>
         </TMPL_IF>
         <TMPL_IF name="MUSIC_ISALBUM">
@@ -27,11 +25,10 @@
     
 
     <TMPL_LOOP name="MUSIC_LOOP"> 
-     <li>
         <TMPL_IF name="MUSIC_ISRADIO">
-          <a href="playing.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic">
+        <li onclick="play('<TMPL_VAR NAME=MUSIC_REALPATH>');">
         <TMPL_ELSE>
-          <a href="music.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=Browse">
+        <li onclick="browse('<TMPL_VAR NAME=MUSIC_REALPATH>');">
         </TMPL_IF>
         <TMPL_IF name="MUSIC_ISSONG">
             <div class='trackno'><TMPL_VAR name="MUSIC_TRACK_NUM"></div>
@@ -43,7 +40,7 @@
             <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
             <p class='description'><TMPL_VAR name="MUSIC_DESC"></p>
         </div>
-    </a></li>
+    </li>
     </TMPL_LOOP>
 
 </ul>

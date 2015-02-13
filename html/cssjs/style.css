@@ -21,25 +21,56 @@ h4 {
     margin: 2px;
     padding: 2px;
     text-transform: uppercase;
+    text-align: center;
     display: inline-block;
     font-size: 13px;
+    width: 18%;
 }
 
 #current-track-info label,
 #albumart {
 	display: inline-block;
 	vertical-align: top;
-        margin: 9px;
+        margin: 5px;
+        width: 100%;
+	overflow: hidden;
 }
 
 #albumart {
         width: 200px;
 }
 
+#zones div.normal {
+    background: #333;
+    padding: 10px;
+    margin: 20px;
+}
+
+#zones div.active {
+    background: #333;
+    padding: 10px;
+    margin: 20px;
+    border-style: dotted;
+    border-width: 1px;
+}
+
+#zones div.zoneinfo {
+    height: 22px;
+    line-height: 22px;
+    overflow: hidden;
+    font-size: 11px;
+}
+
+#zones div.zoneinfo img,
+#zones div.zoneinfo span
+{
+  display: inline-block;
+  vertical-align: middle;
+  line-height: normal; 
+}
+
 #zones ul {
-	margin: 20px;
-        padding: 20px;
-        background: #333;
+    padding: 5px;
 }
 
 #zones ul li {
@@ -138,5 +169,5 @@ body {
 	background: #000;
 	color: #fff;
 	font-family: "PT Sans", Arial, sans-serif;
-        font-size: 14px;
+        font-size: 15px;
 }
