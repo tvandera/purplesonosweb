@@ -1980,89 +1980,110 @@ sub http_build_music_data {
     my $updatenum = shift;
     my %musicdata;
 
-    my @loop_data = ();
+    my @music_loop_data = ();
+    my @page_loop_data = ();
     my $firstsearch = ($qf->{firstsearch}?$qf->{firstsearch}:0);
-    my $maxsearch = 5000;
+    my $maxsearch = $main::MAX_SEARCH;
+    $maxsearch   = $qf->{maxsearch} if ($qf->{maxsearch});
 
-    if ($qf->{msearch}) {
-        $maxsearch   = ($qf->{maxsearch}?$qf->{maxsearch}:$main::MAX_SEARCH);
+    my $albumart = "";
 
-        @loop_data = http_do_search($qf->{zone}, $qf->{msearch}, $firstsearch + $maxsearch);
+    my $mpath = "";
+    $mpath = $qf->{mpath} if (defined $qf->{mpath});
+    $mpath = "" if ($mpath eq "/");
+    my $msearch = $qf->{msearch}; 
+    my $item = sonos_music_entry($mpath);
+    my $name = enc($item->{'dc:title'});
 
-        $musicdata{"MUSIC_PATH"} = "Search: ". uri_escape(uri_escape($qf->{msearch}));
-        $musicdata{"MUSIC_SEARCH"} = $qf->{msearch};
-        $musicdata{"MUSIC_UPDATED"} = 1;
-        $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
-        $musicdata{"MUSIC_PARENT"} = "";
-        $musicdata{"MUSIC_ALBUMART"} = "";
+    $musicdata{"MUSIC_ROOT"} = int($mpath eq "");
+    $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
+    $musicdata{"MUSIC_PATH"} = uri_escape($mpath);
+    $musicdata{"MUSIC_NAME"} = enc($item->{'dc:title'});
+    $musicdata{"MUSIC_ARTIST"} = enc($item->{'dc:creator'});
+    $musicdata{"MUSIC_ALBUM"} = enc($item->{'upnp:album'});
+    $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
+    $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
+    $musicdata{MUSIC_ARG} = "mpath=" . $musicdata{MUSIC_PATH};
 
-    } else {
-        my $mpath = "";
-        my $albumart = "";
-        $maxsearch   = $qf->{maxsearch} if ($qf->{maxsearch});
+    my $class = $item->{'upnp:class'};
+    $musicdata{"MUSIC_CLASS"} = enc($class);
 
-        $mpath = $qf->{mpath} if (defined $qf->{mpath});
-        $mpath = "" if ($mpath eq "/");
-        my $item = sonos_music_entry($mpath);
+    $musicdata{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
+    $musicdata{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
+    $musicdata{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
+
+    my $elements = sonos_containers_get($mpath, $item);
+    my $need_redirect = sonos_music_isfav($mpath);
 
 
-        $musicdata{"MUSIC_ROOT"} = int($mpath eq "");
-        $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
-        $musicdata{"MUSIC_PATH"} = uri_escape($mpath);
-        $musicdata{"MUSIC_NAME"} = enc($item->{'dc:title'});
-        $musicdata{"MUSIC_ARTIST"} = enc($item->{'dc:creator'});
-        $musicdata{"MUSIC_ALBUM"} = enc($item->{'upnp:album'});
-        $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
-        $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
-        $musicdata{MUSIC_ARG} = "mpath=" . $musicdata{MUSIC_PATH};
+    $musicdata{MUSIC_ISPAGED} = int(scalar @{$elements} > $maxsearch);
+    my $from = "";
+    my $to = "";
+    my $count = 0;
+    foreach my $music (@{$elements}) {
+        my $name = $music->{"dc:title"};
+        my $letter = uc(substr($name, 0, 1)); 
+        $from = $letter unless $from; 
+        $count++;
 
-        my $class = $item->{'upnp:class'};
-        $musicdata{"MUSIC_CLASS"} = enc($class);
-
-        $musicdata{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
-        $musicdata{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
-        $musicdata{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
-
-        my $elements = sonos_containers_get($mpath, $item);
-        my $need_redirect = sonos_music_isfav($mpath);
-        foreach my $music (@{$elements}) {
-            my %row_data;
-
-            my $row_item = $need_redirect ?
-                sonos_music_entry(sonos_music_realpath($music->{id})):
-                $music;
-            my $class = $row_item->{"upnp:class"}; 
-            my $name = $music->{"dc:title"};
-            next if ($qf->{'mfilter'} && $name !~ $qf->{'mfilter'});
-
-            $row_data{MUSIC_NAME} = enc($name);
-            $row_data{MUSIC_CLASS} = enc($music->{"upnp:class"});
-            $row_data{MUSIC_PATH} = enc($music->{id});
-            $row_data{MUSIC_REALCLASS} = enc($class);
-            $row_data{MUSIC_REALPATH} = enc($row_item->{id});
-            $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_REALPATH};
-            $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
-            $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"} unless $musicdata{"MUSIC_ALBUMART"};
-            $row_data{"MUSIC_ALBUM"} = enc($music->{"upnp:album"});
-            $row_data{"MUSIC_ARTIST"} = enc($music->{"dc:creator"});
-            $row_data{"MUSIC_DESC"} = enc($music->{"r:description"});
-            $row_data{MUSIC_TRACK_NUM}= enc($music->{"upnp:originalTrackNumber"});
-
-            $row_data{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
-            $row_data{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
-            $row_data{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
-
-            push(@loop_data, \%row_data);
-            last if ($#loop_data > $firstsearch + $maxsearch);
+        if (($count > $maxsearch) && ($letter ne $to)) {
+            my %data;
+            $data{PAGE_NAME} = "$from-$to" unless ($from eq $to);
+            $data{PAGE_NAME} = "$from" if ($from eq $to);
+            $data{PAGE_ARG} = "msearch=^[$from-$to]";
+            push @page_loop_data, \%data;
+            $count = 0;
+            $from = $letter;
         }
+
+        $to = $letter;
     }
 
-    splice(@loop_data, 0, $firstsearch) if ($firstsearch > 0);
-    if ($#loop_data > $maxsearch) {
+    # last
+    my %data;
+    $data{PAGE_NAME} = "$from-$to" unless ($from eq $to);
+    $data{PAGE_NAME} = "$from" if ($from eq $to);
+    $data{PAGE_ARG} = "msearch=^[$from-$to]";
+    push @page_loop_data, \%data;
+    $musicdata{"PAGE_LOOP"} = \@page_loop_data;
+
+    foreach my $music (@{$elements}) {
+        my %row_data;
+
+        my $row_item = $need_redirect ?
+        sonos_music_entry(sonos_music_realpath($music->{id})):
+        $music;
+        my $class = $row_item->{"upnp:class"}; 
+        my $name = $music->{"dc:title"};
+        next if ($qf->{'msearch'} && $name !~ $qf->{'msearch'});
+
+        $row_data{MUSIC_NAME} = enc($name);
+        $row_data{MUSIC_CLASS} = enc($music->{"upnp:class"});
+        $row_data{MUSIC_PATH} = enc($music->{id});
+        $row_data{MUSIC_REALCLASS} = enc($class);
+        $row_data{MUSIC_REALPATH} = enc($row_item->{id});
+        $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_REALPATH};
+        $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
+        $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"} unless $musicdata{"MUSIC_ALBUMART"};
+        $row_data{"MUSIC_ALBUM"} = enc($music->{"upnp:album"});
+        $row_data{"MUSIC_ARTIST"} = enc($music->{"dc:creator"});
+        $row_data{"MUSIC_DESC"} = enc($music->{"r:description"});
+        $row_data{MUSIC_TRACK_NUM}= enc($music->{"upnp:originalTrackNumber"});
+
+        $row_data{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
+        $row_data{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
+        $row_data{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
+
+        push(@music_loop_data, \%row_data);
+        last if ($#music_loop_data > $firstsearch + $maxsearch);
+    }
+
+    splice(@music_loop_data, 0, $firstsearch) if ($firstsearch > 0);
+    if ($#music_loop_data > $maxsearch) {
         $musicdata{"MUSIC_ERROR"} = "More then $maxsearch matching items.<BR>";
     }
 
-    $musicdata{"MUSIC_LOOP"} = \@loop_data;
+    $musicdata{"MUSIC_LOOP"} = \@music_loop_data;
     
     return \%musicdata;
 }
@@ -2093,84 +2114,6 @@ my ($linked) = @_;
     } else {
         return (sort http_zone_sort (@zkeys));
     }
-}
-###############################################################################
-sub http_do_search {
-    my ($zone, $search, $maxsearch) = @_;
-
-    my @loop_data = ();
-
-    my $msearch = $search;
-    my $searchartist = my $searchalbum = my $searchsong = 1;
-    if ($msearch =~ /^artist:/) {
-        $searchalbum = $searchsong = 0;
-        $msearch = substr($msearch, 7); 
-    } elsif ($msearch =~ /^album:/) {
-        $searchartist = $searchsong = 0;
-        $msearch = substr($msearch, 6); 
-    } elsif ($msearch =~ /^song:/) {
-        $searchartist = $searchalbum = 0;
-        $msearch = substr($msearch, 5); 
-    }
-
-# Check that RE compiles
-    eval "if ('foo' =~ /$msearch/i) {1;}";
-    if ($@) {
-        Log (2, "Eval failed: $@");
-        $msearch = "^\$"; # Match nothing
-    }
-
-    foreach my $artist (sort {$a cmp $b} keys %main::MUSIC) {
-
-        last if ($#loop_data > $maxsearch);
-
-        if ($searchartist && ($artist =~ /$msearch/i)) {
-            my %row_data;
-            $row_data{MUSIC_NAME} = enc($artist);
-            $row_data{MUSIC_REALPATH} = $row_data{MUSIC_PATH} = "A%3AARTIST%2F" . uri_escape(uri_escape_utf8($artist, "^A-Za-z0-9"));
-            $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_PATH};
-            $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
-            $row_data{MUSIC_ISSONG} = 0;
-            $row_data{MUSIC_ISALBUM} = 0;
-            $row_data{MUSIC_ISRADIO} = 0;
-            push(@loop_data, \%row_data);
-            last if ($#loop_data > $maxsearch);
-        }
-
-        foreach my $album (sort {$a cmp $b} keys %{$main::MUSIC{$artist}}) {
-            if ($searchalbum && ($album =~ /$msearch/i)) {
-                my %row_data;
-                $row_data{MUSIC_NAME} = enc($album);
-                $row_data{MUSIC_REALPATH} = $row_data{MUSIC_PATH} = "A%3AALBUM%2F" . uri_escape(uri_escape_utf8($album, "^A-Za-z0-9"));
-                $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_PATH};
-                $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
-                $row_data{MUSIC_ISSONG} = 0;
-                $row_data{MUSIC_ISALBUM} = 1;
-                $row_data{MUSIC_ISRADIO} = 0;
-                push(@loop_data, \%row_data);
-                last if ($#loop_data > $maxsearch);
-            }
-
-
-            foreach my $song (sort {$a cmp $b} keys %{$main::MUSIC{$artist}{$album}}) {
-                if ($searchsong && ($song =~ /$msearch/i)) {
-                    my %row_data;
-                    $row_data{MUSIC_NAME} = enc($song);
-                    $row_data{MUSIC_REALPATH} = $row_data{MUSIC_PATH} = uri_escape($main::MUSIC{$artist}{$album}{$song});
-                    $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_PATH};
-                    $row_data{MUSIC_ALBUMART} = sonos_music_albumart(sonos_music_entry($row_data{MUSIC_PATH}));
-                    $row_data{MUSIC_ISSONG} = 1;
-                    $row_data{MUSIC_ISALBUM} = 0;
-                    $row_data{MUSIC_ISRADIO} = 0;
-                    push(@loop_data, \%row_data);
-                    last if ($#loop_data > $maxsearch);
-                }
-            }
-        }
-    }
-
-    sonos_process_hook("SEARCH", $zone, \@loop_data, $msearch, $maxsearch, $searchartist, $searchalbum, $searchsong);
-    return @loop_data;
 }
 
 ###############################################################################

@@ -81,6 +81,9 @@ h4 {
     padding-left: 40px;
 }
 
+#pages li {
+        display: inline;
+    }
 
 #music ul,
 #queuedata ul {
@@ -151,7 +154,8 @@ h4 {
 
 #music li div p.buttons,
 #queuedata li div p.buttons {
-    text-align: right;
+    float: right;
+    width: auto;
 }
 
 #music li.header {

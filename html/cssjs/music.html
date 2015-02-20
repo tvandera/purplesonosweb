@@ -1,6 +1,5 @@
 <TMPL_INCLUDE name="header.tmpl">
 
-<b><TMPL_VAR name="MUSIC_ERROR" ></b>
 <div id="music">
     <ul id='musiclist'>
         <TMPL_IF name="MUSIC_PATH">
@@ -23,6 +22,17 @@
             </TMPL_IF>
         </TMPL_IF>
     
+    <TMPL_UNLESS name="MUSIC_ISALBUM">
+      <TMPL_IF name="MUSIC_ISPAGED">
+        <ul id="pages">
+          <TMPL_LOOP name="PAGE_LOOP"> 
+            <li onClick="browse('<TMPL_VAR NAME=MUSIC_PATH>&<TMPL_VAR NAME=PAGE_ARG>')">
+                <TMPL_VAR name="PAGE_NAME">
+            </li>
+        </TMPL_LOOP>
+        </ul>
+      </TMPL_IF>
+    </TMPL_UNLESS>
 
     <TMPL_LOOP name="MUSIC_LOOP"> 
         <TMPL_IF name="MUSIC_ISRADIO">
