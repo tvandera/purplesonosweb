@@ -2055,7 +2055,7 @@ sub http_build_music_data {
         $music;
         my $class = $row_item->{"upnp:class"}; 
         my $name = $music->{"dc:title"};
-        next if ($qf->{'msearch'} && $name !~ $qf->{'msearch'});
+        next if ($qf->{'msearch'} && $name !~ m/$qf->{'msearch'}/i);
 
         $row_data{MUSIC_NAME} = enc($name);
         $row_data{MUSIC_CLASS} = enc($music->{"upnp:class"});
