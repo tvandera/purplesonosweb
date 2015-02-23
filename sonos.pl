@@ -27,6 +27,8 @@ use JSON;
 use Digest::SHA qw(sha256_hex);
 use File::Slurp;
 use Time::HiRes qw(  gettimeofday );
+use Image::Magick;
+use File::Slurp;
 
 
 $main::VERSION        = "0.72";
@@ -38,11 +40,9 @@ $main::HTTP_PORT      = 8001; # Port our fake http server listens on
 $main::MAX_SEARCH     = 500;  # Default max search results to return
 $main::RENEW_SUB_TIME = 1800; # How often do we do a UPnP renew in seconds
 $main::DEFAULT        = "index.html";
-$main::AACACHE        = 3600; # How long do we tell browser to cache album art in secs
 $main::MUSICDIR       = "";   # Local directory that sonos indexs that we can create music files in
 $main::PASSWORD       = "";   # Password for basic auth
 $main::IGNOREIPS      = "";   # Ignore this ip
-$main::AACACHEDIR     = "aa_cache";
 
 do "./config.pl" if (-f "./config.pl");
 foreach my $ip (split (",", $main::IGNOREIPS)) {
@@ -64,14 +64,6 @@ if ($main::MUSICDIR ne "") {
         die "Couldn't create directory '$main::MUSICDIR'" if (! -d $main::MUSICDIR);
     }
 }
-
-if ($main::AACACHEDIR ne "") {
-    if (! -d $main::AACACHEDIR) {
-        mkdir ($main::AACACHEDIR);
-        die "Couldn't create directory '$main::AACACHEDIR'" if (! -d $main::AACACHEDIR);
-    }
-}
-  
 
 $SIG{INT} = "main::quit";
 $SIG{PIPE} = sub {};
@@ -426,6 +418,7 @@ sub sonos_containers_init {
     sonos_mkcontainer("", "object.container", "Albums", "A:ALBUM", "tiles/album.svg");
     sonos_mkcontainer("", "object.container", "Genres", "A:GENRE", "tiles/genre.svg");
     sonos_mkcontainer("", "object.container", "Composers", "A:COMPOSER", "tiles/composers.svg");
+    sonos_mkcontainer("", "object.container", "Tracks", "A:TRACKS", "tiles/track.svg");
     #sonos_mkcontainer("", "object.container", "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg");
     #sonos_mkcontainer("", "object.container", "Folders", "S:", "tiles/folder.svg");
     sonos_mkcontainer("", "object.container", "Radio", "R:0/0", "tiles/radio_logo.svg");
@@ -1309,29 +1302,36 @@ sub http_albumart_request {
     my $uri = $r->uri;
     my %qf = $uri->query_form;
     my $sha = sha256_hex($uri);
-    my $response;
-
+    my $text;
 
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
 
-    if (($main::AACACHEDIR ne "") and ( -r $main::AACACHEDIR . "/" . $sha)) {
-        my $text = read_file($main::AACACHEDIR . "/" . $sha);
-        $response = HTTP::Response->parse($text)
-    } else {
-        wakeup_nas();
 
+    if (defined $main::AACACHE{$sha}) {
+        $text = $main::AACACHE{$sha};
+    } else {
         my @zones = keys (%main::ZONES);
         my $zone = $main::ZONES{$zones[0]}->{Coordinator};
         my $ipport = $main::ZONES{$zone}->{IPPORT};
         my $request = "http://$ipport" . $uri;
-        $response = $main::useragent->get($request);
+        my $response = $main::useragent->get($request);
+        my $image = Image::Magick->new();
 
-        if ($response->is_success() and ($main::AACACHEDIR ne "")) {
-            write_file($main::AACACHEDIR . "/" . $sha, $response->as_string());
+        if ($response->is_success()) {
+            $image->Read(blob=>$response->content);
+            $image->Set('quality'=>'80');
+            $image->Resize('width' => 200, 'height' => 200);
+        } else {
+            $image->Set(size=>'200x200');
+            $image->ReadImage('canvas:black');
         }
+
+        ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
+        $main::AACACHE{$sha} = $text;
     }
 
     Log(3, "Sending response to " . $r->url);
+    my $response = HTTP::Response->new(200, undef, ["Content-Type" => "image/jpg"], $text);
     $c->send_response($response);
     $c->force_last_request;
 }
