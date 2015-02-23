@@ -253,7 +253,6 @@ sub main {
     add_macro("Previous", "/simple/control.html?zone=%zone%&action=Previous");
 
     sonos_containers_init();
-    sonos_musicdb_load();
     sonos_prefsdb_load();
     sonos_renew_subscriptions();
     plugin_load();
@@ -386,124 +385,7 @@ sub sonos_reindex {
     upnp_content_dir_refresh_share_index();
 }
 
-###############################################################################
-sub sonos_fetch_music {
-    $main::UPDATEID{ShareIndexInProgress2} = 1;
 
-    my ($zone) = split(",", $main::UPDATEID{ShareListUpdateID});
-    my $contentDir = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:ContentDirectory:1");
-
-    if (! defined $contentDir) {
-        if ($zone eq "") {
-            Log(0, "Main zone not found yet, will retry.  Windows XP *WILL* require rerunning SonosWeb after selecting 'Unblock' in the Windows Security Alert.");
-        } else {
-            Log(1, "$zone not available, will retry");
-        }
-        add_timeout (time()+5, \&sonos_fetch_music);
-        return
-    }
-
-    undef %main::REINDEX_DATA;
-
-    Log (1, "Fetching Music DB");
-    $main::REINDEX{start} = 0;
-    sonos_fetch_music_callback();
-}
-
-###############################################################################
-sub sonos_fetch_music_callback {
-    # We only do 200 at a time otherwise we lock out everything else
-
-    my ($zone) = split(",", $main::UPDATEID{ShareListUpdateID});
-    my $contentDir = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:ContentDirectory:1");
-    my $contentDirProxy = $contentDir->controlProxy; 
-    my $result = $contentDirProxy->Browse("A:TRACKS", 'BrowseDirectChildren', 
-                                          'dc:title,res,dc:creator,upnp:artist,upnp:album', 
-                                          $main::REINDEX{start}, 200, "");
-
-    if (!$result->isSuccessful) {
-        Log (2, "Failed to fetch all tracks: " . Dumper($result));
-        Log (3, "Proxy is: " . Dumper($main::REINDEX{contentDirProxy}));
-        $main::UPDATEID{ShareIndexInProgress2} = 0;
-        $main::MUSICUPDATE = $main::SONOS_UPDATENUM++;
-        sonos_containers_del("A:");
-        sonos_process_waiting("MUSIC");
-        return;
-    }
-
-    $main::REINDEX{start} += $result->getValue("NumberReturned");
-    Log (2, "DB: $main::REINDEX{start} of " . $result->getValue("TotalMatches"));
-
-    my $results = $result->getValue("Result");
-    my $tree = XMLin($results, forcearray => ["item"]);
-
-    foreach my $objectid (keys %{$tree->{item}}) {
-        my $entry = $tree->{item}{$objectid};
-        my $artist = $entry->{"dc:creator"};
-        my $album = $entry->{"upnp:album"};
-        my $title = $entry->{"dc:title"};
-        $artist = "" if (! $entry->{"dc:creator"});
-        $album  = "" if (! $entry->{"upnp:album"});
-
-#Only copy the stuff we want
-        $main::REINDEX_DATA{$artist}{$album}{$title} = $objectid
-    }
-
-    if ($main::REINDEX{start} >= $result->getValue("TotalMatches")) {
-        %main::MUSIC = %main::REINDEX_DATA;
-        undef %main::REINDEX_DATA;
-
-        sonos_musicdb_save();
-        $main::UPDATEID{ShareIndexInProgress2} = 0;
-        $main::MUSICUPDATE = $main::SONOS_UPDATENUM++;
-        sonos_containers_del("A:");
-        sonos_process_waiting("MUSIC");
-        unlink glob $main::AACACHEDIR . "/*" if ($main::AACACHEDIR ne "");
-    } else {
-        add_timeout (time(), \&sonos_fetch_music_callback);
-    }
-}
-
-###############################################################################
-sub sonos_musicdb_save {
-    $main::MUSIC{_info}->{ShareListUpdateID} = $main::UPDATEID{ShareListUpdateID};
-    $main::MUSIC{_info}->{version} = $main::VERSION;
-
-    {
-        local $Data::Dumper::Purity = 1;
-        Log (1, "Saving Music DB");
-        open (DB, ">musicdb.pl");
-        my $dumper = Data::Dumper->new( [\%main::MUSIC], [ qw( *main::MUSIC) ] );
-        print DB $dumper->Dump();
-        close DB;
-        Log (1, "Finshed Saving Music DB");
-    }
-
-    delete $main::MUSIC{_info};
-}
-###############################################################################
-sub sonos_musicdb_load {
-    if ( -f "musicdb.pl") {
-        Log (1, "Loading Music DB");
-        do "./musicdb.pl";
-
-	if ($@) {
-            Log (0, "Error loading Music DB: $@");
-        }
-
-        $main::LASTUPDATE  = $main::SONOS_UPDATENUM;
-        Log (1, "Finished Loading Music DB");
-
-        # To make life easier, we always update the music index on new version install
-        if ($main::MUSIC{_info}->{version} != $main::VERSION) {
-            Log (1, "Old version of Music DB (". $main::MUSIC{_info}->{version}.") must rebuild for (" . $main::VERSION .")");
-            undef %main::MUSIC;
-        } else {
-            $main::UPDATEID{ShareListUpdateID} = $main::MUSIC{_info}->{ShareListUpdateID};
-            delete $main::MUSIC{_info};
-        }
-    }
-}
 ###############################################################################
 sub sonos_mkcontainer {
     my ($parent, $class, $title, $id, $icon, $content) = @_;
@@ -806,7 +688,6 @@ sub sonos_upnp_update {
         if (defined $properties{ShareListUpdateID} && $properties{ShareListUpdateID} ne $main::UPDATEID{ShareListUpdateID}) {
             $main::UPDATEID{ShareListUpdateID} = $properties{ShareListUpdateID};
             Log (2, "Refetching Index, update id $properties{ShareListUpdateID}");
-            add_timeout (time(), \&sonos_fetch_music);
         }
         return;
     }
@@ -1442,22 +1323,6 @@ sub http_albumart_request {
         my @zones = keys (%main::ZONES);
         my $zone = $main::ZONES{$zones[0]}->{Coordinator};
         my $ipport = $main::ZONES{$zone}->{IPPORT};
-
-        # Get the album art given the mpath instead of the albumart path
-        if ($uri->path eq "/getAA") {
-            my $mpath = decode("UTF-8", $qf{mpath});
-            my @parts = split("/", $mpath);
-
-            if ($#parts == 2) {
-                $uri = "/getaa?uri=" . (values %{$main::MUSIC{$parts[1]}{$parts[2]}} ) [0]->{res}->{content};
-            } elsif ($#parts == 3) {
-                $uri = "/getaa?uri=" . $main::MUSIC{$parts[1]}{$parts[2]}{$parts[3]}->{res}->{content};
-            } else {
-                $c->send_error(HTTP::Status::RC_NOT_FOUND);
-                $c->force_last_request;
-            }
-        }
-
         my $request = "http://$ipport" . $uri;
         $response = $main::useragent->get($request);
 
