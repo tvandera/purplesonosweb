@@ -2075,7 +2075,7 @@ my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
 
     # One of ours templates, now fill in the parts we know
-    my $template = HTML::Template->new(filename => $diskpath,
+    my $template = HTML::Template::Compiled->new(filename => $diskpath,
                                        die_on_bad_params => 0,
                                        global_vars => 1,
                                        use_query => 1,
