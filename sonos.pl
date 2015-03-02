@@ -2,6 +2,7 @@
 
 use lib "./UPnP/lib";
 use lib ".";
+use feature 'unicode_strings';
 use UPnP::ControlPoint;
 use Socket;
 use IO::Select;
@@ -1323,13 +1324,13 @@ sub http_albumart_request {
             $image->Read(blob=>$response->content);
             $image->Set('quality'=>'80');
             $image->Resize('width' => 200, 'height' => 200);
+	    ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
+	    $main::AACACHE{$sha} = $text;
         } else {
             $image->Set(size=>'200x200');
             $image->ReadImage('canvas:black');
+	    ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
         }
-
-        ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
-        $main::AACACHE{$sha} = $text;
     }
 
     Log(3, "Sending response to " . $r->url);
@@ -1858,19 +1859,19 @@ sub http_build_music_data {
     my $mpath = "";
     $mpath = $qf->{mpath} if (defined $qf->{mpath});
     $mpath = "" if ($mpath eq "/");
-    my $msearch = $qf->{msearch}; 
+    my $msearch = $qf->{msearch};
     my $item = sonos_music_entry($mpath);
     my $name = enc($item->{'dc:title'});
 
     $musicdata{"MUSIC_ROOT"} = int($mpath eq "");
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
-    $musicdata{"MUSIC_PATH"} = uri_escape_utf8($mpath);
+    $musicdata{"MUSIC_PATH"} = enc($mpath);
     $musicdata{"MUSIC_NAME"} = enc($item->{'dc:title'});
     $musicdata{"MUSIC_ARTIST"} = enc($item->{'dc:creator'});
     $musicdata{"MUSIC_ALBUM"} = enc($item->{'upnp:album'});
     $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
     $musicdata{"MUSIC_PARENT"} = uri_escape_utf8($item->{parentID}) if (defined $item && defined $item->{parentID});
-    $musicdata{MUSIC_ARG} = "mpath=" . uri_escape_utf8($musicdata{MUSIC_PATH});
+    my $music_arg = $musicdata{MUSIC_ARG} = "mpath=" . uri_escape_utf8($mpath);
 
     my $class = $item->{'upnp:class'};
     $musicdata{"MUSIC_CLASS"} = enc($class);
@@ -1887,6 +1888,7 @@ sub http_build_music_data {
     my $from = "";
     my $to = "";
     my $count = 0;
+    my $has_non_letters = 0;
     foreach my $music (@{$elements}) {
         my $name = $music->{"dc:title"};
         my $letter = uc(substr($name, 0, 1)); 
@@ -1895,9 +1897,9 @@ sub http_build_music_data {
 
         if (($count > $maxsearch) && ($letter ne $to)) {
             my %data;
-            $data{PAGE_NAME} = "$from-$to" unless ($from eq $to);
-            $data{PAGE_NAME} = "$from" if ($from eq $to);
-            $data{PAGE_ARG} = "msearch=" . uri_escape_utf8("^[$from-$to]") . "&maxsearch=$count";
+            $data{PAGE_NAME} = enc("$from-$to") unless ($from eq $to);
+            $data{PAGE_NAME} = enc($from) if ($from eq $to);
+	    $data{PAGE_ARG} = "$music_arg&from=" . uri_escape_utf8($from) . "&to=" . uri_escape_utf8($to);
             push @page_loop_data, \%data;
             $count = 0;
             $from = $letter;
@@ -1908,12 +1910,14 @@ sub http_build_music_data {
 
     # last
     my %data;
-    $data{PAGE_NAME} = "$from-$to" unless ($from eq $to);
-    $data{PAGE_NAME} = "$from" if ($from eq $to);
-    $data{PAGE_ARG} = "msearch=" . uri_escape_utf8("^[$from-$to]");
+    $data{PAGE_NAME} = enc("$from-$to") unless ($from eq $to);
+    $data{PAGE_NAME} = enc($from) if ($from eq $to);
+    $data{PAGE_ARG} = "$music_arg&from=" . uri_escape_utf8($from) . "&to=" . uri_escape_utf8($to);
     push @page_loop_data, \%data;
     $musicdata{"PAGE_LOOP"} = \@page_loop_data;
 
+    $from = decode('utf8', $qf->{from});
+    $to = decode('utf8', $qf->{to});
     foreach my $music (@{$elements}) {
         my %row_data;
 
@@ -1922,7 +1926,10 @@ sub http_build_music_data {
         $music;
         my $class = $row_item->{"upnp:class"}; 
         my $name = $music->{"dc:title"};
-        next if ($qf->{'msearch'} && $name !~ m/$qf->{'msearch'}/i);
+        my $letter = uc(substr($name, 0, 1)); 
+        next if ($msearch && $name !~ m/$msearch/i);
+	next if ($from && $letter lt $from); 
+	next if ($to && $letter gt $to); 
 
         $row_data{MUSIC_NAME} = enc($name);
         $row_data{MUSIC_CLASS} = enc($music->{"upnp:class"});
@@ -1942,7 +1949,7 @@ sub http_build_music_data {
         $row_data{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
 
         push(@music_loop_data, \%row_data);
-        last if ($#music_loop_data > $firstsearch + $maxsearch);
+        last if (!$from && $#music_loop_data > $firstsearch + $maxsearch);
     }
 
     splice(@music_loop_data, 0, $firstsearch) if ($firstsearch > 0);

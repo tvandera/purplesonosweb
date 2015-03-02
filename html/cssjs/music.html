@@ -4,14 +4,14 @@
     <ul id='musiclist'>
         <TMPL_IF name="MUSIC_PATH">
             <li class='header'>
-            <img onClick="browse('<TMPL_VAR NAME=MUSIC_PARENT>')" src='tiles/back.svg'>
+            <img onClick="browse('mpath=<TMPL_VAR NAME=MUSIC_PARENT>')" src='tiles/back.svg'>
             <div>
                 <p id='musicpath'><TMPL_VAR name="MUSIC_NAME"></p>
                 <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
                 <TMPL_IF name="MUSIC_ISALBUM">
                 <p class='buttons'>
-                <a onclick="play('<TMPL_VAR NAME=MUSIC_PATH>');">Play</A> - 
-                <a onclick="add('<TMPL_VAR NAME=MUSIC_PATH>');">Add</A></p>
+                <a onclick="play('<TMPL_VAR NAME=MUSIC_ARG>');">Play</A> - 
+                <a onclick="add('<TMPL_VAR NAME=MUSIC_ARG>');">Add</A></p>
                 </TMPL_IF>
             </div>
             </li>
@@ -26,7 +26,7 @@
       <TMPL_IF name="MUSIC_ISPAGED">
         <ul id="pages">
           <TMPL_LOOP name="PAGE_LOOP"> 
-            <li onClick="browse('<TMPL_VAR NAME=MUSIC_PATH>&<TMPL_VAR NAME=PAGE_ARG>')">
+            <li onClick="browse('<TMPL_VAR NAME=PAGE_ARG>')">
                 <TMPL_VAR name="PAGE_NAME">
             </li>
         </TMPL_LOOP>
@@ -36,9 +36,9 @@
 
     <TMPL_LOOP name="MUSIC_LOOP"> 
         <TMPL_IF name="MUSIC_ISRADIO">
-        <li onclick="play('<TMPL_VAR NAME=MUSIC_REALPATH>');">
+        <li onclick="play('<TMPL_VAR NAME=MUSIC_ARG>');">
         <TMPL_ELSE>
-        <li onclick="browse('<TMPL_VAR NAME=MUSIC_REALPATH>');">
+        <li onclick="browse('<TMPL_VAR NAME=MUSIC_ARG>');">
         </TMPL_IF>
         <TMPL_IF name="MUSIC_ISSONG">
             <div class='trackno'><TMPL_VAR name="MUSIC_TRACK_NUM"></div>

@@ -62,7 +62,7 @@ function reload() {
     r.onreadystatechange = function() { if (r.readyState == 4) eval(r.responseText); }
     r.send();
 }
-function browse(path) { window.location.href = 'music.html?' + zone_arg + "&mpath=" + encodeURIComponent(path) + "&action=Browse"; }
+function browse(music_arg) { window.location.href = 'music.html?' + zone_arg + music_arg + "&action=Browse"; }
 function zone(name)   { window.location.href = 'playing.html?zone=' + name + "&" + music_arg; }
 
 function send(cmd) {
@@ -72,7 +72,7 @@ function send(cmd) {
   r.send();
 }
 
-function play(path){ window.location.href = "playing.html?" + zone_arg + "action=PlayMusic&mpath=" + encodeURIComponent(path); }
-function add(path) { window.location.href = "playing.html?" + zone_arg + "action=AddMusic&mpath=" + encodeURIComponent(path); }
+function play(music_arg){ window.location.href = "playing.html?" + zone_arg + "action=PlayMusic&" + music_arg; }
+function add(music_arg) { window.location.href = "playing.html?" + zone_arg + "action=AddMusic&" + music_arg; }
 
 
