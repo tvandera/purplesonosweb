@@ -16,18 +16,3 @@ var last_update = "<TMPL_VAR name="LAST_UPDATE">";
 <script language="javascript" src="/simple.js"></script>
 </head>
 <body onload='reload();'>
-
-<TMPL_IF NAME="ACTIVE_ZONE">
-  <div id="top-labels" style="display: block;">
-     |
-     <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
-     |
-     <h4 id="queuelabel"      onclick="goto('queue')">QUEUE</h4>
-     |
-     <h4 id="nowplayinglabel" onclick="goto('playing')">PLAYING</h4>
-     |
-     <h4 id="musiclabel"      onclick="goto('music')">MUSIC</h4> 
-     |
-    </a>
-  </div>
-</TMPL_IF>

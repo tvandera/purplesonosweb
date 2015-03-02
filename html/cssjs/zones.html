@@ -1,5 +1,11 @@
 <TMPL_INCLUDE name="header.tmpl">
 
+<TMPL_IF NAME="ACTIVE_ZONE">
+  <div id="top-labels" style="display: block;">
+     <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
+  </div>
+</TMPL_IF>
+
 <div id="zones">
 <TMPL_LOOP name="ZONES_LOOP"> 
  <div 

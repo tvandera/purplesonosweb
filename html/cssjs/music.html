@@ -1,5 +1,10 @@
 <TMPL_INCLUDE name="header.tmpl">
 
+<div id="top-labels" style="display: block;">
+   <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
+   <h4 id="nowplayinglabel" onclick="goto('playing')">PLAYING</h4>
+</div>
+
 <div id="music">
     <ul id='musiclist'>
         <TMPL_IF name="MUSIC_PATH">

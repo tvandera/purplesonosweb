@@ -17,14 +17,18 @@ a {
         display: inline-block;
 }
 
+
 h4 {
-    margin: 2px;
-    padding: 2px;
+    margin: 2px 8px 2px 8px;
     text-transform: uppercase;
     text-align: center;
     display: inline-block;
     font-size: 13px;
-    width: 18%;
+}
+
+h4#nowplayinglabel,
+h4#musiclabel {
+    float: right;
 }
 
 #current-track-info label,
@@ -152,6 +156,7 @@ h4 {
 	color: #aaa;
 }
 
+#volumes img#queueicon,
 #music li div p.buttons,
 #queuedata li div p.buttons {
     float: right;
