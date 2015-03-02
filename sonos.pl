@@ -95,8 +95,10 @@ sub sonos_profile {
 sub enc {
     my $ent = shift;
     $ent = "" if ref $ent;
-    return encode_entities($ent);
+    $ent = encode_entities($ent);
+    return $ent;
 }
+
 
 ###############################################################################
 use POSIX ":sys_wait_h";           
@@ -1762,7 +1764,7 @@ my ($zone, $updatenum, $active_zone) = @_;
     $activedata{ZONE_ID}            = $activedata{ACTIVE_ZONEID};
     $activedata{ZONE_NAME}          = $activedata{ACTIVE_ZONE};
     $activedata{ZONE_VOLUME}        = $activedata{ACTIVE_VOLUME};
-    $activedata{ZONE_ARG}           = "zone=".uri_escape($zone)."&";
+    $activedata{ZONE_ARG}           = "zone=".uri_escape_utf8($zone)."&";
 
     my $icon = $main::ZONES{$zone}->{Icon};
     $icon =~ s/^x-rincon-roomicon://;
@@ -1809,7 +1811,7 @@ my ($zone, $updatenum) = @_;
     my %queuedata;
 
     $queuedata{QUEUE_ZONE}       = enc($main::ZONES{$zone}->{ZoneName});
-    $queuedata{QUEUE_ZONEID}     = uri_escape($zone);
+    $queuedata{QUEUE_ZONEID}     = uri_escape_utf8($zone);
     $queuedata{QUEUE_LASTUPDATE} = $main::QUEUEUPDATE{$zone};
     $queuedata{QUEUE_UPDATED}    = ($main::QUEUEUPDATE{$zone} > $updatenum);
 
@@ -1828,7 +1830,7 @@ my ($zone, $updatenum) = @_;
         $row_data{QUEUE_ARTIST}   = enc($queue->{"dc:creator"});
         $row_data{QUEUE_TRACK_NUM}= enc($queue->{"upnp:originalTrackNumber"});
         $row_data{QUEUE_ALBUMART} = enc($queue->{"upnp:albumArtURI"});
-        $row_data{QUEUE_ARG}      = "zone=" . uri_escape($zone). "&queue=$queue->{id}";
+        $row_data{QUEUE_ARG}      = "zone=" . uri_escape_utf8($zone). "&queue=" . uri_escape_utf8($queue->{id});
         $row_data{QUEUE_ID}       = $queue->{id};
         push(@loop_data, \%row_data);
         $i++;
@@ -1862,13 +1864,13 @@ sub http_build_music_data {
 
     $musicdata{"MUSIC_ROOT"} = int($mpath eq "");
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
-    $musicdata{"MUSIC_PATH"} = uri_escape($mpath);
+    $musicdata{"MUSIC_PATH"} = uri_escape_utf8($mpath);
     $musicdata{"MUSIC_NAME"} = enc($item->{'dc:title'});
     $musicdata{"MUSIC_ARTIST"} = enc($item->{'dc:creator'});
     $musicdata{"MUSIC_ALBUM"} = enc($item->{'upnp:album'});
     $musicdata{"MUSIC_UPDATED"} = ($mpath ne "" || (!$qf->{NoWait} && ($main::MUSICUPDATE > $updatenum)));
-    $musicdata{"MUSIC_PARENT"} = uri_escape($item->{parentID}) if (defined $item && defined $item->{parentID});
-    $musicdata{MUSIC_ARG} = "mpath=" . $musicdata{MUSIC_PATH};
+    $musicdata{"MUSIC_PARENT"} = uri_escape_utf8($item->{parentID}) if (defined $item && defined $item->{parentID});
+    $musicdata{MUSIC_ARG} = "mpath=" . uri_escape_utf8($musicdata{MUSIC_PATH});
 
     my $class = $item->{'upnp:class'};
     $musicdata{"MUSIC_CLASS"} = enc($class);
@@ -1895,7 +1897,7 @@ sub http_build_music_data {
             my %data;
             $data{PAGE_NAME} = "$from-$to" unless ($from eq $to);
             $data{PAGE_NAME} = "$from" if ($from eq $to);
-            $data{PAGE_ARG} = "msearch=^[$from-$to]";
+            $data{PAGE_ARG} = "msearch=" . uri_escape_utf8("^[$from-$to]");
             push @page_loop_data, \%data;
             $count = 0;
             $from = $letter;
@@ -1908,7 +1910,7 @@ sub http_build_music_data {
     my %data;
     $data{PAGE_NAME} = "$from-$to" unless ($from eq $to);
     $data{PAGE_NAME} = "$from" if ($from eq $to);
-    $data{PAGE_ARG} = "msearch=^[$from-$to]";
+    $data{PAGE_ARG} = "msearch=" . uri_escape_utf8("^[$from-$to]");
     push @page_loop_data, \%data;
     $musicdata{"PAGE_LOOP"} = \@page_loop_data;
 
@@ -1927,7 +1929,7 @@ sub http_build_music_data {
         $row_data{MUSIC_PATH} = enc($music->{id});
         $row_data{MUSIC_REALCLASS} = enc($class);
         $row_data{MUSIC_REALPATH} = enc($row_item->{id});
-        $row_data{MUSIC_ARG} = "mpath=" . $row_data{MUSIC_REALPATH};
+        $row_data{MUSIC_ARG} = "mpath=" . uri_escape_utf8($row_item->{id});
         $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
         $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"} unless $musicdata{"MUSIC_ALBUMART"};
         $row_data{"MUSIC_ALBUM"} = enc($music->{"upnp:album"});
@@ -2195,20 +2197,6 @@ sub Log {
     my ($x, $y, $z, $subroutine)    = caller(1);
     $subroutine = "*unknown*" if (!defined $subroutine);
     print  "$now $Level[$level]: $filename:$line $subroutine @_\n";
-}
-###############################################################################
-# Copied from newer URI::Escape module
-sub uri_escape_utf8
-{
-    my $text = shift;
-    if ($] < 5.008) {
-        $text =~ s/([^\0-\x7F])/do {my $o = ord($1); sprintf("%c%c", 0xc0 | ($o >> 6), 0x80 | ($o & 0x3f)) }/ge;
-    }
-    else {
-        utf8::encode($text);
-    }
-
-    return uri_escape($text, @_);
 }
 ###############################################################################
 @main::DOWNLOADS = ();
