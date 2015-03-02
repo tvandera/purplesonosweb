@@ -1883,7 +1883,7 @@ sub http_build_music_data {
     my $need_redirect = sonos_music_isfav($mpath);
 
 
-    $musicdata{MUSIC_ISPAGED} = int(scalar @{$elements} > $maxsearch);
+    $musicdata{MUSIC_ISPAGED} = int(scalar @{$elements} > $maxsearch) if $elements;
     my $from = "";
     my $to = "";
     my $count = 0;
@@ -1897,7 +1897,7 @@ sub http_build_music_data {
             my %data;
             $data{PAGE_NAME} = "$from-$to" unless ($from eq $to);
             $data{PAGE_NAME} = "$from" if ($from eq $to);
-            $data{PAGE_ARG} = "msearch=" . uri_escape_utf8("^[$from-$to]");
+            $data{PAGE_ARG} = "msearch=" . uri_escape_utf8("^[$from-$to]") . "&maxsearch=$count";
             push @page_loop_data, \%data;
             $count = 0;
             $from = $letter;
@@ -2092,7 +2092,7 @@ my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
     if ($r->uri->path =~ /\.xml/) { $content_type = "text/xml; charset=ISO-8859-1"; }
     if ($r->uri->path =~ /\.json/) { $content_type = "application/json"; }
 
-    my $output = $template->output;
+    my $output = encode('utf8', $template->output);
     my $gzoutput; 
     my $status = gzip \$output => \$gzoutput;
     my $response = HTTP::Response->new(200, undef, [Connection => "close",
