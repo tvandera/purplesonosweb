@@ -1,8 +1,9 @@
 <TMPL_INCLUDE name="header.tmpl">
 
-<div id="top-labels" style="display: block;">
+<div id="top-labels">
      <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
-     <h4 id="musiclabel"      onclick="goto('music')">MUSIC</h4> 
+     <h4 id="queuelabel" onclick="goto('queue');">QUEUE</h4>
+     <h4 id="musiclabel" onclick="goto('music')">MUSIC</h4> 
 </div>
 
 <TMPL_IF name="ACTIVE_ZONE"> 
@@ -19,8 +20,6 @@
     <label id="artist"><TMPL_VAR name="ACTIVE_ARTIST"></label><br>
 </div>
 
-<hr />
-
 <div id="control">
     <img onclick="send('Previous');" width="44" height="44" src="svg/prev.svg" id="previous">
     <img onclick="send('Pause');" width="44" height="44" src="svg/pause.svg" id="pause"
@@ -35,6 +34,7 @@
     >
     <img onclick="send('Next');" width="44" height="44" src="svg/next.svg" id="next">
 </div>
+
 
 <div id="volumes">
     <img onclick="send('MuteOn');" width="44" height="44" src="svg/mute_off.svg" id="muteon"
@@ -51,7 +51,6 @@
     <label id="volume"><TMPL_VAR name="ACTIVE_VOLUME">%</label>
     <img onclick="send('MuchLouder');" width="44" height="44" src="svg/plus.svg" id="muchlouder">
 
-    <img id="queueicon" src="svg/queue.png" onclick="goto('queue');">
 </div>
 </TMPL_IF>
 
