@@ -72,7 +72,7 @@ function send(cmd) {
   r.send();
 }
 
-function play(music_arg){ window.location.href = "playing.html?" + zone_arg + "action=PlayMusic&" + music_arg; }
-function add(music_arg) { window.location.href = "playing.html?" + zone_arg + "action=AddMusic&" + music_arg; }
+function play(music_arg){ send("PlayMusic&" + music_arg); goto("playing"); } 
+function add(music_arg){ send("AddMusic&" + music_arg); goto("playing"); } 
 
 
