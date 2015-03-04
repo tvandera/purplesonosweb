@@ -7,12 +7,19 @@
 <link rel="apple-touch-icon" href="favicon.png">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable = no" />
-<link rel="stylesheet" type="text/css" href="style.css" />
+<style>
+   <TMPL_INCLUDE NAME="style.css">
+</style>
 <script>
 var zone_arg = "<TMPL_VAR name="ZONE_ARG">";
 var music_arg = "<TMPL_VAR name="MUSIC_ARG">";
 var last_update = "<TMPL_VAR name="LAST_UPDATE">";
+<TMPL_IF NAME="ACTIVE_ZONE">
+zone_info = <TMPL_VAR NAME=ACTIVE_JSON>;
+</TMPL_IF>
 </script>
-<script language="javascript" src="/simple.js"></script>
+<script language="javascript">
+   <TMPL_INCLUDE NAME="simple.js">
+</script>
 </head>
-<body onload='reload();'>
+<body onload='drawControl(); reload();'>

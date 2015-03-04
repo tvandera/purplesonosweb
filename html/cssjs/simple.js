@@ -33,12 +33,15 @@ function updateToggle(first, second, doFirst) {
 
 
 function drawControl() {
-    var name = zone_info.ACTIVE_NAME;
-    if (!name && !zone_info.ACTIVE_ALBUM && !zone_info.ACTIVE_ARTIST)
-        name = "<em>Not playing</em>";
-    updateText('song', name);
-    updateText('album', zone_info.ACTIVE_ALBUM);
-    updateText('artist', zone_info.ACTIVE_ARTIST);
+    if (page() != "playing") return;
+
+    var info = "";
+    if (zone_info.ACTIVE_NAME) info += zone_info.ACTIVE_NAME + '<br>';
+    if (zone_info.ACTIVE_ALBUM) info += "&nbsp;<em>album:</em> " + zone_info.ACTIVE_ALBUM + '<br>';
+    if (zone_info.ACTIVE_ARTIST) info += "&nbsp;<em>artist:</em> " + zone_info.ACTIVE_ARTIST + '<br>';
+    if (!info) info = "<em>Not playing</em>";
+    updateText('info', info);
+
     updateToggle("pause", "play", zone_info.ACTIVE_MODE == 1);
     updateToggle("muteoff", "muteon", zone_info.ACTIVE_MUTED);
     updateText("volume", "" +  zone_info.ACTIVE_VOLUME + "%");
@@ -74,5 +77,21 @@ function send(cmd) {
 
 function play(music_arg){ window.location.href = "playing.html?" + zone_arg + "action=PlayMusic&" + music_arg; }
 function add(music_arg) { window.location.href = "playing.html?" + zone_arg + "action=AddMusic&" + music_arg; }
+function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
+function seek(to) { window.location.href = "queue.html?" + zone_arg + "action=Seek&" + music_arg + to; }
 
+function softer() {
+   send('MuchSofter');
+   zone_info.ACTIVE_VOLUME -= 5;
+   if (zone_info.ACTIVE_VOLUME < 0) zone_info.ACTIVE_VOLUME = 0;
+   updateText("volume", "" +  zone_info.ACTIVE_VOLUME + "%");
+}
+
+function louder() {
+   send('MuchLouder');
+   zone_info.ACTIVE_VOLUME += 5;
+   if (zone_info.ACTIVE_VOLUME > 100) zone_info.ACTIVE_VOLUME = 100;
+   updateText("volume", "" +  zone_info.ACTIVE_VOLUME + "%");
+}
+    
 

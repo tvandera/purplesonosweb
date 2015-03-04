@@ -2,24 +2,21 @@
 
 <div id="top-labels">
 	<h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
-	<h4 id="nowplayinglabel" onclick="goto('playing')">PLAYING</h4>
+	<h4 id="nowplayinglabel" onclick="goto('playing')">NOW PLAYING</h4>
 </div>
 
 <div id="queue">
     <div id="queuedata">
         <ul>
             <li class="header">
-            <img width="44" height="44" src="svg/queue.svg" />
+            <img width="44" height="44" src="svg/queue.png" />
             <div>
                 <p>&nbsp;</p>
-                <p class="buttons">
-                <a href="queue.html?<TMPL_VAR NAME=ALL_ARG>&action=RemoveAll">Remove All</a>
-                </p>
+                <p class="buttons" onclick="removeall()">Remove All</p>
             </div>
             </li>
             <TMPL_LOOP NAME=QUEUE_LOOP>
-                <li>
-                  <a href="queue.html?<TMPL_VAR NAME=QUEUE_ARG>&action=Seek">
+                <li onclick="seek('<TMPL_VAR NAME=QUEUE_ARG>');">
                     <img width="44" height="44" class="albumart" src="<TMPL_VAR name="QUEUE_ALBUMART">" />
                     <div>
                         <p class="title"><TMPL_VAR name="QUEUE_NAME"></p>
