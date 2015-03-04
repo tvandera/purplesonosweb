@@ -37,7 +37,11 @@ function drawControl() {
 
     var info = "";
     if (zone_info.ACTIVE_NAME) info += zone_info.ACTIVE_NAME + '<br>';
-    if (zone_info.ACTIVE_ALBUM) info += "&nbsp;<em>album:</em> " + zone_info.ACTIVE_ALBUM + '<br>';
+    if (zone_info.ACTIVE_ALBUM) {
+      if (zone_info.ACTIVE_ISRADIO) info += "&nbsp;<em>station:</em> ";
+      else info += "&nbsp;<em>album:</em> ";
+      info += zone_info.ACTIVE_ALBUM + '<br>';
+    }
     if (zone_info.ACTIVE_ARTIST) info += "&nbsp;<em>artist:</em> " + zone_info.ACTIVE_ARTIST + '<br>';
     if (!info) info = "<em>Not playing</em>";
     updateText('info', info);
