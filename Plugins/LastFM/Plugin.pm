@@ -112,9 +112,12 @@ sub av {
         $duration = $1*3600+$2*60+$3;
     }
 
-    my $str = "&a[0]=" . main::uri_escape_utf8($ct->{"dc:creator"}) .
-              "&b[0]=" . main::uri_escape_utf8($ct->{"upnp:album"}) .
-              "&t[0]=" . main::uri_escape_utf8($ct->{"dc:title"}) .
+    my $creator = $ct->{"dc:creator"} // "";
+    my $album = $ct->{"upnp:album"} // ""; 
+    my $title = $ct->{"dc:title"} // "";
+    my $str = "&a[0]=" . main::uri_escape_utf8($creator) .
+              "&b[0]=" . main::uri_escape_utf8($album) .
+              "&t[0]=" . main::uri_escape_utf8($title) .
               "&m[0]=" . 
               "&l[0]=" . $duration;
 
