@@ -23,7 +23,7 @@
         </TMPL_IF>
         <TMPL_IF name="MUSIC_ISALBUM">
             <TMPL_IF name="MUSIC_ALBUMART">
-            <li class='albumart'><img width="200" height="200" src='<TMPL_VAR name="MUSIC_ALBUMART">'></li>
+            <li class='albumart'><img width="200" height="200" src="<TMPL_VAR name="MUSIC_ALBUMART">"></li>
             </TMPL_IF>
         </TMPL_IF>
     
@@ -48,7 +48,7 @@
         <TMPL_IF name="MUSIC_ISSONG">
             <div class='trackno'><TMPL_VAR name="MUSIC_TRACK_NUM"></div>
         <TMPL_ELSE>
-            <img width="44" height="44" src='<TMPL_VAR name="MUSIC_ALBUMART">'>
+            <img width="44" height="44" src="<TMPL_VAR name="MUSIC_ALBUMART">">
         </TMPL_IF>
         <div>
             <p class='title'><TMPL_VAR name="MUSIC_NAME"></p>
