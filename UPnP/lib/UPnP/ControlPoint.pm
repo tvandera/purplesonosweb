@@ -283,7 +283,8 @@ sub _createDevice {
 		carp("Loading device description failed with error: " . 
 			 $response->code . " " . $response->message);
 	}
-	pop(@LWP::Protocol::http::EXTRA_SOCK_OPTS);
+	# remove key and value
+	splice(@LWP::Protocol::http::EXTRA_SOCK_OPTS, -2);
 
 	if ($device) {
 		$device->base($base ? $base : $location);
@@ -329,7 +330,6 @@ sub _deviceRemoved {
 	}
 }
 
-            use Data::Dumper;
 sub _receiveSearchResponse {
 	my $self = shift;
 	my $socket = shift;
@@ -643,12 +643,10 @@ sub subscribe {
 
 	if (defined($cp)) {
 		my $url = $self->eventSubURL;
-		my $request = HTTP::Request->new('SUBSCRIBE', 
-										 "$url");
+		my $request = HTTP::Request->new('SUBSCRIBE', "$url");
 		$request->header('NT', 'upnp:event');
 		$request->header('Callback', '<' . $cp->subscriptionURL . '>');
-		$request->header('Timeout', 
-						 'Second-' . defined($timeout) ?  $timeout : 'infinite');
+		$request->header('Timeout', 'Second-' . defined($timeout) ?  $timeout : 'infinite');
 		my $ua = LWP::UserAgent->new(timeout => 20);
 		my $response = $ua->request($request);
 
@@ -732,7 +730,8 @@ sub _loadDescription {
 		carp("Error loading SCPD document: $!");
 	}
 
-	pop(@LWP::Protocol::http::EXTRA_SOCK_OPTS);
+	# remove both key and value
+	splice(@LWP::Protocol::http::EXTRA_SOCK_OPTS, -2);
 
 	$self->{_loadedDescription} = 1;
 }
