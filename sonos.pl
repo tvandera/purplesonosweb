@@ -31,7 +31,6 @@ use Time::HiRes qw(  gettimeofday );
 use Image::Magick;
 use File::Slurp;
 
-
 $main::VERSION        = "0.72";
 
 ###############################################################################
@@ -498,7 +497,7 @@ sub sonos_renew_subscriptions {
             my ($location, $name) = split (",", $sub);
             my $device = $main::DEVICE{$location};
             my $service = upnp_device_get_service($device, $name);
-            $main::SUBSCRIPTIONS{"$location,$name"} = $service->subscribe(\&sonos_upnp_update);
+            $main::SUBSCRIPTIONS{$location . "-" . $name} = $service->subscribe(\&sonos_upnp_update);
         }
     }
     add_timeout(time()+$main::RENEW_SUB_TIME, \&sonos_renew_subscriptions);
@@ -1256,7 +1255,7 @@ sub upnp_search_cb {
                              urn:schemas-upnp-org:service:AVTransport:1 
                              urn:schemas-upnp-org:service:RenderingControl:1)) {
             my $service = upnp_device_get_service($device, $name);
-            $main::SUBSCRIPTIONS{"$device->{LOCATION},$name"} = $service->subscribe(\&sonos_upnp_update);
+            $main::SUBSCRIPTIONS{$device->{LOCATION} . "-" . $name} = $service->subscribe(\&sonos_upnp_update);
         }
     }
     elsif ($action eq 'deviceRemoved') {
