@@ -1315,13 +1315,13 @@ sub http_albumart_request {
 	    ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
 	    $main::AACACHE{$sha} = $text;
         } else {
+            Log(3, "error for " . $uri);
             $image->Set(size=>'200x200');
             $image->ReadImage('canvas:black');
 	    ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
         }
     }
 
-    Log(3, "Sending response to " . $r->url);
     my $response = HTTP::Response->new(200, undef, ["Content-Type" => "image/jpg"], $text);
     $c->send_response($response);
     $c->force_last_request;
@@ -1388,8 +1388,6 @@ sub http_handle_request {
     my %qf = $uri->query_form;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
     
-
-    Log (1, "URI: $uri");
 
     if ($main::HTTP_HANDLERS{$path}) {
         my $callback = $main::HTTP_HANDLERS{$path};
