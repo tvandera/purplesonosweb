@@ -1,66 +1,15 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
 <head>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+<title>Web SONOS Controller</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="apple-touch-icon" href="favicon.png">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<title>Sonos Web Control - <tmpl_var name=VERSION></title>
-
-<link rel="styleSheet" href="main.css" type="text/css" media=screen>
-<link href="simple-slider.css" rel="stylesheet" type="text/css" />
-<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<script language="javascript" src="/http.js"></script>
-<script language="javascript" src="/sonos.js"></script>
-<script language="javascript" src="/sampleapp.js"></script>
-<script language="javascript" src="spin.js"></script>
-<script language="javascript" src="jquery.spin.js"></script>
-<script src="simple-slider.js"></script>
+<meta http-equiv="refresh" content="3000;URL=index.html?" />
 </head>
-
-<body onload="start()">
-<div id="tabs">
-    <div id="top-labels">
-        <h4 id="currentzonename" onclick='mZones()'>ZONE</h4>:
-        <h4 id="queuelabel" onclick='mQueue()'>QUEUE</h4>
-        <h4 id="nowplayinglabel" onclick='mNowPlaying()'>PLAYING</h4>
-        <h4 id="musiclabel" onclick='mMusic()'>MUSIC</h4> 
-    </div>
-
-    <div id="zone-container">
-        <h4 id="zoneslabel">ZONES</h4> 
-        <div id="zones"></div>
-    </div>
-
-    <div id="music">
-    </div>
-
-    <div id="now-playing">
-          <div id="current-track-info">
-            <img class='albumart' id="albumart" onerror='this.src="tiles/missingaa_lite.svg";'/><br>
-            <label id="song"></label><br>
-            <label id="album"></label><br>
-            <label id="artist"></label><br>
-        </div>
-        <div id="control">
-            <img src="svg/prev.svg"  id="previous" onclick="doAction('Previous')" >
-            <img src="svg/play.svg"  id="play"     onclick="doAction('Play');" >
-            <img src="svg/pause.svg" id="pause"    onclick="doAction('Pause');" >
-            <img src="svg/next.svg"  id="next"     onclick="doAction('Next')" >
-        </div>
-        <div id="volumes">
-            <img src="svg/mute_off.svg" id="muteon"     onclick="doAction('MuteOn');"     class="playback-mode"/>
-            <img src="svg/mute_on.svg"  id="muteoff"    onclick="doAction('MuteOff');"    class="playback-mode" />
-            <img src="svg/minus.svg"     id="muchsofter" onclick="doAction('MuchSofter');" class="playback-mode"/>
-            <input id="volume" type="text" data-slider="true" data-slider-range="0,100">
-            <img src="svg/plus.svg"     id="muchlouder" onclick="doAction('MuchLouder');" class="playback-mode"/>
-        </div>
-    </div>
-
-    <div id="queue">
-        <div id=queuedata>Loading...</div>
-    </div>
-
-</div>
-
-</body>
+<frameset cols="100%">
+  <frame src="zones.html"></frame>
+</frameset>
 </html>
