@@ -7,6 +7,7 @@ use UPnP::ControlPoint;
 use Socket;
 use IO::Select;
 use IO::Handle;
+use Net::Address::IP::Local;
 use Data::Dumper;
 use HTML::Parser;
 use HTML::Entities;
@@ -212,7 +213,14 @@ sub main {
     add_type("text/css" => qw(css));
     $main::useragent = LWP::UserAgent->new(env_proxy  => 1, keep_alive => 2, parse_head => 0);
     $main::daemon = HTTP::Daemon->new(LocalPort => $main::HTTP_PORT, Reuse => 1) || die;
-    $main::cp = UPnP::ControlPoint->new ();
+
+    if ($main::NETWORK) {
+        my $localAddr = Net::Address::IP::Local->connected_to($main::NETWORK);
+        $main::cp = UPnP::ControlPoint->new (SearchAddr => $localAddr);
+    } else {
+        $main::cp = UPnP::ControlPoint->new ();
+    }
+
     my $search = $main::cp->searchByType("urn:schemas-upnp-org:device:ZonePlayer:1", \&main::upnp_search_cb);
 
     my @selsockets = $main::cp->sockets();
