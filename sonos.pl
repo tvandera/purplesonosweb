@@ -7,6 +7,7 @@ use UPnP::ControlPoint;
 use Socket;
 use IO::Select;
 use IO::Handle;
+use Net::Address::IP::Local;
 use Data::Dumper;
 use HTML::Parser;
 use HTML::Entities;
@@ -212,7 +213,14 @@ sub main {
     add_type("text/css" => qw(css));
     $main::useragent = LWP::UserAgent->new(env_proxy  => 1, keep_alive => 2, parse_head => 0);
     $main::daemon = HTTP::Daemon->new(LocalPort => $main::HTTP_PORT, Reuse => 1) || die;
-    $main::cp = UPnP::ControlPoint->new ();
+
+    if ($main::NETWORK) {
+        my $localAddr = Net::Address::IP::Local->connected_to($main::NETWORK);
+        $main::cp = UPnP::ControlPoint->new (SearchAddr => $localAddr);
+    } else {
+        $main::cp = UPnP::ControlPoint->new ();
+    }
+
     my $search = $main::cp->searchByType("urn:schemas-upnp-org:device:ZonePlayer:1", \&main::upnp_search_cb);
 
     my @selsockets = $main::cp->sockets();
@@ -1307,13 +1315,13 @@ sub http_albumart_request {
 	    ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
 	    $main::AACACHE{$sha} = $text;
         } else {
+            Log(3, "error for " . $uri);
             $image->Set(size=>'200x200');
             $image->ReadImage('canvas:black');
 	    ($text) = $image->ImageToBlob("filename" => "dummy.jpg");
         }
     }
 
-    Log(3, "Sending response to " . $r->url);
     my $response = HTTP::Response->new(200, undef, ["Content-Type" => "image/jpg"], $text);
     $c->send_response($response);
     $c->force_last_request;
@@ -1380,8 +1388,6 @@ sub http_handle_request {
     my %qf = $uri->query_form;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
     
-
-    Log (1, "URI: $uri");
 
     if ($main::HTTP_HANDLERS{$path}) {
         my $callback = $main::HTTP_HANDLERS{$path};

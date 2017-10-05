@@ -20,6 +20,7 @@ require Exporter;
 our @ISA = qw(Exporter UPnP::Common::DeviceLoader);
 our $VERSION = $UPnP::Common::VERSION;
 
+use constant DEFAULT_SSDP_SEARCH_ADDR => '0.0.0.0';
 use constant DEFAULT_SSDP_SEARCH_PORT => 8008;
 use constant DEFAULT_SUBSCRIPTION_PORT => 8058;
 use constant DEFAULT_SUBSCRIPTION_URL => '/eventSub';
@@ -32,13 +33,15 @@ sub new {
 
     $self = $class->SUPER::new(%args);
 
+    my $searchAddr = $args{SearchAddr} || DEFAULT_SSDP_SEARCH_ADDR;
     my $searchPort = $args{SearchPort} || DEFAULT_SSDP_SEARCH_PORT;
     my $subscriptionPort = $args{SubscriptionPort} || DEFAULT_SUBSCRIPTION_PORT;
-	my $maxWait = $args{MaxWait} || 3;
+    my $maxWait = $args{MaxWait} || 3;
 
 	# Create the socket on which search requests go out
     $self->{_searchSocket} = IO::Socket::INET->new(Proto => 'udp',
-												   LocalPort => $searchPort) ||
+        LocalAddr => $searchAddr,
+        LocalPort => $searchPort) ||
 	croak("Error creating search socket: $!\n");
 	setsockopt($self->{_searchSocket}, 
 			   IP_LEVEL,
