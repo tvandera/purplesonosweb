@@ -7,7 +7,6 @@ use UPnP::ControlPoint;
 use Socket;
 use IO::Select;
 use IO::Handle;
-use Net::Address::IP::Local;
 use Data::Dumper;
 use HTML::Parser;
 use HTML::Entities;
@@ -214,9 +213,8 @@ sub main {
     $main::useragent = LWP::UserAgent->new(env_proxy  => 1, keep_alive => 2, parse_head => 0);
     $main::daemon = HTTP::Daemon->new(LocalPort => $main::HTTP_PORT, Reuse => 1) || die;
 
-    if ($main::NETWORK) {
-        my $localAddr = Net::Address::IP::Local->connected_to($main::NETWORK);
-        $main::cp = UPnP::ControlPoint->new (SearchAddr => $localAddr);
+    if ($main::SEARCHADDR) {
+        $main::cp = UPnP::ControlPoint->new (SearchAddr => $main::SEARCHADDR);
     } else {
         $main::cp = UPnP::ControlPoint->new ();
     }
