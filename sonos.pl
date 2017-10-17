@@ -955,7 +955,8 @@ sub sonos_add_radio {
 ###############################################################################
 sub upnp_device_get_service {
     my ($device, $name) = @_;
-
+    return undef unless $name
+    return undef unless $device
     my $service = $device->getService($name);
     return $service if ($service);
 
