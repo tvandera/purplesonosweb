@@ -1,0 +1,7 @@
+libsoap-lite-perl
+libxml-parser-lite-perl
+libxml-simple-perl
+libhtml-template-compiled-perl
+libhtml-template-perl
+libfile-slurp-perl
+perlmagick
