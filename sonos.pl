@@ -692,16 +692,16 @@ sub sonos_music_isfav {
 }
 
 ###############################################################################
-sub sonos_music_realpath {
-    my ($mpath) = @_;
+sub sonos_music_realclass {
+    my ($entry) = @_;
+    my $class = $entry->{"upnp:class"};
 
-    my $entry = sonos_music_entry($mpath);
-    return $mpath if (!defined $entry);
-    return $mpath if (!$entry->{'r:resMD'});
+    return $class if (!$entry->{'r:resMD'});
     my $meta = XMLin($entry->{'r:resMD'});
-    return $mpath if (!$meta->{item}->{id});
-    return $meta->{item}->{id};
+    return $class if (!$meta->{item}->{"upnp:class"});
+    return $meta->{item}->{"upnp:class"};
 }
+
 ###############################################################################
 sub sonos_music_class {
     my ($mpath) = @_;
@@ -713,7 +713,6 @@ sub sonos_music_class {
 ###############################################################################
 sub sonos_music_entry {
     my ($mpath) = @_;
-    
     my $type = substr ($mpath, 0, index($mpath, ':'));
 
     if (exists $main::ITEMS{$mpath}) {
@@ -795,8 +794,6 @@ sub sonos_avtransport_set_linein {
 ###############################################################################
 sub sonos_avtransport_add {
     my ($zone, $mpath, $queueSlot) = @_;
-
-    $mpath = sonos_music_realpath($mpath);
 
     my $entry = sonos_music_entry($mpath);
     Log(3, "before mpath = $mpath entry = " . Dumper($entry));
@@ -955,6 +952,8 @@ sub sonos_add_radio {
 ###############################################################################
 sub upnp_device_get_service {
     my ($device, $name) = @_;
+    Log(2, Dumper($device));
+    Log(2, Dumper($name));
     return undef unless $name;
     return undef unless $device;
     my $service = $device->getService($name);
@@ -1866,7 +1865,6 @@ sub http_build_music_data {
     $musicdata{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
 
     my $elements = sonos_containers_get($mpath, $item);
-    my $need_redirect = sonos_music_isfav($mpath);
 
 
     $musicdata{MUSIC_ISPAGED} = int(scalar @{$elements} > $maxsearch) if $elements;
@@ -1906,10 +1904,8 @@ sub http_build_music_data {
     foreach my $music (@{$elements}) {
         my %row_data;
 
-        my $row_item = $need_redirect ?
-        sonos_music_entry(sonos_music_realpath($music->{id})):
-        $music;
-        my $class = $row_item->{"upnp:class"}; 
+        my $class = $music->{"upnp:class"}; 
+        my $realclass = sonos_music_realclass($music); 
         my $name = $music->{"dc:title"};
         my $letter = uc(substr($name, 0, 1)); 
         next if ($msearch && $name !~ m/$msearch/i);
@@ -1917,11 +1913,10 @@ sub http_build_music_data {
 	next if ($to && $letter gt $to); 
 
         $row_data{MUSIC_NAME} = enc($name);
-        $row_data{MUSIC_CLASS} = enc($music->{"upnp:class"});
+        $row_data{MUSIC_CLASS} = enc($class);
         $row_data{MUSIC_PATH} = enc($music->{id});
-        $row_data{MUSIC_REALCLASS} = enc($class);
-        $row_data{MUSIC_REALPATH} = enc($row_item->{id});
-        $row_data{MUSIC_ARG} = "mpath=" . uri_escape_utf8($row_item->{id});
+        $row_data{MUSIC_REALCLASS} = enc($realclass);
+        $row_data{MUSIC_ARG} = "mpath=" . uri_escape_utf8($music->{id});
         $row_data{"MUSIC_ALBUMART"} = sonos_music_albumart($music);
         $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"} unless $musicdata{"MUSIC_ALBUMART"};
         $row_data{"MUSIC_ALBUM"} = enc($music->{"upnp:album"});
@@ -1929,9 +1924,10 @@ sub http_build_music_data {
         $row_data{"MUSIC_DESC"} = enc($music->{"r:description"});
         $row_data{MUSIC_TRACK_NUM}= enc($music->{"upnp:originalTrackNumber"});
 
-        $row_data{MUSIC_ISSONG} =  int($class =~ /musicTrack$/);
-        $row_data{MUSIC_ISRADIO} = int($class =~ /audioBroadcast$/);
-        $row_data{MUSIC_ISALBUM} = int($class =~ /musicAlbum$/);
+        $row_data{MUSIC_ISFAV}   = int($class =~ /favorite$/);
+        $row_data{MUSIC_ISSONG}  = int($realclass =~ /musicTrack$/);
+        $row_data{MUSIC_ISRADIO} = int($realclass =~ /audioBroadcast$/);
+        $row_data{MUSIC_ISALBUM} = int($realclass =~ /musicAlbum$/);
 
         push(@music_loop_data, \%row_data);
         last if (!$from && $#music_loop_data > $firstsearch + $maxsearch);
@@ -1944,6 +1940,7 @@ sub http_build_music_data {
 
     $musicdata{"MUSIC_LOOP"} = \@music_loop_data;
     
+
     return \%musicdata;
 }
 ###############################################################################
