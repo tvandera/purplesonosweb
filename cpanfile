@@ -9,7 +9,7 @@ requires 'HTML::Parser';
 requires 'HTML::Template';
 requires 'HTML::Template::Compiled';
 requires 'HTTP::Daemon';
-requires 'Image::Magick';
+# requires 'Image::Magick';
 requires 'IO::Compress::Gzip';
 requires 'IO::Handle';
 requires 'IO::Select';
@@ -22,6 +22,9 @@ requires 'POSIX';
 requires 'SOAP::Lite'; 
 requires 'Socket';
 requires 'Time::HiRes';
-requires 'UPnP::ControlPoint';
+# UPnP::Controlpoint is in ./UPnP
+# this is a local modified version
+# requires 'UPnP::ControlPoint';
 requires 'URI::Escape';
 requires 'XML::Simple';
+requires 'XML::Parser::Lite';
