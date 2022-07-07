@@ -3,6 +3,10 @@
 use lib "./UPnP/lib";
 use lib ".";
 use feature 'unicode_strings';
+
+use strict;
+use warnings;
+
 use UPnP::ControlPoint;
 use Socket;
 use IO::Select;
