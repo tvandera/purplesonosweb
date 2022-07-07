@@ -1,3 +1,5 @@
+These are the .deb packages needed for purplesonosweb:
+
 libsoap-lite-perl
 libxml-parser-lite-perl
 libxml-simple-perl
