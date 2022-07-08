@@ -1018,7 +1018,7 @@ sub upnp_content_dir_browse {
         $start += $result->getValue("NumberReturned");
 
         my $results = $result->getValue("Result");
-        my $tree = XMLin($results, forcearray => ["item", "container"], keyattr=>{"item" => "ID"});
+        my $tree = XMLin($results, forcearray => ["item", "container"], keyattr=>{});
 
         push(@data, @{$tree->{item}}) if (defined $tree->{item});
         push(@data, @{$tree->{container}}) if (defined $tree->{container});
