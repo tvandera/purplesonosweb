@@ -968,7 +968,7 @@ sub upnp_zone_get_service {
         ! defined $main::ZONES{$zone}->{Location} || 
         ! defined $main::DEVICE{$main::ZONES{$zone}->{Location}}) {
         main::Log(0, "Zone '$zone' not found");
-        main::Log(4, "Known zones: " . Dumper(%main::ZONES));
+        return undef;
     }
 
     return upnp_device_get_service($main::DEVICE{$main::ZONES{$zone}->{Location}}, $name);
