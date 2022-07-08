@@ -212,7 +212,7 @@ sub main {
 
     add_type("text/css" => qw(css));
     $main::useragent = LWP::UserAgent->new(env_proxy  => 1, keep_alive => 2, parse_head => 0);
-    $main::daemon = HTTP::Daemon->new(LocalPort => $main::HTTP_PORT, Reuse => 1) || die;
+    $main::daemon = HTTP::Daemon->new(LocalPort => $main::HTTP_PORT, ReuseAddr => 1, ReusePort => 1) || die;
 
     if ($main::SEARCHADDR) {
         $main::cp = UPnP::ControlPoint->new (SearchAddr => $main::SEARCHADDR);
