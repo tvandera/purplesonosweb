@@ -1681,7 +1681,7 @@ my ($zone, $updatenum, $active_zone) = @_;
                 $activedata{ACTIVE_NAME}  = enc($curtrack->{item}->{"r:streamContent"});
             }
 
-            if (enc($curtrack->{item}->{"dc:creator"}) eq "") {
+            if (!defined ($curtrack->{item}->{"dc:creator"})) {
                 $activedata{ACTIVE_ALBUM}     = enc($curtransport->{item}->{"dc:title"});
             } else{
                 $activedata{ACTIVE_NAME}      = enc($curtrack->{item}->{"dc:title"});
