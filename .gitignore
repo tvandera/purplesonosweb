@@ -5,3 +5,4 @@
 aa_cache
 *.log
 local
+.vscode
