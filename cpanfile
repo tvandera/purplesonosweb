@@ -9,7 +9,7 @@ requires 'HTML::Parser';
 requires 'HTML::Template';
 requires 'HTML::Template::Compiled';
 requires 'HTTP::Daemon';
-# requires 'Image::Magick';
+requires 'Image::Magick', '>= 6.0, < 7.000';
 requires 'IO::Compress::Gzip';
 requires 'IO::Handle';
 requires 'IO::Select';
