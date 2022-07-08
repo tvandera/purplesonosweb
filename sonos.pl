@@ -1240,11 +1240,15 @@ sub upnp_avtransport_save {
 sub upnp_search_cb {
     my ($search, $device, $action) = @_;
     if ($action eq 'deviceAdded') {
-        Log(2, "Added name: " . $device->friendlyName . " " . $device->{UDN} . " type: " . $device->deviceType());
-        Log(2, %$device);
+        Log(2, "Added name: " . $device->friendlyName . "\n" .
+               "Location: " .  $device->{LOCATION} . "\n" .
+               "UDN: " .  $device->{UDN} . "\n" .
+               "type: " . $device->deviceType()
+               );
+        Log(4, Dumper($device));
 
 
-#        next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
+#       next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
         $main::DEVICE{$device->{LOCATION}} = $device;
 
 #                             urn:schemas-upnp-org:service:DeviceProperties:1
