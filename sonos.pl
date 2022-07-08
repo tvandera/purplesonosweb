@@ -202,13 +202,7 @@ sub quit {
 ###############################################################################
 # main
 sub main {
-    Log (0, "Starting up version $main::VERSION!\n" .
-    "If the application doesn't seem to work:\n" . 
-    "  * you may need to disable your firewall or allow the application\n" .
-    "  * make sure the computer is on the same network as Sonos boxes\n" .
-    "  * make sure the Sonos Controller software isn't running on the same computer\n" .
-    "\n" . 
-    "Now, point your browser to http://localhost:$main::HTTP_PORT and leave this running\n");
+    Log (0, "Starting v$main::VERSION at http://localhost:$main::HTTP_PORT\n");
 
     add_type("text/css" => qw(css));
     $main::useragent = LWP::UserAgent->new(env_proxy  => 1, keep_alive => 2, parse_head => 0);
