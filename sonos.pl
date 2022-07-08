@@ -1051,7 +1051,6 @@ sub upnp_content_dir_refresh_share_index {
         add_timeout (time()+5, \&upnp_content_dir_refresh_share_index);
         return
     }
-    my $contentDir = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:ContentDirectory:1");
     my $contentDirProxy = $contentDir->controlProxy; 
     $contentDirProxy->RefreshShareIndex();
 }
