@@ -52,7 +52,10 @@ sub new {
 	# Create the socket on which we'll listen for events to which we are
 	# subscribed.
     $self->{_subscriptionSocket} = HTTP::Daemon->new(
-											 LocalPort => $subscriptionPort, Reuse=>1, Listen=>20) ||
+											 LocalPort => $subscriptionPort,
+											 ReuseAddr=>1,
+											 ReusePort=>1,
+											 Listen=>20) ||
 	croak("Error creating subscription socket: $!\n");
 	$self->{_subscriptionURL} = $args{SubscriptionURL} || DEFAULT_SUBSCRIPTION_URL;
 	$self->{_subscriptionPort} = $subscriptionPort;
@@ -84,6 +87,8 @@ sub DESTROY {
 			$subscription->unsubscribe;
 		}
 	}
+
+	$self->{_subscriptionSocket}
 }
 
 sub searchByType {
