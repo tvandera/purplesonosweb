@@ -1,7 +1,5 @@
 #!/usr/bin/env perl
 
-use lib "./UPnP/lib";
-use lib ".";
 use feature 'unicode_strings';
 
 use strict;
@@ -26,7 +24,6 @@ use IO::Compress::Gzip qw(gzip);
 use LWP::UserAgent;
 use SOAP::Lite maptype => {}; 
 use MIME::Base64;
-use strict;
 use Carp qw(cluck);
 use JSON;
 use Digest::SHA qw(sha256_hex);
