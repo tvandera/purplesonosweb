@@ -525,10 +525,10 @@ sub sonos_upnp_update {
     if ($service->serviceId =~ /serviceId:ZoneGroupTopology/) {
         foreach my $key (keys %properties) {
             if ($key eq "ZoneGroupState") {
-                my $tree = XMLin(decode_entities($properties{$key}), 
-                        forcearray => ["ZoneGroup", "ZoneGroupMember"]);
+                my $tree = XMLin(decode_entities($properties{$key}), forcearray => ["ZoneGroup", "ZoneGroupMember"]);
                 Log(4, "ZoneGroupTopology " . Dumper($tree));
-                foreach my $group (@{$tree->{ZoneGroup}}) {
+                my @groups = @{$tree->{ZoneGroups}->{ZoneGroup}};
+                foreach my $group (@groups) {
                     my %zonegroup = %{$group};
                     my $coordinator = $zonegroup{Coordinator};
                     my @members = @{$zonegroup{ZoneGroupMember}};
