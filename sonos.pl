@@ -1328,7 +1328,7 @@ sub http_base_url {
     my $baseurl;
 
     if (!defined $r || ! $r->header("host")) {
-        $baseurl = "http://". UPnP::Common::getLocalIP().":".$main::HTTP_PORT;
+        $baseurl = "http://". UPnP::Common::getLocalIPAddress().":".$main::HTTP_PORT;
     } else {
         $baseurl = "http://".$r->header("host");
     }
@@ -1981,7 +1981,7 @@ my ($qf, $params) = @_;
     # globals
     {
         my $globals = {};
-        my $host = UPnP::Common::getLocalIP().":".$main::HTTP_PORT; 
+        my $host = UPnP::Common::getLocalIPAddress().":".$main::HTTP_PORT; 
         $globals->{"BASE_URL"} = "http://$host";
         $globals->{"VERSION"    } = $main::VERSION;
         $globals->{"LAST_UPDATE"} = $main::LASTUPDATE;
