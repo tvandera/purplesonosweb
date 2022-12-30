@@ -22,9 +22,7 @@ requires 'POSIX';
 requires 'SOAP::Lite'; 
 requires 'Socket';
 requires 'Time::HiRes';
-# UPnP::Controlpoint is in ./UPnP
-# this is a local modified version
-# requires 'UPnP::ControlPoint';
+requires 'UPnP::ControlPoint';
 requires 'URI::Escape';
 requires 'XML::Liberal';
 requires 'XML::LibXML::Simple';
