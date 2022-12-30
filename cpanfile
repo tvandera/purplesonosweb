@@ -26,5 +26,5 @@ requires 'Time::HiRes';
 # this is a local modified version
 # requires 'UPnP::ControlPoint';
 requires 'URI::Escape';
-requires 'XML::Simple';
-requires 'XML::Parser::Lite';
+requires 'XML::Liberal';
+requires 'XML::LibXML::Simple';

@@ -13,7 +13,11 @@ use Data::Dumper;
 use HTML::Parser;
 use HTML::Entities;
 use URI::Escape;
-use XML::Simple;
+
+use XML::Liberal;
+use XML::LibXML::Simple   qw(XMLin);
+XML::Liberal->globally_override('LibXML');
+
 use HTTP::Daemon;
 use HTML::Template;
 use HTML::Template::Compiled;
