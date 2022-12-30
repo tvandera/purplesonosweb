@@ -1,0 +1,9 @@
+POST /MediaRenderer/RenderingControl/Control HTTP/1.1
+HOST: 192.168.2.200:1400
+CONTENT-LENGTH: 323
+CONTENT-TYPE: text/xml; charset="utf-8"
+SOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"
+
+
+<soap:Envelope soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><SetVolume xmlns="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID xsi:type="xsd:int">0</InstanceID><Channel xsi:type="xsd:string">Master</Channel><DesiredVolume xsi:type="xsd:int">24</DesiredVolume></SetVolume></soap:Body></soap:Envelope>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume>30</DesiredVolume></u:SetVolume></s:Body></s:Envelope>

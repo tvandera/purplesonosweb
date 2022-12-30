@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <soap:Body>
+    <unit:SetVolume xmlns:unit="urn:schemas-upnp-org:service:RenderingControl:1">
+      <InstanceID>0</InstanceID>
+      <Channel>Master</Channel>
+      <DesiredVolume>24</DesiredVolume>
+    </unit:SetVolume>
+  </soap:Body>
+</soap:Envelope>

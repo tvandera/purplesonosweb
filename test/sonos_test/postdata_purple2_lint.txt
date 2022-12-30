@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <soap:Body>
+    <u:SetVolume>
+      <InstanceID xsi:type="xsd:int">0</InstanceID>
+      <Channel xsi:type="xsd:string">Master</Channel>
+      <DesiredVolume xsi:type="xsd:int">20</DesiredVolume>
+    </u:SetVolume>
+  </soap:Body>
+</soap:Envelope>
