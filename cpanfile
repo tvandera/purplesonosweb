@@ -24,5 +24,7 @@ requires 'Socket';
 requires 'Time::HiRes';
 requires 'UPnP::ControlPoint';
 requires 'URI::Escape';
+
+requires 'XML::Simple';
 requires 'XML::Liberal';
 requires 'XML::LibXML::Simple';
