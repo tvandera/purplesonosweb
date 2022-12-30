@@ -1630,7 +1630,7 @@ my ($zone, $updatenum, $active_zone) = @_;
     $activedata{ACTIVE_ZONE}      = enc($main::ZONES{$zone}->{ZoneName});
     $activedata{ACTIVE_ZONEID}    = uri_escape($zone); 
     $activedata{ACTIVE_VOLUME}    = int($main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val});
-    $activedata{ZONE_ACTIVE}      = int($zone eq $active_zone);
+    $activedata{ZONE_ACTIVE}      = defined $active_zone && int($zone eq $active_zone);
 
     my $lastupdate;
     if ($main::ZONES{$zone}->{RENDER}->{LASTUPDATE} > $main::ZONES{$zone}->{AV}->{LASTUPDATE}) {
