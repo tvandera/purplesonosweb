@@ -1023,6 +1023,7 @@ sub upnp_content_dir_browse {
         $start += $result->getValue("NumberReturned");
 
         my $results = $result->getValue("Result");
+        Log(4, "results = ", Dumper($results));
         my $tree = XMLin($results, forcearray => ["item", "container"], keyattr=>{});
 
         push(@data, @{$tree->{item}}) if (defined $tree->{item});
