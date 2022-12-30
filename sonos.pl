@@ -961,6 +961,7 @@ sub upnp_device_get_service {
         $service = $child->getService($name);
         return $service if ($service);
     }
+    main::Log(0, "Device '$device' with name '$name' not found");
     return undef;
 }
 
@@ -1266,7 +1267,7 @@ sub upnp_search_cb {
         }
     }
     elsif ($action eq 'deviceRemoved') {
-        Log(1, "Removed name:" . $device->friendlyName) . " zone=" . substr($device->{UDN}, 5);
+        Log(1, "Removed name:" . $device->friendlyName . " zone=" . substr($device->{UDN}, 5));
         delete $main::ZONES{substr($device->{UDN}, 5)};
     } else {
         Log(1, "Unknown action name:" . $device->friendlyName);
