@@ -26,7 +26,7 @@ use POSIX qw(strftime);
 use Encode qw(encode decode);
 use IO::Compress::Gzip qw(gzip);
 use LWP::UserAgent;
-use SOAP::Lite maptype => {}; 
+use SOAP::Lite maptype => {};
 use MIME::Base64;
 use Carp qw(cluck);
 use JSON;
@@ -106,9 +106,9 @@ sub enc {
 
 
 ###############################################################################
-use POSIX ":sys_wait_h";           
-sub sigchld {               
-    my $child;               
+use POSIX ":sys_wait_h";
+sub sigchld {
+    my $child;
     while (($child = waitpid(-1,WNOHANG)) > 0) {
         delete $main::CHLD{$child};
     }
@@ -311,7 +311,7 @@ sub plugin_load {
     # Now init the plugins.  We do in two steps so plugin inits can talk to other plugins
     foreach my $plugin (keys %main::PLUGINS) {
         eval "Plugins::${plugin}::init();";
-	if ($@) {
+        if ($@) {
             Log(0, "Did not init $plugin: " . $@);
             delete $main::PLUGINS{$plugin};
             next;
@@ -567,11 +567,11 @@ sub sonos_upnp_update {
                     } elsif($item->{UDN} =~ "SA_RINCON4_") { #PANDORA
                         Log(2, "Adding Pandora Subscription");
                         $main::SERVICES{Pandora} = $item;
-                        
+
                     } elsif($item->{UDN} =~ "SA_RINCON6_") { #SIRIUS
                         Log(2, "Adding Sirius Subscription");
                         $main::SERVICES{Sirius} = $item;
-                    } 
+                    }
                 }
                 sonos_process_waiting("SERVICES");
             } else {
@@ -590,8 +590,8 @@ sub sonos_upnp_update {
             Log(3, "Unknown RenderingControl " . Dumper(\%properties));
             return;
         }
-        my $tree = XMLin(decode_entities($properties{LastChange}), 
-                forcearray => ["ZoneGroup"], 
+        my $tree = XMLin(decode_entities($properties{LastChange}),
+                forcearray => ["ZoneGroup"],
                 keyattr=>{"Volume"   => "channel",
                           "Mute"     => "channel",
                           "Loudness" => "channel"});
@@ -629,7 +629,7 @@ sub sonos_upnp_update {
                 } else {
                     $main::ZONES{$zone}->{AV}->{$key} = $tree->{InstanceID}->{$key}->{val};
                 }
-            }  
+            }
         }
 
         sonos_process_waiting("AV", $zone);
@@ -703,6 +703,7 @@ sub sonos_music_realclass {
 
 ###############################################################################
 sub sonos_music_class {
+    # Given a music_path, looks up an returns the class
     my ($mpath) = @_;
 
     my $entry = sonos_music_entry($mpath);
@@ -711,6 +712,7 @@ sub sonos_music_class {
 }
 ###############################################################################
 sub sonos_music_entry {
+    # Given a music_path, returns info on this music entry
     my ($mpath) = @_;
     my $type = substr ($mpath, 0, index($mpath, ':'));
 
@@ -745,7 +747,7 @@ sub sonos_is_radio {
     return undef if (!defined $entry);
     my $uri = $entry->{res}->{content};
     return ($uri =~ m/^x-sonosapi-stream:/) ||
-           ($uri =~ m/^x-sonosapi-radio:/) || 
+           ($uri =~ m/^x-sonosapi-radio:/) ||
            ($uri =~ m/^x-sonosapi-pndrradio:/);
 }
 
@@ -799,7 +801,7 @@ sub sonos_avtransport_add {
 
     if ($entry->{"upnp:class"} eq "object.item.audioItem.audioBroadcast") {
         return
-    } 
+    }
 
     my $type = substr ($mpath, 0, index($mpath, ':'));
     my $metadata = "";
@@ -834,7 +836,7 @@ sub sonos_process_waiting_internal {
     my ($mwhat, $mzone, $what, $zone) = @_;
 
     return if (!defined $main::WAITING{$mwhat}{$mzone});
-    my @waiting = @{$main::WAITING{$mwhat}{$mzone}}; 
+    my @waiting = @{$main::WAITING{$mwhat}{$mzone}};
     @{$main::WAITING{$mwhat}{$mzone}} = ();
 
     while ($#waiting >= 0) {
@@ -856,7 +858,7 @@ sub sonos_process_hook {
 
     return undef if (!defined $main::HOOK{$what});
 
-    my @hooks = @{$main::HOOK{$what}}; 
+    my @hooks = @{$main::HOOK{$what}};
 
     while ($#hooks >= 0) {
         my($callback, @args) = @{shift @hooks};
@@ -936,8 +938,8 @@ sub sonos_add_radio {
     my $item = '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" ' .
                'xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" ' .
                'xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">' .
-               '<item id="" restricted="false"><dc:title>' . 
-               $name . '</dc:title><res>x-rincon-mp3radio:' . 
+               '<item id="" restricted="false"><dc:title>' .
+               $name . '</dc:title><res>x-rincon-mp3radio:' .
                $station .  '</res></item></DIDL-Lite>';
 
     my ($zone) = split(",", $main::UPDATEID{MasterRadioUpdateID});
@@ -969,8 +971,8 @@ sub upnp_device_get_service {
 sub upnp_zone_get_service {
     my ($zone, $name) = @_;
 
-    if (! exists $main::ZONES{$zone} || 
-        ! defined $main::ZONES{$zone}->{Location} || 
+    if (! exists $main::ZONES{$zone} ||
+        ! defined $main::ZONES{$zone}->{Location} ||
         ! defined $main::DEVICE{$main::ZONES{$zone}->{Location}}) {
         main::Log(0, "Zone '$zone' not found");
         return undef;
@@ -984,7 +986,7 @@ sub upnp_content_dir_create_object {
     my ($zone, $containerid, $elements) = @_;
     my $contentDir = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:ContentDirectory:1");
     return undef if (! defined $contentDir);
-    my $contentDirProxy = $contentDir->controlProxy; 
+    my $contentDirProxy = $contentDir->controlProxy;
     my $result = $contentDirProxy->CreateObject($containerid, $elements);
     return $result;
 }
@@ -993,7 +995,7 @@ sub upnp_content_dir_destroy_object {
     my ($zone, $objectid) = @_;
     my $contentDir = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:ContentDirectory:1");
     return undef if (! defined $contentDir);
-    my $contentDirProxy = $contentDir->controlProxy; 
+    my $contentDirProxy = $contentDir->controlProxy;
     my $result = $contentDirProxy->DestroyObject($objectid);
     return $result;
 }
@@ -1011,11 +1013,11 @@ sub upnp_content_dir_browse {
 
     my $contentDir = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:ContentDirectory:1");
     return undef if (! defined $contentDir);
-    my $contentDirProxy = $contentDir->controlProxy; 
+    my $contentDirProxy = $contentDir->controlProxy;
 
     do {
-        $result = $contentDirProxy->Browse($objectid, $type, 
-                                           'dc:title,res,dc:creator,upnp:artist,upnp:album', 
+        $result = $contentDirProxy->Browse($objectid, $type,
+                                           'dc:title,res,dc:creator,upnp:artist,upnp:album',
                                            $start, 2000, "");
 
         return undef if (!$result->isSuccessful);
@@ -1038,7 +1040,7 @@ sub upnp_content_dir_delete {
     my ($zone, $objectid) = @_;
 
     my $contentDir = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:ContentDirectory:1");
-    my $contentDirProxy = $contentDir->controlProxy; 
+    my $contentDirProxy = $contentDir->controlProxy;
 
     $contentDirProxy->DestroyObject($objectid);
 }
@@ -1057,7 +1059,7 @@ sub upnp_content_dir_refresh_share_index {
         add_timeout (time()+5, \&upnp_content_dir_refresh_share_index);
         return
     }
-    my $contentDirProxy = $contentDir->controlProxy; 
+    my $contentDirProxy = $contentDir->controlProxy;
     $contentDirProxy->RefreshShareIndex();
 }
 
@@ -1132,7 +1134,11 @@ sub upnp_render_volume {
     my $render = upnp_zone_get_service($zone, "urn:schemas-upnp-org:service:RenderingControl:1");
     my $renderProxy = $render->controlProxy;
     my $result = $renderProxy->SetVolume("0", "Master", $vol);
-    $main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val} = $vol if ($result->isSuccessful);
+    if ($result->isSuccessful) {
+        $main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val} = $vol if ($result->isSuccessful);
+    } else {
+        Log (2, "SetVolume error:\n", Dumper($result));
+    }
     return $vol;
 }
 ###############################################################################
@@ -1259,9 +1265,9 @@ sub upnp_search_cb {
 
 #                             urn:schemas-upnp-org:service:DeviceProperties:1
 
-        foreach my $name (qw(urn:schemas-upnp-org:service:ZoneGroupTopology:1 
-                             urn:schemas-upnp-org:service:ContentDirectory:1 
-                             urn:schemas-upnp-org:service:AVTransport:1 
+        foreach my $name (qw(urn:schemas-upnp-org:service:ZoneGroupTopology:1
+                             urn:schemas-upnp-org:service:ContentDirectory:1
+                             urn:schemas-upnp-org:service:AVTransport:1
                              urn:schemas-upnp-org:service:RenderingControl:1)) {
             my $service = upnp_device_get_service($device, $name);
             $main::SUBSCRIPTIONS{$device->{LOCATION} . "-" . $name} = $service->subscribe(\&sonos_upnp_update);
@@ -1388,7 +1394,7 @@ sub http_handle_request {
 
     my %qf = $uri->query_form;
     delete $qf{zone} if (exists $qf{zone} && !exists $main::ZONES{$qf{zone}});
-    
+
 
     if ($main::HTTP_HANDLERS{$path}) {
         my $callback = $main::HTTP_HANDLERS{$path};
@@ -1406,7 +1412,7 @@ sub http_handle_request {
         my $plugin = $parts[1];
         splice(@parts, 0, 2);
         my $restpath = join("/", @parts);
-        if ($main::PLUGINS{$plugin} && $main::PLUGINS{$plugin}->{html} && 
+        if ($main::PLUGINS{$plugin} && $main::PLUGINS{$plugin}->{html} &&
             -e $main::PLUGINS{$plugin}->{html} . $restpath) {
             $diskpath = $main::PLUGINS{$plugin}->{html} . $restpath;
             $tmplhook = $main::PLUGINS{$plugin}->{tmplhook};
@@ -1629,7 +1635,7 @@ my ($zone, $updatenum, $active_zone) = @_;
 
     $activedata{HAS_ACTIVE_ZONE}  = int(defined $active_zone);
     $activedata{ACTIVE_ZONE}      = enc($main::ZONES{$zone}->{ZoneName});
-    $activedata{ACTIVE_ZONEID}    = uri_escape($zone); 
+    $activedata{ACTIVE_ZONEID}    = uri_escape($zone);
     $activedata{ACTIVE_VOLUME}    = int($main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val});
     $activedata{ZONE_ACTIVE}      = defined $active_zone && int($zone eq $active_zone);
 
@@ -1757,7 +1763,7 @@ my ($zone, $updatenum, $active_zone) = @_;
     my $icon = $main::ZONES{$zone}->{Icon};
     $icon =~ s/^x-rincon-roomicon://;
     $activedata{ZONE_ICON}          = $icon;
-    
+
     $activedata{ZONE_LASTUPDATE}    = $lastupdate;
     my $num_linked                  = $#{$main::ZONES{$zone}->{Members}};
     $activedata{ZONE_NUMLINKED}     = $num_linked;
@@ -1765,7 +1771,7 @@ my ($zone, $updatenum, $active_zone) = @_;
     $activedata{ZONE_FANCYNAME}     .= " + " . $num_linked if $num_linked;
 
     my @members;
-    foreach (@{$main::ZONES{$zone}->{Members}}) { 
+    foreach (@{$main::ZONES{$zone}->{Members}}) {
         my %memberdata;
         $memberdata{"ZONE_NAME"}   = $main::ZONES{$_}->{ZoneName};
         $memberdata{"ZONE_ID"}     = $_;
@@ -1877,8 +1883,8 @@ sub http_build_music_data {
     my $has_non_letters = 0;
     foreach my $music (@{$elements}) {
         my $name = $music->{"dc:title"};
-        my $letter = uc(substr($name, 0, 1)); 
-        $from = $letter unless $from; 
+        my $letter = uc(substr($name, 0, 1));
+        $from = $letter unless $from;
         $count++;
 
         if (($count > $maxsearch) && ($letter ne $to)) {
@@ -1907,13 +1913,13 @@ sub http_build_music_data {
     foreach my $music (@{$elements}) {
         my %row_data;
 
-        my $class = $music->{"upnp:class"}; 
-        my $realclass = sonos_music_realclass($music); 
+        my $class = $music->{"upnp:class"};
+        my $realclass = sonos_music_realclass($music);
         my $name = $music->{"dc:title"};
-        my $letter = uc(substr($name, 0, 1)); 
+        my $letter = uc(substr($name, 0, 1));
         next if ($msearch && $name !~ m/$msearch/i);
-	next if ($from && $letter lt $from); 
-	next if ($to && $letter gt $to); 
+	next if ($from && $letter lt $from);
+	next if ($to && $letter gt $to);
 
         $row_data{MUSIC_NAME} = enc($name);
         $row_data{MUSIC_CLASS} = enc($class);
@@ -1942,14 +1948,14 @@ sub http_build_music_data {
     }
 
     $musicdata{"MUSIC_LOOP"} = \@music_loop_data;
-    
+
 
     return \%musicdata;
 }
 ###############################################################################
 # Sort items by coordinators first, for linked zones sort under their coordinator
 sub http_zone_sort_linked () {
-    my $c = $main::ZONES{$main::ZONES{$main::a}->{Coordinator}}->{ZoneName} cmp 
+    my $c = $main::ZONES{$main::ZONES{$main::a}->{Coordinator}}->{ZoneName} cmp
             $main::ZONES{$main::ZONES{$main::b}->{Coordinator}}->{ZoneName};
     return $c if ($c != 0);
     return -1 if ($main::ZONES{$main::a}->{Coordinator} eq $main::a);
@@ -1983,11 +1989,11 @@ my ($qf, $params) = @_;
     $updatenum = $qf->{lastupdate} if ($qf->{lastupdate});
 
     my %map = ();
- 
+
     # globals
     {
         my $globals = {};
-        my $host = UPnP::Common::getLocalIPAddress().":".$main::HTTP_PORT; 
+        my $host = UPnP::Common::getLocalIPAddress().":".$main::HTTP_PORT;
         $globals->{"BASE_URL"} = "http://$host";
         $globals->{"VERSION"    } = $main::VERSION;
         $globals->{"LAST_UPDATE"} = $main::LASTUPDATE;
@@ -2001,7 +2007,7 @@ my ($qf, $params) = @_;
         $globals->{"MUSICDIR_AVAILABLE"} = !($main::MUSICDIR eq "");
         $globals->{"ZONES_LASTUPDATE"} = $main::ZONESUPDATE;
         $globals->{"ZONES_UPDATED"} = ($main::ZONESUPDATE > $updatenum);
-        
+
         $map{GLOBALS_JSON} = to_json($globals, { pretty => 1}, { pretty => 1});
         %map = (%map, %$globals);
     }
@@ -2043,7 +2049,7 @@ my ($qf, $params) = @_;
             my %row_data;
             $row_data{PLUGIN_LINK} = $main::PLUGINS{$plugin}->{link};
             $row_data{PLUGIN_NAME} = $main::PLUGINS{$plugin}->{name};
-            
+
             push(@loop_data, \%row_data);
         }
 
@@ -2079,13 +2085,13 @@ my ($what, $zone, $c, $r, $diskpath, $tmplhook) = @_;
     $template->param(%$map);
 
     &$tmplhook($c, $r, $diskpath, $template) if ($tmplhook);
-    
+
     my $content_type = "text/html; charset=ISO-8859-1";
     if ($r->uri->path =~ /\.xml/) { $content_type = "text/xml; charset=ISO-8859-1"; }
     if ($r->uri->path =~ /\.json/) { $content_type = "application/json"; }
 
     my $output = encode('utf8', $template->output);
-    my $gzoutput; 
+    my $gzoutput;
     my $status = gzip \$output => \$gzoutput;
     my $response = HTTP::Response->new(200, undef, [Connection => "close",
             "Content-Type" => $content_type, "Pragma" => "no-cache", "Content-Encoding" => "gzip",
@@ -2194,7 +2200,7 @@ sub Log {
 @main::DOWNLOADS = ();
 $main::DOWNLOADS_PID = undef;
 
-sub download 
+sub download
 {
     my ($url, $file) = @_;
 
