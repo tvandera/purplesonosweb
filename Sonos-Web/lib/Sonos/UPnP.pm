@@ -335,7 +335,7 @@ sub upnp_avtransport_save {
 }
 ###############################################################################
 
-# callback routine that get called by UPnP::Controlpoint when a device is added
+# callback routine that gets called by UPnP::Controlpoint when a device is added
 # or removed
 sub upnp_search_cb {
     my ($search, $device, $action) = @_;
