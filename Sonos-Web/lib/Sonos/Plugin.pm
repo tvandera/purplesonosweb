@@ -66,3 +66,28 @@ sub plugin_quit {
         }
     }
 }
+
+###############################################################################
+sub sonos_prefsdb_save {
+    {
+        local $Data::Dumper::Purity = 1;
+        Log( 1, "Saving Prefs DB" );
+        open( DB, ">prefsdb.pl" );
+        my $dumper =
+          Data::Dumper->new( [ \%main::PREFS ], [qw( *main::PREFS)] );
+        print DB $dumper->Dump();
+        close DB;
+        Log( 1, "Finshed Saving Prefs DB" );
+    }
+}
+###############################################################################
+sub sonos_prefsdb_load {
+    if ( -f "prefsdb.pl" ) {
+        Log( 1, "Loading Prefs DB" );
+        do "./prefsdb.pl";
+
+        if ($@) {
+            Log( 0, "Error loading Prefs DB: $@" );
+        }
+    }
+}
