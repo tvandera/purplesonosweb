@@ -8,7 +8,5 @@ WriteMakefile(
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     ABSTRACT_FROM     => 'lib/Sonos/Web.pm', # retrieve abstract from module
     AUTHOR            => 'Tom Vander Aa <tom.vanderaa@gmail.com>',
-    #LICENSE           => 'perl',
-    #Value must be from legacy list of licenses here
-    #https://metacpan.org/pod/Module::Build::API
+    LICENSE           => 'mit',
 );
