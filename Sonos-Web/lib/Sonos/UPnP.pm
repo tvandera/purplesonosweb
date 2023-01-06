@@ -2,7 +2,19 @@ package Sonos::UPnP;
 
 require UPnP::ControlPoint;
 
+use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init( $DEBUG );
+
+use Data::Dumper;
+
+
 use constant SERVICE_TYPE =>  "urn:schemas-upnp-org:device:ZonePlayer:1";
+use constant SERVICE_NAMES => qw(
+    urn:schemas-upnp-org:service:ZoneGroupTopology:1
+    urn:schemas-upnp-org:service:ContentDirectory:1
+    urn:schemas-upnp-org:service:AVTransport:1
+    urn:schemas-upnp-org:service:RenderingControl:1
+);
 
 sub new {
         my ($class, $searchaddr) = @_;
@@ -14,7 +26,8 @@ sub new {
             $cp = UPnP::ControlPoint->new ();
         }
 
-        my $search = $cp->searchByType(SERVICE_TYPE, \&::upnp_search_cb);
+        my $search = $cp->searchByType(SERVICE_TYPE, \&upnp_search_cb);
+        $cp->handle();
 
         return bless {
                 _controlpoint => $cp,
@@ -327,12 +340,12 @@ sub upnp_avtransport_save {
 sub upnp_search_cb {
     my ($search, $device, $action) = @_;
     if ($action eq 'deviceAdded') {
-        Log(2, "Added name: " . $device->friendlyName . "\n" .
+       INFO("Added name: " . $device->friendlyName . "\n" .
                "Location: " .  $device->{LOCATION} . "\n" .
                "UDN: " .  $device->{UDN} . "\n" .
                "type: " . $device->deviceType()
                );
-        Log(4, Dumper($device));
+       DEBUG(Dumper($device));
 
 
 #       next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
@@ -349,9 +362,9 @@ sub upnp_search_cb {
         }
     }
     elsif ($action eq 'deviceRemoved') {
-        Log(1, "Removed name:" . $device->friendlyName . " zone=" . substr($device->{UDN}, 5));
+        INFO("Removed name:" . $device->friendlyName . " zone=" . substr($device->{UDN}, 5));
         delete $main::ZONES{substr($device->{UDN}, 5)};
     } else {
-        Log(1, "Unknown action name:" . $device->friendlyName);
+        WARNING("Unknown action name:" . $device->friendlyName);
     }
 }
