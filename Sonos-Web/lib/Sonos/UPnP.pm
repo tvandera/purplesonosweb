@@ -1,9 +1,20 @@
 package Sonos::UPnP;
 
+use v5.36;
+use strict;
+use warnings;
+
 require UPnP::ControlPoint;
+require Sonos::State;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init( $DEBUG );
+
+use XML::Liberal;
+use XML::LibXML::Simple   qw(XMLin);
+XML::Liberal->globally_override('LibXML');
+
+use HTML::Entities;
 
 use Data::Dumper;
 
@@ -37,17 +48,22 @@ sub new {
 
 END {
     foreach my $sub (keys %main::SUBSCRIPTIONS) {
-        Log (2, "Unsubscribe $sub");
+        INFO  "Unsubscribe $sub";
         $main::SUBSCRIPTIONS{$sub}->unsubscribe;
     }
 }
 
 sub processZoneGroupState($zone, $properties) {
-    my $tree = XMLin(decode_entities($properties{"ZoneGroupState"}), forcearray => ["ZoneGroup", "ZoneGroupMember"]);
+    INFO "Found ZoneGroup: ";
+    DEBUG "\$properties = ", Dumper($properties);
+    DEBUG Dumper($properties->{"ZoneGroupState"});
+
+    my $tree = XMLin(decode_entities($properties->{"ZoneGroupState"}), forcearray => ["ZoneGroup", "ZoneGroupMember"]);
     my @groups = @{$tree->{ZoneGroups}->{ZoneGroup}};
     foreach my $group (@groups) {
         my %zonegroup = %{$group};
         my $coordinator = $zonegroup{Coordinator};
+        my @members = @{$zonegroup{ZoneGroupMember}};
 
         foreach my $member (@members) {
             $member->{Coordindator} = $coordinator;
@@ -63,34 +79,35 @@ sub processThirdPartyMediaServers($zone, $properties) {
         "SA_RINCON6_" => "Sirius"
     );
 
-    my $tree = XMLin(decode_entities($properties{"ThirdPartyMediaServers"}), forcearray => ["Service"]);
+    my $tree = XMLin(decode_entities($properties->{"ThirdPartyMediaServers"}), forcearray => ["Service"]);
     for my $item ( @{ $tree->{Service} } ) {
         while (my ($rincon, $service) = each(%mapping))
         {
-            $Sonos::State::addService{$service, $item} if ($item->{UDN} =~ $rincon);
+            Sonos::State::addService($service, $item) if ($item->{UDN} =~ $rincon);
         }
     }
 }
 
 sub processRenderingControl($zone, $properties) {
-    my $tree = XMLin(decode_entities($properties{LastChange}),
+    my $tree = XMLin(decode_entities($properties->{LastChange}),
             forcearray => ["ZoneGroup"],
-            keyattr=>{"Volume"   => "channel",
-                        "Mute"     => "channel",
-                        "Loudness" => "channel"});
+            keyattr=>{
+                "Volume" => "channel",
+                "Mute" => "channel",
+            "Loudness" => "channel"});
     $zone->updateRenderState($tree->{InstanceID});
 }
 
 sub processAVTransport($zone, $properties) {
-    my $tree = XMLin(decode_entities($properties{LastChange}));
-    my %instancedata %{$tree->{InstanceID}};
+    my $tree = XMLin(decode_entities($properties->{LastChange}));
+    my %instancedata = %{$tree->{InstanceID}};
 
     # decode entities
     foreach my $key (keys %instancedata) {
-        my $val = $instancedata[$key];
+        my $val = $instancedata{$key};
         $val = decode_entities($val) if ($val =~ /^&lt;/);
         $val = \%{XMLin($val)} if ($val =~ /^</);
-        $instancedata[$key] = $val;
+        $instancedata{$key} = $val;
     }
 
     $zone->updateAVTransport(\%instancedata);
@@ -102,26 +119,28 @@ sub processAVTransport($zone, $properties) {
 # -
 sub sonos_upnp_update {
     my ($service, %properties) = @_;
-    my $zone = sonos_location_to_id($service->{BASE});
 
-    my %handlers = (
-        # serviceId, property key
-        ("serviceId:ZoneGroupTopology", "ZoneGroupState") => \&processZoneGroupState,
-        ("serviceId:ZoneGroupTopology", "ThirdPartyMediaServers") => \&processThirdPartyMediaServers,
+    my @handlers = (
+        # serviceId, property key, handler
+        [ "ZoneGroupTopology", "ZoneGroupState", \&processZoneGroupState ],
+        [ "ZoneGroupTopology", "ThirdPartyMediaServers", \&processThirdPartyMediaServers ],
 
-        ("serviceId:RenderingControl",  "LastChange") => \&processRenderingControl,
-        ("serviceId:AVTransport",       "LastChange") => \&processAVTransport,
+        [ "RenderingControl",  "LastChange", \&processRenderingControl ],
+        [ "AVTransport",       "LastChange", \&processAVTransport ],
 
-        ("serviceId:ContentDirectory",  "ContainerUpdateIDs") => \&processContainerUpdate,
-        ("serviceId:ContentDirectory",  "ShareIndexInProgress") => \&processContainerUpdate,
-        ("serviceId:ContentDirectory",  "MasterRadioUpdateID") => \&processContainerUpdate,
-        ("serviceId:ContentDirectory",  "SavedQueuesUpdateID") => \&processContainerUpdate,
-        ("serviceId:ContentDirectory",  "ShareListUpdateID") => \&processContainerUpdate,
+        [ "ContentDirectory",  "ContainerUpdateIDs", \&processContainerUpdate ],
+        [ "ContentDirectory",  "ShareIndexInProgress", \&processContainerUpdate ],
+        [ "ContentDirectory",  "MasterRadioUpdateID", \&processContainerUpdate ],
+        [ "ContentDirectory",  "SavedQueuesUpdateID", \&processContainerUpdate ],
+        [ "ContentDirectory",  "ShareListUpdateID", \&processContainerUpdate ],
     );
 
-    while (my ($id, $keyProperty, $handler) = each(%handlers)) {
-        if (($service->serviceId =~ /serviceId:$id/) and (defined $properties{$keyProperty})) {
-            &handler(\%properties);
+    my $zone;
+    for (@handlers) {
+        my ($id, $keyProperty, $handler) = @$_;
+        $zone = Sonos::State::findZone($service->{BASE});
+        if (($service->serviceId =~ /serviceId:$id/) && (defined $properties{$keyProperty})) {
+            &$handler($zone, \%properties);
         }
     }
 
@@ -133,7 +152,7 @@ sub sonos_upnp_update {
         }
 
         if (!defined $main::ZONES{$zone}->{QUEUE} || $properties{ContainerUpdateIDs} =~ /Q:0/) {
-            Log (2, "Refetching Q for $main::ZONES{$zone}->{ZoneName} updateid $properties{ContainerUpdateIDs}");
+            INFO "Refetching Q for $main::ZONES{$zone}->{ZoneName} updateid $properties{ContainerUpdateIDs}";
             $main::ZONES{$zone}->{QUEUE} = upnp_content_dir_browse($zone, "Q:0");
             $main::LASTUPDATE = $main::SONOS_UPDATENUM;
             $main::QUEUEUPDATE{$zone} = $main::SONOS_UPDATENUM++;
@@ -166,7 +185,7 @@ sub sonos_upnp_update {
 ###############################################################################
 sub sonos_renew_subscriptions {
     foreach my $sub (keys %main::SUBSCRIPTIONS) {
-        Log (3, "renew $sub");
+        INFO "renew $sub";
         my $previousStart = $main::SUBSCRIPTIONS{$sub}->{_startTime};
         $main::SUBSCRIPTIONS{$sub}->renew();
         if($previousStart == $main::SUBSCRIPTIONS{$sub}->{_startTime}) {
@@ -183,7 +202,7 @@ sub sonos_renew_subscriptions {
 
 sub upnp_device_get_service {
     my ($device, $name) = @_;
-    Log(2, "Service for $name/$device");
+    INFO "Service for $name/$device";
     return undef unless $name;
     return undef unless $device;
     my $service = $device->getService($name);
@@ -193,7 +212,7 @@ sub upnp_device_get_service {
         $service = $child->getService($name);
         return $service if ($service);
     }
-    main::Log(0, "Device '$device' with name '$name' not found");
+    WARN "Device '$device' with name '$name' not found";
     return undef;
 }
 
@@ -262,7 +281,7 @@ sub upnp_content_dir_browse {
 
     $type = 'BrowseDirectChildren' if (!defined $type);
 
-    Log(4, "zone: $zone objectid: $objectid type: $type");
+    DEBUG "zone: $zone objectid: $objectid type: $type";
 
     my $start = 0;
     my @data = ();
@@ -311,9 +330,9 @@ sub upnp_content_dir_refresh_share_index {
 
     if (! defined $contentDir) {
         if ($zone eq "") {
-            Log(0, "Main zone not found yet, will retry.  Windows XP *WILL* require rerunning SonosWeb after selecting 'Unblock' in the Windows Security Alert.");
+            WARN "Main zone not found yet, will retry.  Windows XP *WILL* require rerunning SonosWeb after selecting 'Unblock' in the Windows Security Alert.";
         } else {
-            Log(1, "$zone not available, will retry");
+            WARN "$zone not available, will retry";
         }
         add_timeout (time()+5, \&upnp_content_dir_refresh_share_index);
         return
@@ -519,7 +538,6 @@ sub upnp_search_cb {
                "UDN: " .  $device->{UDN} . "\n" .
                "type: " . $device->deviceType()
                );
-       DEBUG(Dumper($device));
 
 
 #       next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
