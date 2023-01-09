@@ -1,3 +1,7 @@
+package Sonos::Container;
+
+# Contains music library info
+# a cache for ContentDir
 
 ###############################################################################
 sub sonos_mkcontainer {
@@ -7,14 +11,14 @@ sub sonos_mkcontainer {
 
     $data{'upnp:class'}       = $class;
     $data{'dc:title'}         = $title;
-    $data{parentID}           = $parent;
-    $data{id}                 = $id;
+    $data{'parentID'}         = $parent;
+    $data{'id'}               = $id;
     $data{'upnp:albumArtURI'} = $icon;
-    $data{res}->{content}     = $content if (defined $content);
+    $data{'res'}->{content}   = $content if (defined $content);
 
     push (@{$main::CONTAINERS{$parent}},  \%data);
 
-    $main::ITEMS{$data{id}} = \%data;
+    $main::ITEMS{$data{'id'}} = \%data;
 }
 
 ###############################################################################
@@ -22,10 +26,10 @@ sub sonos_mkitem {
     my ($parent, $class, $title, $id, $content) = @_;
 
     $main::ITEMS{$id}->{"upnp:class"}   = $class;
-    $main::ITEMS{$id}->{parentID}       = $parent;
+    $main::ITEMS{$id}->{'parentID'}       = $parent;
     $main::ITEMS{$id}->{"dc:title"}     = $title;
-    $main::ITEMS{$id}->{id}             = $id;
-    $main::ITEMS{$id}->{res}->{content} = $content if (defined $content);
+    $main::ITEMS{$id}->{'id'}             = $id;
+    $main::ITEMS{$id}->{'res'}->{content} = $content if (defined $content);
 }
 ###############################################################################
 sub sonos_containers_init {
@@ -72,7 +76,7 @@ sub sonos_containers_get {
             my $linein =  upnp_content_dir_browse($zone, "AI:");
 
             if (defined $linein->[0]) {
-                $linein->[0]->{id} .= "/" . $linein->[0]->{"dc:title"};
+                $linein->[0]->{'id'} .= "/" . $linein->[0]->{"dc:title"};
                 push @{$main::CONTAINERS{$what}}, $linein->[0];
             }
         }
@@ -81,7 +85,7 @@ sub sonos_containers_get {
     }
 
     foreach my $item (@{$main::CONTAINERS{$what}}) {
-        $main::ITEMS{$item->{id}} = $item;
+        $main::ITEMS{$item->{'id'}} = $item;
     }
     return $main::CONTAINERS{$what};
 }
@@ -93,7 +97,7 @@ sub sonos_containers_del {
     foreach my $key (keys %main::CONTAINERS) {
         next if (! ($key =~ /^$what/));
         foreach my $item (@{$main::CONTAINERS{$key}}) {
-            delete $main::ITEMS{$item->{id}};
+            delete $main::ITEMS{$item->{'id'}};
         }
         delete $main::CONTAINERS{$key};
     }
