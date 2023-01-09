@@ -9,11 +9,11 @@ use Data::Dumper;
 
 
 use constant SERVICE_TYPE =>  "urn:schemas-upnp-org:device:ZonePlayer:1";
-use constant SERVICE_NAMES => qw(
-    urn:schemas-upnp-org:service:ZoneGroupTopology:1
-    urn:schemas-upnp-org:service:ContentDirectory:1
-    urn:schemas-upnp-org:service:AVTransport:1
-    urn:schemas-upnp-org:service:RenderingControl:1
+use constant SERVICE_NAMES => (
+    "ZoneGroupTopology", # zones
+    "ContentDirectory",  # music library
+    "AVTransport",       # currently playing track
+    "RenderingControl"   # volume etc
 );
 
 sub new {
@@ -35,127 +35,98 @@ sub new {
         }, $class;
 }
 
+END {
+    foreach my $sub (keys %main::SUBSCRIPTIONS) {
+        Log (2, "Unsubscribe $sub");
+        $main::SUBSCRIPTIONS{$sub}->unsubscribe;
+    }
+}
+
+sub processZoneGroupState($zone, $properties) {
+    my $tree = XMLin(decode_entities($properties{"ZoneGroupState"}), forcearray => ["ZoneGroup", "ZoneGroupMember"]);
+    my @groups = @{$tree->{ZoneGroups}->{ZoneGroup}};
+    foreach my $group (@groups) {
+        my %zonegroup = %{$group};
+        my $coordinator = $zonegroup{Coordinator};
+
+        foreach my $member (@members) {
+            $member->{Coordindator} = $coordinator;
+            Sonos::State::addZone($member);
+        }
+    }
+}
+
+sub processThirdPartyMediaServers($zone, $properties) {
+    my %mapping = (
+        "SA_RINCON1_" => "Rhapsody",
+        "SA_RINCON4_" => "Pandora",
+        "SA_RINCON6_" => "Sirius"
+    );
+
+    my $tree = XMLin(decode_entities($properties{"ThirdPartyMediaServers"}), forcearray => ["Service"]);
+    for my $item ( @{ $tree->{Service} } ) {
+        while (my ($rincon, $service) = each(%mapping))
+        {
+            $Sonos::State::addService{$service, $item} if ($item->{UDN} =~ $rincon);
+        }
+    }
+}
+
+sub processRenderingControl($zone, $properties) {
+    my $tree = XMLin(decode_entities($properties{LastChange}),
+            forcearray => ["ZoneGroup"],
+            keyattr=>{"Volume"   => "channel",
+                        "Mute"     => "channel",
+                        "Loudness" => "channel"});
+    $zone->updateRenderState($tree->{InstanceID});
+}
+
+sub processAVTransport($zone, $properties) {
+    my $tree = XMLin(decode_entities($properties{LastChange}));
+    my %instancedata %{$tree->{InstanceID}};
+
+    # decode entities
+    foreach my $key (keys %instancedata) {
+        my $val = $instancedata[$key];
+        $val = decode_entities($val) if ($val =~ /^&lt;/);
+        $val = \%{XMLin($val)} if ($val =~ /^</);
+        $instancedata[$key] = $val;
+    }
+
+    $zone->updateAVTransport(\%instancedata);
+}
+
+
 ###############################################################################
+# This routine get calles when an update from the Sonos system was received.
+# -
 sub sonos_upnp_update {
     my ($service, %properties) = @_;
-
-    Log (2, "Event received for service=" . $service->{BASE} . " id = " . $service->serviceId);
-    Log(4, Dumper(\%properties));
-
-    # Save off the zone names
-    if ($service->serviceId =~ /serviceId:ZoneGroupTopology/) {
-        foreach my $key (keys %properties) {
-            if ($key eq "ZoneGroupState") {
-                my $tree = XMLin(decode_entities($properties{$key}), forcearray => ["ZoneGroup", "ZoneGroupMember"]);
-                Log(4, "ZoneGroupTopology " . Dumper($tree));
-                my @groups = @{$tree->{ZoneGroups}->{ZoneGroup}};
-                foreach my $group (@groups) {
-                    my %zonegroup = %{$group};
-                    my $coordinator = $zonegroup{Coordinator};
-                    my @members = @{$zonegroup{ZoneGroupMember}};
-                    $main::ZONES{$coordinator}->{Members} = [];
-
-                    foreach my $member (@members) {
-                        my $zkey = $member->{UUID};
-                        foreach my $mkey (keys %{$member}) {
-                            $main::ZONES{$zkey}->{$mkey} = $member->{$mkey};
-                        }
-                        $main::ZONES{$zkey}->{Coordinator} = $coordinator;
-                        push @{ $main::ZONES{$coordinator}->{Members} }, $zkey;
-
-                        my @ip = split(/\//, $member->{Location});
-                        $main::ZONES{$zkey}->{IPPORT} = $ip[2];
-                        $main::ZONES{$zkey}->{AV}->{LASTUPDATE} = 1 if (!defined $main::ZONES{$zkey}->{AV}->{LASTUPDATE});
-                        $main::ZONES{$zkey}->{RENDER}->{LASTUPDATE} = 1 if (!defined $main::ZONES{$zkey}->{RENDER}->{LASTUPDATE});
-                        $main::ZONES{$zkey}->{AV}->{CurrentTrackMetaData} = "" if (!defined $main::ZONES{$zkey}->{AV}->{CurrentTrackMetaData});
-                        $main::QUEUEUPDATE{$zkey} = 1 if (!defined $main::QUEUEUPDATE{$zkey});
-                    }
-                }
-                $main::LASTUPDATE  = $main::SONOS_UPDATENUM;
-                $main::ZONESUPDATE = $main::SONOS_UPDATENUM++;
-
-                sonos_process_waiting("ZONES");
-            } elsif ($key eq "ThirdPartyMediaServers") {
-                my $tree = XMLin(decode_entities($properties{$key}), forcearray => ["Service"]);
-                for my $item ( @{ $tree->{Service} } ) {
-                    if($item->{UDN} =~ "SA_RINCON1_") { #Rhapsody
-                        Log(2, "Adding Rhapsody Subscription");
-                        $main::SERVICES{Rhapsody} = $item;
-                    } elsif($item->{UDN} =~ "SA_RINCON4_") { #PANDORA
-                        Log(2, "Adding Pandora Subscription");
-                        $main::SERVICES{Pandora} = $item;
-
-                    } elsif($item->{UDN} =~ "SA_RINCON6_") { #SIRIUS
-                        Log(2, "Adding Sirius Subscription");
-                        $main::SERVICES{Sirius} = $item;
-                    }
-                }
-                sonos_process_waiting("SERVICES");
-            } else {
-                Log(4, "$key " . Dumper($properties{$key}));
-            }
-        }
-    }
-
-    Log(4, "Parsed ZoneGroupTopology " . Dumper(\%main::ZONES));
-
     my $zone = sonos_location_to_id($service->{BASE});
 
-    # Save off the current status
-    if ($service->serviceId =~ /serviceId:RenderingControl/) {
-        if (decode_entities($properties{LastChange}) eq "") {
-            Log(3, "Unknown RenderingControl " . Dumper(\%properties));
-            return;
+    my %handlers = (
+        # serviceId, property key
+        ("serviceId:ZoneGroupTopology", "ZoneGroupState") => \&processZoneGroupState,
+        ("serviceId:ZoneGroupTopology", "ThirdPartyMediaServers") => \&processThirdPartyMediaServers,
+
+        ("serviceId:RenderingControl",  "LastChange") => \&processRenderingControl,
+        ("serviceId:AVTransport",       "LastChange") => \&processAVTransport,
+
+        ("serviceId:ContentDirectory",  "ContainerUpdateIDs") => \&processContainerUpdate,
+        ("serviceId:ContentDirectory",  "ShareIndexInProgress") => \&processContainerUpdate,
+        ("serviceId:ContentDirectory",  "MasterRadioUpdateID") => \&processContainerUpdate,
+        ("serviceId:ContentDirectory",  "SavedQueuesUpdateID") => \&processContainerUpdate,
+        ("serviceId:ContentDirectory",  "ShareListUpdateID") => \&processContainerUpdate,
+    );
+
+    while (my ($id, $keyProperty, $handler) = each(%handlers)) {
+        if (($service->serviceId =~ /serviceId:$id/) and (defined $properties{$keyProperty})) {
+            &handler(\%properties);
         }
-        my $tree = XMLin(decode_entities($properties{LastChange}),
-                forcearray => ["ZoneGroup"],
-                keyattr=>{"Volume"   => "channel",
-                          "Mute"     => "channel",
-                          "Loudness" => "channel"});
-        Log(4, "RenderingControl " . Dumper($tree));
-        foreach my $key ("Volume", "Treble", "Bass", "Mute", "Loudness") {
-            if ($tree->{InstanceID}->{$key}) {
-                $main::ZONES{$zone}->{RENDER}->{$key} = $tree->{InstanceID}->{$key};
-                $main::LASTUPDATE                 = $main::SONOS_UPDATENUM;
-                $main::ZONES{$zone}->{RENDER}->{LASTUPDATE} = $main::SONOS_UPDATENUM++;
-            }
-        }
-
-        sonos_process_waiting("RENDER", $zone);
-
-        return;
-    }
-
-    if ($service->serviceId =~ /serviceId:AVTransport/) {
-        if (decode_entities($properties{LastChange}) eq "") {
-            Log(3, "Unknown AVTransport " . Dumper(\%properties));
-            return;
-        }
-        my $tree = XMLin(decode_entities($properties{LastChange}));
-        Log(4, "AVTransport " . Dumper($tree));
-
-        foreach my $key ("CurrentTrackMetaData", "CurrentPlayMode", "NumberOfTracks", "CurrentTrack", "TransportState", "AVTransportURIMetaData", "AVTransportURI", "r:NextTrackMetaData", "CurrentTrackDuration") {
-            if ($tree->{InstanceID}->{$key}) {
-                $main::LASTUPDATE             = $main::SONOS_UPDATENUM;
-                $main::ZONES{$zone}->{AV}->{LASTUPDATE} = $main::SONOS_UPDATENUM++;
-                if ($tree->{InstanceID}->{$key}->{val} =~ /^&lt;/) {
-                    $tree->{InstanceID}->{$key}->{val} = decode_entities($tree->{InstanceID}->{$key}->{val});
-                }
-                if ($tree->{InstanceID}->{$key}->{val} =~ /^</) {
-                    $main::ZONES{$zone}->{AV}->{$key} = \%{XMLin($tree->{InstanceID}->{$key}->{val})};
-                } else {
-                    $main::ZONES{$zone}->{AV}->{$key} = $tree->{InstanceID}->{$key}->{val};
-                }
-            }
-        }
-
-        sonos_process_waiting("AV", $zone);
-        return;
     }
 
 
     if ($service->serviceId =~ /serviceId:ContentDirectory/) {
-        Log(4, "ContentDirectory " . Dumper(\%properties));
 
         if (defined $properties{ContainerUpdateIDs} && $properties{ContainerUpdateIDs} =~ /AI:/) {
             sonos_containers_del("AI:");
@@ -188,17 +159,6 @@ sub sonos_upnp_update {
             Log (2, "Refetching Index, update id $properties{ShareListUpdateID}");
         }
         return;
-    }
-
-
-    while (my ($key, $val) = each %properties) {
-        if ($val =~ /&lt/) {
-            my $d = decode_entities($val);
-            my $tree = XMLin($d, forcearray => ["ZoneGroup"], keyattr=>{"ZoneGroup" => "ID"});
-            Log(3, "Property ${key}'s value is " . Dumper($tree));
-        } else {
-            Log(3, "Property ${key}'s value is " . $val);
-        }
     }
 }
 
@@ -251,6 +211,26 @@ sub upnp_zone_get_service {
     return upnp_device_get_service($main::DEVICE{$main::ZONES{$zone}->{Location}}, $name);
 }
 
+
+###############################################################################
+sub sonos_add_radio {
+    my ($name, $station) = @_;
+    Log(3, "Adding radio name:$name, station:$station");
+
+    $station = substr($station, 5) if (substr($station, 0, 5) eq "http:");
+    $name = enc($name);
+
+    my $item = '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" ' .
+               'xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" ' .
+               'xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">' .
+               '<item id="" restricted="false"><dc:title>' .
+               $name . '</dc:title><res>x-rincon-mp3radio:' .
+               $station .  '</res></item></DIDL-Lite>';
+
+    my ($zone) = split(",", $main::UPDATEID{MasterRadioUpdateID});
+    return upnp_content_dir_create_object($zone, "R:0/0", $item);
+}
+
 ###############################################################################
 sub upnp_content_dir_create_object {
     my ($zone, $containerid, $elements) = @_;
@@ -270,6 +250,13 @@ sub upnp_content_dir_destroy_object {
     return $result;
 }
 ###############################################################################
+# objectid is like :
+# - AI: for audio-in
+# - Q:0 for queue
+#
+# type is
+#  - "BrowseMetadata", or
+#  - "BrowseDirectChildren"
 sub upnp_content_dir_browse {
     my ($zone, $objectid, $type) = @_;
 
@@ -295,7 +282,6 @@ sub upnp_content_dir_browse {
         $start += $result->getValue("NumberReturned");
 
         my $results = $result->getValue("Result");
-        Log(4, "results = ", Dumper($results));
         my $tree = XMLin($results, forcearray => ["item", "container"], keyattr=>{});
 
         push(@data, @{$tree->{item}}) if (defined $tree->{item});
@@ -305,7 +291,10 @@ sub upnp_content_dir_browse {
     return \@data;
 }
 
-###############################################################################
+
+# Used to remove
+# - a radio station
+# - a play list
 sub upnp_content_dir_delete {
     my ($zone, $objectid) = @_;
 
