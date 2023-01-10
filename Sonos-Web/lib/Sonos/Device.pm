@@ -1,4 +1,4 @@
-package Sonos::UPnP;
+package Sonos::Device;
 
 use v5.36;
 use strict;
@@ -32,17 +32,51 @@ sub new {
 
 	$self = $class->SUPER::new(%args);
 
-    my $cp = UPnP::ControlPoint->new();
     my $self = bless {
-        _controlpoint => $cp,
-        _players => {},
-        _subscriptions => {},
     }, $class;
 
-    $self->_search = $cp->searchByType( SERVICE_TYPE, sub { upnp_search_cb($self, @_) });
-    $cp->handle();
-
     return $self;
+}
+
+# or removed
+sub discovery_callback {
+    my ( $self, $search, $device, $action ) = @_;
+    if ( $action eq 'deviceAdded' ) {
+        INFO(   "Added name: "
+              . $device->friendlyName . "\n"
+              . "Location: "
+              . $device->{LOCATION} . "\n" . "UDN: "
+              . $device->{UDN} . "\n"
+              . "type: "
+              . $device->deviceType() );
+
+        #       next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
+        $main::DEVICE{ $device->{LOCATION} } = $device;
+
+   #                             urn:schemas-upnp-org:service:DeviceProperties:1
+
+        foreach my $name (
+            qw(urn:schemas-upnp-org:service:ZoneGroupTopology:1
+            urn:schemas-upnp-org:service:ContentDirectory:1
+            urn:schemas-upnp-org:service:AVTransport:1
+            urn:schemas-upnp-org:service:RenderingControl:1)
+          )
+        {
+            my $service = upnp_device_get_service( $device, $name );
+            $main::SUBSCRIPTIONS{ $device->{LOCATION} . "-" . $name } =
+              $service->subscribe( \&sonos_upnp_update );
+        }
+    }
+    elsif ( $action eq 'deviceRemoved' ) {
+        INFO(   "Removed name:"
+              . $device->friendlyName
+              . " player="
+              . substr( $device->{UDN}, 5 ) );
+        delete $main::ZONES{ substr( $device->{UDN}, 5 ) };
+    }
+    else {
+        WARNING( "Unknown action name:" . $device->friendlyName );
+    }
 }
 
 sub DESTROY
@@ -105,7 +139,7 @@ sub processRenderingControl ( $self, $properties ) {
             "Loudness" => "channel"
         }
     );
-    $player->updateRenderState( $tree->{InstanceID} );
+    $self->updateRenderState( $tree->{InstanceID} );
 }
 
 sub processAVTransport ( $player, $properties ) {
@@ -597,56 +631,4 @@ sub upnp_avtransport_standalone_coordinator {
     return $result;
 }
 
-###############################################################################
-sub upnp_avtransport_save {
-    my ( $player, $name ) = @_;
 
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-    my $result           = $avTransportProxy->SaveQueue( 0, $name, "" );
-    return $result;
-}
-###############################################################################
-
-# callback routine that gets called by UPnP::Controlpoint when a device is added
-# or removed
-sub upnp_search_cb {
-    my ( $search, $device, $action ) = @_;
-    if ( $action eq 'deviceAdded' ) {
-        INFO(   "Added name: "
-              . $device->friendlyName . "\n"
-              . "Location: "
-              . $device->{LOCATION} . "\n" . "UDN: "
-              . $device->{UDN} . "\n"
-              . "type: "
-              . $device->deviceType() );
-
-        #       next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
-        $main::DEVICE{ $device->{LOCATION} } = $device;
-
-   #                             urn:schemas-upnp-org:service:DeviceProperties:1
-
-        foreach my $name (
-            qw(urn:schemas-upnp-org:service:ZoneGroupTopology:1
-            urn:schemas-upnp-org:service:ContentDirectory:1
-            urn:schemas-upnp-org:service:AVTransport:1
-            urn:schemas-upnp-org:service:RenderingControl:1)
-          )
-        {
-            my $service = upnp_device_get_service( $device, $name );
-            $main::SUBSCRIPTIONS{ $device->{LOCATION} . "-" . $name } =
-              $service->subscribe( \&sonos_upnp_update );
-        }
-    }
-    elsif ( $action eq 'deviceRemoved' ) {
-        INFO(   "Removed name:"
-              . $device->friendlyName
-              . " player="
-              . substr( $device->{UDN}, 5 ) );
-        delete $main::ZONES{ substr( $device->{UDN}, 5 ) };
-    }
-    else {
-        WARNING( "Unknown action name:" . $device->friendlyName );
-    }
-}
