@@ -5,7 +5,6 @@ use strict;
 use warnings;
 
 require UPnP::ControlPoint;
-require Sonos::State;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -32,51 +31,10 @@ sub new {
 
 	$self = $class->SUPER::new(%args);
 
-    my $self = bless {
+    $self = bless {
     }, $class;
 
     return $self;
-}
-
-# or removed
-sub discovery_callback {
-    my ( $self, $search, $device, $action ) = @_;
-    if ( $action eq 'deviceAdded' ) {
-        INFO(   "Added name: "
-              . $device->friendlyName . "\n"
-              . "Location: "
-              . $device->{LOCATION} . "\n" . "UDN: "
-              . $device->{UDN} . "\n"
-              . "type: "
-              . $device->deviceType() );
-
-        #       next if ($device->{LOCATION} !~ /xml\/zone_player.xml/);
-        $main::DEVICE{ $device->{LOCATION} } = $device;
-
-   #                             urn:schemas-upnp-org:service:DeviceProperties:1
-
-        foreach my $name (
-            qw(urn:schemas-upnp-org:service:ZoneGroupTopology:1
-            urn:schemas-upnp-org:service:ContentDirectory:1
-            urn:schemas-upnp-org:service:AVTransport:1
-            urn:schemas-upnp-org:service:RenderingControl:1)
-          )
-        {
-            my $service = upnp_device_get_service( $device, $name );
-            $main::SUBSCRIPTIONS{ $device->{LOCATION} . "-" . $name } =
-              $service->subscribe( \&sonos_upnp_update );
-        }
-    }
-    elsif ( $action eq 'deviceRemoved' ) {
-        INFO(   "Removed name:"
-              . $device->friendlyName
-              . " player="
-              . substr( $device->{UDN}, 5 ) );
-        delete $main::ZONES{ substr( $device->{UDN}, 5 ) };
-    }
-    else {
-        WARNING( "Unknown action name:" . $device->friendlyName );
-    }
 }
 
 sub DESTROY
@@ -106,7 +64,6 @@ sub processZoneGroupState ( $self, $properties ) {
 
         foreach my $member (@members) {
             $member->{Coordindator} = $coordinator;
-            Sonos::State::addZone($member);
         }
     }
 }

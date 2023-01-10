@@ -24,7 +24,7 @@ sub new {
         _devices => {},
     }, $class;
 
-    $self->_search = $cp->searchByType( SERVICE_TYPE, sub { $self->discovery_callback(@_) });
+    $cp->searchByType( SERVICE_TYPE, sub { $self->discovery_callback(@_) });
     $cp->handle();
 
     return $self;
