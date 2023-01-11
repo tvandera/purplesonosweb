@@ -45,7 +45,7 @@ sub _discoveryCallback {
     my $location = $device->{LOCATION};
 
     if ( $action eq 'deviceAdded' ) {
-        $self->{_devices}->{$location} = $device;
+        $self->{_devices}->{$location} = Sonos::Device->new($device);
         INFO "Found device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
     }
     elsif ( $action eq 'deviceRemoved' ) {

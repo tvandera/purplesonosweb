@@ -25,13 +25,15 @@ use constant SERVICE_NAMES => (
     "RenderingControl"      # volume etc
 );
 
+package Sonos::Device;
+
 sub new {
-    my($self, %args) = @_;
+    my($self, $upnp, %args) = @_;
 	my $class = ref($self) || $self;
 
-	$self = $class->SUPER::new(%args);
-
     $self = bless {
+        _upnp => $upnp,
+        _subscriptions => {},
     }, $class;
 
     return $self;
@@ -40,7 +42,7 @@ sub new {
 sub DESTROY
 {
     my $self = shift;
-    my %subscriptions = %{$self->_subscriptions};
+    my %subscriptions = %{$self->{_subscriptions}};
     foreach my $sub ( keys %subscriptions ) {
         INFO "Unsubscribe $sub";
         $subscriptions{$sub}->unsubscribe;
@@ -164,8 +166,7 @@ sub sonos_upnp_update {
         if ( !defined $main::ZONES{$player}->{QUEUE}
             || $properties{ContainerUpdateIDs} =~ /Q:0/ )
         {
-            INFO
-"Refetching Q for $main::ZONES{$player}->{ZoneName} updateid $properties{ContainerUpdateIDs}";
+            INFO "Refetching Q for $main::ZONES{$player}->{ZoneName} updateid $properties{ContainerUpdateIDs}";
             $main::ZONES{$player}->{QUEUE} =
               upnp_content_dir_browse( $player, "Q:0" );
             $main::LASTUPDATE = $main::SONOS_UPDATENUM;
@@ -211,55 +212,19 @@ sub sonos_upnp_update {
 }
 
 ###############################################################################
-sub sonos_renew_subscriptions {
-    foreach my $sub ( keys %main::SUBSCRIPTIONS ) {
-        INFO "renew $sub";
-        my $previousStart = $main::SUBSCRIPTIONS{$sub}->{_startTime};
-        $main::SUBSCRIPTIONS{$sub}->renew();
-        if ( $previousStart == $main::SUBSCRIPTIONS{$sub}->{_startTime} ) {
-            Log( 1, "renew failed " . Dumper($@) );
-
-            # Renew failed, lets subscribe again
-            my ( $location, $name ) = split( ",", $sub );
-            my $device  = $main::DEVICE{$location};
-            my $service = upnp_device_get_service( $device, $name );
-            $main::SUBSCRIPTIONS{ $location . "-" . $name } =
-              $service->subscribe( \&sonos_upnp_update );
+sub renewSubscriptions($self) {
+    for my $name (SERVICE_NAMES) {
+        my $sub = $self->getSubscription($name);
+        if (defined $sub) {
+            $sub->renew();
+        } else {
+            my $service = $self->getService($name);
+            my $updatemethod = "process" . $name;
+            $self->{_subscriptions}->{$name} = $service->subscribe( sub { $self->$updatemethod() }  );
         }
     }
-    add_timeout( time() + $main::RENEW_SUB_TIME, \&sonos_renew_subscriptions );
-}
 
-sub upnp_device_get_service {
-    my ( $device, $name ) = @_;
-    INFO "Service for $name/$device";
-    return undef unless $name;
-    return undef unless $device;
-    my $service = $device->getService($name);
-    return $service if ($service);
-
-    for my $child ( $device->children ) {
-        $service = $child->getService($name);
-        return $service if ($service);
-    }
-    WARN "Device '$device' with name '$name' not found";
-    return undef;
-}
-
-###############################################################################
-sub upnp_zone_get_service {
-    my ( $player, $name ) = @_;
-
-    if (   !exists $main::ZONES{$player}
-        || !defined $main::ZONES{$player}->{Location}
-        || !defined $main::DEVICE{ $main::ZONES{$player}->{Location} } )
-    {
-        main::Log( 0, "Zone '$player' not found" );
-        return undef;
-    }
-
-    return upnp_device_get_service(
-        $main::DEVICE{ $main::ZONES{$player}->{Location} }, $name );
+    # add_timeout( time() + $main::RENEW_SUB_TIME, \&sonos_renew_subscriptions );
 }
 
 ###############################################################################
