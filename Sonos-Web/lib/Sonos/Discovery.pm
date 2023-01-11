@@ -11,6 +11,7 @@ use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
 use Data::Dumper;
+$Data::Dumper::Maxdepth = 2;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
@@ -24,20 +25,28 @@ sub new {
         _devices => {},
     }, $class;
 
-    $cp->searchByType( SERVICE_TYPE, sub { $self->discovery_callback(@_) });
-    $cp->handle();
+    $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
 
     return $self;
 }
 
+sub numDevices($self) {
+    return scalar keys %{$self->{_devices}};
+}
+
+sub controlPoint($self) {
+    return $self->{_controlpoint};
+}
+
 # callback routine that gets called by UPnP::Controlpoint when a device is added
 # or removed
-sub discovery_callback {
+sub _discoveryCallback {
     my ( $self, $search, $device, $action ) = @_;
     my $location = $device->{LOCATION};
 
     if ( $action eq 'deviceAdded' ) {
         $self->{_devices}->{$location} = $device;
+        INFO "Found device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
     }
     elsif ( $action eq 'deviceRemoved' ) {
         delete $self->{_devices}->{$location};
