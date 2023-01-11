@@ -37,10 +37,10 @@ sub discovery_callback {
     my $location = $device->{LOCATION};
 
     if ( $action eq 'deviceAdded' ) {
-        $self->_devices->{$location} = $device;
+        $self->{_devices}->{$location} = $device;
     }
     elsif ( $action eq 'deviceRemoved' ) {
-        delete $self->_devices->{$location};
+        delete $self->{_devices}->{$location};
     }
     else {
         WARNING( "Unknown action name:" . $action );
