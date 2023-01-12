@@ -17,3 +17,4 @@ while ($client->numDevices() < 2) {
 }
 
 pass("found 2 devices");
+$client->controlPoint()->handle();

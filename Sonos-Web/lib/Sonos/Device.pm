@@ -16,8 +16,13 @@ XML::Liberal->globally_override('LibXML');
 use HTML::Entities;
 
 use Data::Dumper;
+use Carp;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
+
+use constant SERVICE_PREFIX => "urn:schemas-upnp-org:service:";
+use constant SERVICE_SUFFIX => ":1";
+
 use constant SERVICE_NAMES => (
     "ZoneGroupTopology",    # zones
     "ContentDirectory",     # music library
@@ -36,28 +41,44 @@ sub new {
         _subscriptions => {},
     }, $class;
 
+    $self->renewSubscriptions();
+
     return $self;
 }
 
 sub DESTROY
 {
     my $self = shift;
-    my %subscriptions = %{$self->{_subscriptions}};
-    foreach my $sub ( keys %subscriptions ) {
-        INFO "Unsubscribe $sub";
-        $subscriptions{$sub}->unsubscribe;
-    }
+    map { $_->unsubscribe if defined } values(%{$self->{_subscriptions}});
 }
 
-sub processZoneGroupState ( $self, $properties ) {
-    INFO "Found ZoneGroup: ";
-    DEBUG "\$properties = ", Dumper($properties);
-    DEBUG Dumper( $properties->{"ZoneGroupState"} );
+sub getSubscription($self, $name) {
+    return $self->{_subscriptions}->{$name};
+}
 
+sub getService($self, $name) {
+    $name = SERVICE_PREFIX . $name . SERVICE_SUFFIX;
+    my $device = $self->{_upnp};
+
+    my $service = $device->getService($name);
+    return $service if $service;
+
+   for my $child ( $device->children ) {
+        $service = $child->getService($name);
+        return $service if ($service);
+    }
+
+}
+
+
+sub processZoneGroupTopology ( $self, $service, %properties ) {
     my $tree = XMLin(
-        decode_entities( $properties->{"ZoneGroupState"} ),
+        decode_entities( $properties{"ZoneGroupState"} ),
         forcearray => [ "ZoneGroup", "ZoneGroupMember" ]
     );
+
+    INFO "Found ZoneGroup: ";
+    DEBUG Dumper( $tree );
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
     foreach my $group (@groups) {
         my %zonegroup   = %{$group};
@@ -88,9 +109,9 @@ sub processThirdPartyMediaServers ( $self, $properties ) {
     }
 }
 
-sub processRenderingControl ( $self, $properties ) {
+sub processRenderingControl ( $self, $service, %properties ) {
     my $tree = XMLin(
-        decode_entities( $properties->{LastChange} ),
+        decode_entities( $properties{LastChange} ),
         forcearray => ["ZoneGroup"],
         keyattr    => {
             "Volume"   => "channel",
@@ -101,8 +122,8 @@ sub processRenderingControl ( $self, $properties ) {
     $self->updateRenderState( $tree->{InstanceID} );
 }
 
-sub processAVTransport ( $player, $properties ) {
-    my $tree         = XMLin( decode_entities( $properties->{LastChange} ) );
+sub processAVTransport ( $player, $service, %properties ) {
+    my $tree         = XMLin( decode_entities( $properties{LastChange} ) );
     my %instancedata = %{ $tree->{InstanceID} };
 
     # decode entities
@@ -113,102 +134,62 @@ sub processAVTransport ( $player, $properties ) {
         $instancedata{$key} = $val;
     }
 
-    $player->updateAVTransport( \%instancedata );
+    #$player->updateAVTransport( \%instancedata );
 }
 
-###############################################################################
-# This routine get calles when an update from the Sonos system was received.
-# -
-sub sonos_upnp_update {
-    my ( $service, %properties ) = @_;
-
-    my @handlers = (
-
-        # serviceId, property key, handler
-        [ "ZoneGroupTopology", "ZoneGroupState", \&processZoneGroupState ],
-        [
-            "ZoneGroupTopology", "ThirdPartyMediaServers",
-            \&processThirdPartyMediaServers
-        ],
-
-        [ "RenderingControl", "LastChange", \&processRenderingControl ],
-        [ "AVTransport",      "LastChange", \&processAVTransport ],
-
-        [ "ContentDirectory", "ContainerUpdateIDs", \&processContainerUpdate ],
-        [
-            "ContentDirectory", "ShareIndexInProgress",
-            \&processContainerUpdate
-        ],
-        [ "ContentDirectory", "MasterRadioUpdateID", \&processContainerUpdate ],
-        [ "ContentDirectory", "SavedQueuesUpdateID", \&processContainerUpdate ],
-        [ "ContentDirectory", "ShareListUpdateID",   \&processContainerUpdate ],
-    );
-
-    my $player;
-    for (@handlers) {
-        my ( $id, $keyProperty, $handler ) = @$_;
-        $player = Sonos::State::findZone( $service->{BASE} );
-        if (   ( $service->serviceId =~ /serviceId:$id/ )
-            && ( defined $properties{$keyProperty} ) )
-        {
-            &$handler( $player, \%properties );
-        }
+sub processContentDirectory ( $player, $service, %properties ) {
+    INFO Dumper(\%properties);
+    if ( defined $properties{ContainerUpdateIDs}
+        && $properties{ContainerUpdateIDs} =~ /AI:/ )
+    {
+        sonos_containers_del("AI:");
     }
 
-    if ( $service->serviceId =~ /serviceId:ContentDirectory/ ) {
-
-        if ( defined $properties{ContainerUpdateIDs}
-            && $properties{ContainerUpdateIDs} =~ /AI:/ )
-        {
-            sonos_containers_del("AI:");
-        }
-
-        if ( !defined $main::ZONES{$player}->{QUEUE}
-            || $properties{ContainerUpdateIDs} =~ /Q:0/ )
-        {
-            INFO "Refetching Q for $main::ZONES{$player}->{ZoneName} updateid $properties{ContainerUpdateIDs}";
-            $main::ZONES{$player}->{QUEUE} =
-              upnp_content_dir_browse( $player, "Q:0" );
-            $main::LASTUPDATE = $main::SONOS_UPDATENUM;
-            $main::QUEUEUPDATE{$player} = $main::SONOS_UPDATENUM++;
-            sonos_process_waiting( "QUEUE", $player );
-        }
-
-        if ( defined $properties{ShareIndexInProgress} ) {
-            $main::UPDATEID{ShareIndexInProgress} =
-              $properties{ShareIndexInProgress};
-        }
-
-        if (
-            defined $properties{MasterRadioUpdateID}
-            && ( $properties{MasterRadioUpdateID} ne
-                $main::UPDATEID{MasterRadioUpdateID} )
-          )
-        {
-            $main::UPDATEID{MasterRadioUpdateID} =
-              $properties{MasterRadioUpdateID};
-            sonos_containers_del("R:0/0");
-        }
-
-        if ( defined $properties{SavedQueuesUpdateID}
-            && $properties{SavedQueuesUpdateID} ne
-            $main::UPDATEID{SavedQueuesUpdateID} )
-        {
-            $main::UPDATEID{SavedQueuesUpdateID} =
-              $properties{SavedQueuesUpdateID};
-            sonos_containers_del("SQ:");
-        }
-
-        if ( defined $properties{ShareListUpdateID}
-            && $properties{ShareListUpdateID} ne
-            $main::UPDATEID{ShareListUpdateID} )
-        {
-            $main::UPDATEID{ShareListUpdateID} = $properties{ShareListUpdateID};
-            Log( 2,
-                "Refetching Index, update id $properties{ShareListUpdateID}" );
-        }
-        return;
+    if ( !defined $main::ZONES{$player}->{QUEUE}
+        || $properties{ContainerUpdateIDs} =~ /Q:0/ )
+    {
+        INFO "Refetching Q for $main::ZONES{$player}->{ZoneName} updateid $properties{ContainerUpdateIDs}";
+        $main::ZONES{$player}->{QUEUE} =
+            upnp_content_dir_browse( $player, "Q:0" );
+        $main::LASTUPDATE = $main::SONOS_UPDATENUM;
+        $main::QUEUEUPDATE{$player} = $main::SONOS_UPDATENUM++;
+        sonos_process_waiting( "QUEUE", $player );
     }
+
+    if ( defined $properties{ShareIndexInProgress} ) {
+        $main::UPDATEID{ShareIndexInProgress} =
+            $properties{ShareIndexInProgress};
+    }
+
+    if (
+        defined $properties{MasterRadioUpdateID}
+        && ( $properties{MasterRadioUpdateID} ne
+            $main::UPDATEID{MasterRadioUpdateID} )
+        )
+    {
+        $main::UPDATEID{MasterRadioUpdateID} =
+            $properties{MasterRadioUpdateID};
+        sonos_containers_del("R:0/0");
+    }
+
+    if ( defined $properties{SavedQueuesUpdateID}
+        && $properties{SavedQueuesUpdateID} ne
+        $main::UPDATEID{SavedQueuesUpdateID} )
+    {
+        $main::UPDATEID{SavedQueuesUpdateID} =
+            $properties{SavedQueuesUpdateID};
+        sonos_containers_del("SQ:");
+    }
+
+    if ( defined $properties{ShareListUpdateID}
+        && $properties{ShareListUpdateID} ne
+        $main::UPDATEID{ShareListUpdateID} )
+    {
+        $main::UPDATEID{ShareListUpdateID} = $properties{ShareListUpdateID};
+        Log( 2,
+            "Refetching Index, update id $properties{ShareListUpdateID}" );
+    }
+    return;
 }
 
 ###############################################################################
@@ -218,9 +199,11 @@ sub renewSubscriptions($self) {
         if (defined $sub) {
             $sub->renew();
         } else {
-            my $service = $self->getService($name);
+            my $service = $self->getService($name) or
+                carp("Could not find service: $name");
             my $updatemethod = "process" . $name;
-            $self->{_subscriptions}->{$name} = $service->subscribe( sub { $self->$updatemethod() }  );
+            $self->{_subscriptions}->{$name} = $service->subscribe( sub { $self->$updatemethod(@_); }  ) or
+                carp("Could not subscribe to \"$name\"");
         }
     }
 
