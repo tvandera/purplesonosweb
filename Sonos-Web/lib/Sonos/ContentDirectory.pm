@@ -10,6 +10,9 @@ Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 use Carp;
 
+use XML::Liberal;
+use XML::LibXML::Simple qw(XMLin);
+XML::Liberal->globally_override('LibXML');
 
 # Contains music library info
 # caches for ContentDir
@@ -67,12 +70,11 @@ sub processUpdate ( $self, $service, %properties ) {
     foreach my $key (keys %properties) {
         next if ($key !~ /UpdateIDs?$/);
 
-        my $oldvalue = $self->{_updateids}->{$key};
+        my $oldvalue = $self->{_updateids}->{$key} || "";
         my $newvalue = $properties{$key};
-        my $updated = not defined $oldvalue or $oldvalue ne $newvalue;
 
         # call fetchAndCache if updated
-        $self->fetchAndCacheByUpdateID($key) if $updated;
+        $self->fetchAndCacheByUpdateID($key) if $oldvalue ne $newvalue;
     }
 
     # merge new UpdateIDs into existing ones
@@ -80,8 +82,9 @@ sub processUpdate ( $self, $service, %properties ) {
 }
 
 
-sub fetchAndCacheByUpdateID( $self, $updateid) {
-    my @matching = grep { print "@_\n"; $_->[0] eq $updateid } @ObjectIDs;
+sub fetchAndCacheByUpdateID {
+    my ($self, $updateid)  = @_;
+    my @matching = grep { $_->[0] eq $updateid } @ObjectIDs;
     map { $self->fetchAndCacheByObjectId($_->[2]) } @matching;
 }
 
@@ -104,7 +107,7 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
     do {
         $result = $self->contentDirProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
 
-        carp("Browse ContentDirectory Failed") unless $result->isSuccessful;
+        return undef unless $result->isSuccessful;
 
         $start += $result->getValue("NumberReturned");
 
@@ -118,6 +121,8 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
         push( @data, @{ $tree->{item} } ) if ( defined $tree->{item} );
         push( @data, @{ $tree->{container} } ) if ( defined $tree->{container} );
     } while ( $start < $result->getValue("TotalMatches") );
+
+    INFO "Found " . scalar(@data) . " entries.";
 
     return \@data;
 }
