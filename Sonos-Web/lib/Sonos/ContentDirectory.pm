@@ -1,7 +1,103 @@
 package Sonos::Container;
 
 # Contains music library info
-# a cache for ContentDir
+# caches for ContentDir
+
+sub new {
+    my($self, $device, %args) = @_;
+	my $class = ref($self) || $self;
+
+    $self = bless {
+        _device => $device,
+        _containers => {},
+        _items => {},
+        _updateids => {}
+    }, $class;
+
+    return $self;
+}
+
+my ObjectIDs = (
+    (  "Favorites", "FV:2", "tiles/favorites.svg");
+    (  "Artists", "A:ARTIST", "tiles/artists.svg");
+    (  "Albums", "A:ALBUM", "tiles/album.svg");
+    (  "Genres", "A:GENRE", "tiles/genre.svg");
+    (  "Composers", "A:COMPOSER", "tiles/composers.svg");
+    (  "Tracks", "A:TRACKS", "tiles/track.svg");
+    (  "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg");
+    (  "Folders", "S:", "tiles/folder.svg");
+    (  "Radio", "R:0/0", "tiles/radio_logo.svg");
+    (  "Line In", "AI:", "tiles/linein.svg");
+    (  "Playlists", "SQ:", "tiles/sonos_playlists.svg");
+)
+
+
+# called when anything in ContentDirectory has been updated
+# i.e.:
+#  'SavedQueuesUpdateID' => 'RINCON_000E583472BC01400,12',
+#  'ContainerUpdateIDs' => 'Q:0,503',
+#  'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
+#  'SystemUpdateID' => '131',
+#  'FavoritePresetsUpdateID' => 'RINCON_000E583472BC01400,97',
+#  'FavoritesUpdateID' => 'RINCON_000E583472BC01400,98',
+#  'RadioLocationUpdateID' => 'RINCON_000E585187D201400,347',
+#  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
+sub processUpdate ( $self, $service, %properties ) {
+    INFO Dumper \%properties;
+
+    # check if anything was updated
+    foreach my $key (keys %properties) {
+        next if ($key !~ /UpdateID$/);
+        my $oldvalue = $self->{_updateids}->{$key};
+        my $newvalue = $properties{$key};
+        my $updated = (not defined $oldvalue || $oldvalue ne $newvalue);
+        my $updatemethod = $key =~ s/UpdateID/Updated/gr;
+
+        # call e.g. $self->ContainerUpdated(%properties) if updated
+        $self->$updatemethod(%properties) if $updated;
+    }
+
+    # merge new UpdateIDs into existing ones
+    %{$self->{_updateids}} = ( %{$self->{_updateids}}, %properties);
+}
+
+
+
+###############################################################################
+# objectid is like :
+# - AI: for audio-in
+# - Q:0 for queue
+#
+# actiontype is
+#  - "BrowseMetadata", or
+#  - "BrowseDirectChildren" (default)
+sub fetchAndCache( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
+    my $start = 0;
+    my @data  = ();
+    my $result;
+
+    do {
+        $result = $self->contentDirProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
+
+        carp("Browse ContentDirectory Failed") unless $result->isSuccessful;
+
+        $start += $result->getValue("NumberReturned");
+
+        my $results = $result->getValue("Result");
+        my $tree    = XMLin(
+            $results,
+            forcearray => [ "item", "container" ],
+            keyattr    => {}
+        );
+
+        push( @data, @{ $tree->{item} } ) if ( defined $tree->{item} );
+        push( @data, @{ $tree->{container} } ) if ( defined $tree->{container} );
+    } while ( $start < $result->getValue("TotalMatches") );
+
+    return \@data;
+}
+
+
 
 ###############################################################################
 sub sonos_mkcontainer {
@@ -53,53 +149,39 @@ sub sonos_containers_init {
     sonos_mkitem("", "object.container", "Music", "");
 }
 ###############################################################################
-sub sonos_containers_get {
-    my ($what, $item) = @_;
+sub get($self, $objectid, $item) {
 
-    my ($zone) = split(",", $main::UPDATEID{ShareListUpdateID});
-    if (!defined $zone) {
-        my $foo = ();
-        return $foo;
-    }
-
-    my $type = substr ($what, 0, index($what, ':'));
-
-    if (defined $main::HOOK{"CONTAINER_$type"}) {
-        sonos_process_hook("CONTAINER_$type", $what);
-    }
-
-    if (exists $main::CONTAINERS{$what}) {
-        Log (2, "Using cache for $what");
-    } elsif ($what eq "AI:") { # line-in
-        $main::CONTAINERS{$what} = ();
-        foreach my $zone (keys %main::ZONES) {
-            my $linein =  upnp_content_dir_browse($zone, "AI:");
-
-            if (defined $linein->[0]) {
-                $linein->[0]->{'id'} .= "/" . $linein->[0]->{"dc:title"};
-                push @{$main::CONTAINERS{$what}}, $linein->[0];
-            }
-        }
-    } else {
-        $main::CONTAINERS{$what} = upnp_content_dir_browse($zone, $what);
-    }
-
-    foreach my $item (@{$main::CONTAINERS{$what}}) {
-        $main::ITEMS{$item->{'id'}} = $item;
-    }
-    return $main::CONTAINERS{$what};
 }
+
 ###############################################################################
-sub sonos_containers_del {
-    my ($what) = @_;
+sub addRadioStation($self, $name, $station_url) {
+    $station_url = substr( $station_url, 5 ) if ( substr( $station_url, 0, 5 ) eq "http:" );
+    $name    = enc($name);
 
-    $main::MUSICUPDATE = $main::SONOS_UPDATENUM++;
-    foreach my $key (keys %main::CONTAINERS) {
-        next if (! ($key =~ /^$what/));
-        foreach my $item (@{$main::CONTAINERS{$key}}) {
-            delete $main::ITEMS{$item->{'id'}};
-        }
-        delete $main::CONTAINERS{$key};
-    }
+    my $item =
+        '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" '
+      . 'xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" '
+      . 'xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">'
+      . '<item id="" restricted="false"><dc:title>'
+      . $name
+      . '</dc:title><res>x-rincon-mp3radio:'
+      . $station_url
+      . '</res></item></DIDL-Lite>';
 
+    return $self->createObject( "R:0/0", $item );
+}
+
+# add a radio station or play list
+sub createObject( $self, $containerid, $elements ) {
+    return  $self->contentDirProxy->CreateObject( $containerid, $elements );
+}
+
+# remove a radio station or play list
+sub destroyObject( $self, $objectid ) {
+    $self->contentDirProxy()->DestroyObject($objectid);
+}
+
+###############################################################################
+sub refreshShareIndex($self) {
+    $self->contentDirProxy()->RefreshShareIndex();
 }
