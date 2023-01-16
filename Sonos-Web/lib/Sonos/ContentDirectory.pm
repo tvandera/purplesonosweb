@@ -1,4 +1,11 @@
-package Sonos::Container;
+package Sonos::ContentDirectory;
+
+use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init($DEBUG);
+
+use Data::Dumper;
+use Carp;
+
 
 # Contains music library info
 # caches for ContentDir
@@ -17,19 +24,24 @@ sub new {
     return $self;
 }
 
-my ObjectIDs = (
-    (  "Favorites", "FV:2", "tiles/favorites.svg");
-    (  "Artists", "A:ARTIST", "tiles/artists.svg");
-    (  "Albums", "A:ALBUM", "tiles/album.svg");
-    (  "Genres", "A:GENRE", "tiles/genre.svg");
-    (  "Composers", "A:COMPOSER", "tiles/composers.svg");
-    (  "Tracks", "A:TRACKS", "tiles/track.svg");
-    (  "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg");
-    (  "Folders", "S:", "tiles/folder.svg");
-    (  "Radio", "R:0/0", "tiles/radio_logo.svg");
-    (  "Line In", "AI:", "tiles/linein.svg");
-    (  "Playlists", "SQ:", "tiles/sonos_playlists.svg");
-)
+my @ObjectIDs = (
+    [ "FavoritesUpdateID", "Favorites",          "FV:2",        "tiles/favorites.svg" ],
+
+    [ "ShareListUpdateID", "Artists",            "A:ARTIST",    "tiles/artists.svg" ],
+    [ "ShareListUpdateID", "Albums",             "A:ALBUM",     "tiles/album.svg" ],
+    [ "ShareListUpdateID", "Genres",             "A:GENRE",     "tiles/genre.svg" ],
+    [ "ShareListUpdateID", "Composers",          "A:COMPOSER",  "tiles/composers.svg" ],
+    [ "ShareListUpdateID", "Tracks",             "A:TRACKS",    "tiles/track.svg" ],
+    [ "ShareListUpdateID", "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg" ],
+    [ "ShareListUpdateID", "Folders",            "S:",          "tiles/folder.svg" ],
+
+    [ "RadioLocationUpdateID", "Radio", "R:0/0", "tiles/radio_logo.svg" ],
+
+    [ "ContainerUpdateIDs", "Line In", "AI:", "tiles/linein.svg" ],
+    [ "ContainerUpdateIDs", "Queue", "Q:0", "tiles/queue.svg" ],
+
+    [ "SavedQueuesUpdateID", "Playlists", "SQ:", "tiles/sonos_playlists.svg" ],
+);
 
 
 # called when anything in ContentDirectory has been updated
@@ -43,24 +55,29 @@ my ObjectIDs = (
 #  'RadioLocationUpdateID' => 'RINCON_000E585187D201400,347',
 #  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
 sub processUpdate ( $self, $service, %properties ) {
-    INFO Dumper \%properties;
+    INFO Dumper(\%properties);
 
     # check if anything was updated
     foreach my $key (keys %properties) {
-        next if ($key !~ /UpdateID$/);
+        next if ($key !~ /UpdateIDs?$/);
+
         my $oldvalue = $self->{_updateids}->{$key};
         my $newvalue = $properties{$key};
         my $updated = (not defined $oldvalue || $oldvalue ne $newvalue);
-        my $updatemethod = $key =~ s/UpdateID/Updated/gr;
 
-        # call e.g. $self->ContainerUpdated(%properties) if updated
-        $self->$updatemethod(%properties) if $updated;
+        # call fetchAndCache if updated
+        $self->fetchAndCacheByUpdateID($key) if $updated;
     }
 
     # merge new UpdateIDs into existing ones
     %{$self->{_updateids}} = ( %{$self->{_updateids}}, %properties);
 }
 
+
+sub fetchAndCacheByUpdateID( $self, $updateid) {
+    my @matching = grep { $_[0] eq $updateid } @ObjectIDs;
+    map { $self->fetchAndCacheByObjectId($_[2]) } @matching;
+}
 
 
 ###############################################################################
@@ -71,7 +88,7 @@ sub processUpdate ( $self, $service, %properties ) {
 # actiontype is
 #  - "BrowseMetadata", or
 #  - "BrowseDirectChildren" (default)
-sub fetchAndCache( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
+sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
     my $start = 0;
     my @data  = ();
     my $result;
@@ -185,3 +202,5 @@ sub destroyObject( $self, $objectid ) {
 sub refreshShareIndex($self) {
     $self->contentDirProxy()->RefreshShareIndex();
 }
+
+1;

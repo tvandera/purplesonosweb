@@ -6,6 +6,7 @@ use warnings;
 
 require UPnP::ControlPoint;
 require Sonos::Device;
+require Sonos::ContentDirectory;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -23,7 +24,6 @@ sub new {
     $self = bless {
         _controlpoint => $cp,
         _devices => {}, # UDN => UPnP::ControlPoint
-        _contentdirectory => Sonos::ContentDirectory->new($self), #  Sonos::ContentDirectory
         _zonegroups => {}, # Sonos::ZoneGroup
     }, $class;
 
