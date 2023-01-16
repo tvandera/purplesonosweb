@@ -1,5 +1,9 @@
 package Sonos::ContentDirectory;
 
+use v5.36;
+use strict;
+use warnings;
+
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
@@ -22,6 +26,10 @@ sub new {
     }, $class;
 
     return $self;
+}
+
+sub contentDirProxy($self) {
+    return $self->{_device}->getService("ContentDirectory")->controlProxy;
 }
 
 my @ObjectIDs = (
@@ -55,15 +63,13 @@ my @ObjectIDs = (
 #  'RadioLocationUpdateID' => 'RINCON_000E585187D201400,347',
 #  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
 sub processUpdate ( $self, $service, %properties ) {
-    INFO Dumper(\%properties);
-
     # check if anything was updated
     foreach my $key (keys %properties) {
         next if ($key !~ /UpdateIDs?$/);
 
         my $oldvalue = $self->{_updateids}->{$key};
         my $newvalue = $properties{$key};
-        my $updated = (not defined $oldvalue || $oldvalue ne $newvalue);
+        my $updated = not defined $oldvalue or $oldvalue ne $newvalue;
 
         # call fetchAndCache if updated
         $self->fetchAndCacheByUpdateID($key) if $updated;
@@ -75,8 +81,8 @@ sub processUpdate ( $self, $service, %properties ) {
 
 
 sub fetchAndCacheByUpdateID( $self, $updateid) {
-    my @matching = grep { $_[0] eq $updateid } @ObjectIDs;
-    map { $self->fetchAndCacheByObjectId($_[2]) } @matching;
+    my @matching = grep { print "@_\n"; $_->[0] eq $updateid } @ObjectIDs;
+    map { $self->fetchAndCacheByObjectId($_->[2]) } @matching;
 }
 
 
@@ -92,6 +98,8 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
     my $start = 0;
     my @data  = ();
     my $result;
+
+    INFO "Fetching " . $objectid;
 
     do {
         $result = $self->contentDirProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );

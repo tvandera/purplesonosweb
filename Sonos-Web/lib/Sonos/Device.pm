@@ -39,9 +39,10 @@ sub new {
     $self = bless {
         _upnp => $upnp,
         _subscriptions => {},
-        _contentdirectory => Sonos::ContentDirectory->new($self), #  Sonos::ContentDirectory
+        _contentdirectory => undef, #  Sonos::ContentDirectory
     }, $class;
 
+    $self->{_contentdirectory} = Sonos::ContentDirectory->new($self);
     $self->renewSubscriptions();
 
     return $self;
