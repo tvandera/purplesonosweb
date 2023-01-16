@@ -11,7 +11,7 @@ use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
 use Data::Dumper;
-$Data::Dumper::Maxdepth = 2;
+$Data::Dumper::Maxdepth = 3;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
@@ -22,7 +22,9 @@ sub new {
     my $cp = UPnP::ControlPoint->new(%args);
     $self = bless {
         _controlpoint => $cp,
-        _devices => {},
+        _devices => {}, # UDN => UPnP::ControlPoint
+        _contentdirectory => Sonos::ContentDirectory->new($self), #  Sonos::ContentDirectory
+        _zonegroups => {}, # Sonos::ZoneGroup
     }, $class;
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
@@ -38,6 +40,10 @@ sub controlPoint($self) {
     return $self->{_controlpoint};
 }
 
+sub sockets($self) {
+    return $self->controlPoint()->sockets()
+}
+
 # callback routine that gets called by UPnP::Controlpoint when a device is added
 # or removed
 sub _discoveryCallback {
@@ -47,6 +53,7 @@ sub _discoveryCallback {
     if ( $action eq 'deviceAdded' ) {
         $self->{_devices}->{$location} = Sonos::Device->new($device);
         INFO "Found device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
+        # DEBUG Dumper($device);
     }
     elsif ( $action eq 'deviceRemoved' ) {
         delete $self->{_devices}->{$location};

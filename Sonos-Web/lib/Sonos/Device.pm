@@ -77,9 +77,8 @@ sub processZoneGroupTopology ( $self, $service, %properties ) {
         forcearray => [ "ZoneGroup", "ZoneGroupMember" ]
     );
 
-    INFO "Found ZoneGroup: ";
-    DEBUG Dumper( $tree );
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
+    DEBUG "Found " . scalar(@groups) . " zone groups: ";
     foreach my $group (@groups) {
         my %zonegroup   = %{$group};
         my $coordinator = $zonegroup{Coordinator};
@@ -89,6 +88,8 @@ sub processZoneGroupTopology ( $self, $service, %properties ) {
             $member->{Coordindator} = $coordinator;
         }
     }
+
+
 }
 
 # not currently called, should be called from processZoneGroupTopology
@@ -143,32 +144,8 @@ sub processAVTransport ( $player, $service, %properties ) {
 }
 
 # called when anything in ContentDirectory has been updated
-# i.e.:
-#  'SavedQueuesUpdateID' => 'RINCON_000E583472BC01400,12',
-#  'ContainerUpdateIDs' => 'Q:0,503',
-#  'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
-#  'SystemUpdateID' => '131',
-#  'FavoritePresetsUpdateID' => 'RINCON_000E583472BC01400,97',
-#  'FavoritesUpdateID' => 'RINCON_000E583472BC01400,98',
-#  'RadioLocationUpdateID' => 'RINCON_000E585187D201400,347',
-#  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
 sub processContentDirectory ( $self, $service, %properties ) {
-    INFO Dumper \%properties;
-
-    # check if anything was updated
-    foreach my $key (keys %properties) {
-        next if ($key !~ /UpdateID$/);
-        my $oldvalue = $self->{_updateids}->{$key};
-        my $newvalue = $properties{$key};
-        my $updated = (not defined $oldvalue || $oldvalue ne $newvalue);
-        my $updatemethod = $key =~ s/UpdateID/Updated/gr;
-
-        # call e.g. $self->ContainerUpdated(%properties) if updated
-        $self->$updatemethod(%properties) if $updated;
-    }
-
-    # merge new UpdateIDs into existing ones
-    %{$self->{_updateids}} = ( %{$self->{_updateids}}, %properties);
+    $self->{_contentdirectory}->processUpdate($service, %properties);
 }
 
 ###############################################################################
@@ -189,167 +166,29 @@ sub renewSubscriptions($self) {
     # add_timeout( time() + $main::RENEW_SUB_TIME, \&sonos_renew_subscriptions );
 }
 
-###############################################################################
-sub sonos_add_radio {
-    my ( $name, $station ) = @_;
-    Log( 3, "Adding radio name:$name, station:$station" );
-
-    $station = substr( $station, 5 ) if ( substr( $station, 0, 5 ) eq "http:" );
-    $name    = enc($name);
-
-    my $item =
-        '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" '
-      . 'xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" '
-      . 'xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">'
-      . '<item id="" restricted="false"><dc:title>'
-      . $name
-      . '</dc:title><res>x-rincon-mp3radio:'
-      . $station
-      . '</res></item></DIDL-Lite>';
-
-    my ($player) = split( ",", $main::UPDATEID{MasterRadioUpdateID} );
-    return upnp_content_dir_create_object( $player, "R:0/0", $item );
+sub avTransportProxy($self) {
+    return $self->getService("AVTransport")->controlProxy;
 }
 
-###############################################################################
-sub upnp_content_dir_create_object {
-    my ( $player, $containerid, $elements ) = @_;
-    my $contentDir = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:ContentDirectory:1" );
-    return undef if ( !defined $contentDir );
-    my $contentDirProxy = $contentDir->controlProxy;
-    my $result = $contentDirProxy->CreateObject( $containerid, $elements );
-    return $result;
-}
-###############################################################################
-sub upnp_content_dir_destroy_object {
-    my ( $player, $objectid ) = @_;
-    my $contentDir = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:ContentDirectory:1" );
-    return undef if ( !defined $contentDir );
-    my $contentDirProxy = $contentDir->controlProxy;
-    my $result          = $contentDirProxy->DestroyObject($objectid);
-    return $result;
-}
-###############################################################################
-# objectid is like :
-# - AI: for audio-in
-# - Q:0 for queue
-#
-# type is
-#  - "BrowseMetadata", or
-#  - "BrowseDirectChildren"
-sub upnp_content_dir_browse {
-    my ( $player, $objectid, $type ) = @_;
-
-    $type = 'BrowseDirectChildren' if ( !defined $type );
-
-    DEBUG "player: $player objectid: $objectid type: $type";
-
-    my $start = 0;
-    my @data  = ();
-    my $result;
-
-    my $contentDir = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:ContentDirectory:1" );
-    return undef if ( !defined $contentDir );
-    my $contentDirProxy = $contentDir->controlProxy;
-
-    do {
-        $result =
-          $contentDirProxy->Browse( $objectid, $type,
-            'dc:title,res,dc:creator,upnp:artist,upnp:album',
-            $start, 2000, "" );
-
-        return undef if ( !$result->isSuccessful );
-
-        $start += $result->getValue("NumberReturned");
-
-        my $results = $result->getValue("Result");
-        my $tree    = XMLin(
-            $results,
-            forcearray => [ "item", "container" ],
-            keyattr    => {}
-        );
-
-        push( @data, @{ $tree->{item} } ) if ( defined $tree->{item} );
-        push( @data, @{ $tree->{container} } )
-          if ( defined $tree->{container} );
-    } while ( $start < $result->getValue("TotalMatches") );
-
-    return \@data;
+sub renderProxy($self) {
+    return $self->getService("RenderingControl")->controlProxy;
 }
 
-# Used to remove
-# - a radio station
-# - a play list
-sub upnp_content_dir_delete {
-    my ( $player, $objectid ) = @_;
-
-    my $contentDir = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:ContentDirectory:1" );
-    my $contentDirProxy = $contentDir->controlProxy;
-
-    $contentDirProxy->DestroyObject($objectid);
+sub removeTrackFromQueue($self, $objectid) {
+    return $self->avTransportProxy()->RemoveTrackFromQueue( "0", $objectid );
 }
 
-###############################################################################
-sub upnp_content_dir_refresh_share_index {
-    my ($player) = split( ",", $main::UPDATEID{ShareListUpdateID} );
-    my $contentDir = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:ContentDirectory:1" );
-
-    if ( !defined $contentDir ) {
-        if ( $player eq "" ) {
-            WARN
-"Main player not found yet, will retry.  Windows XP *WILL* require rerunning SonosWeb after selecting 'Unblock' in the Windows Security Alert.";
-        }
-        else {
-            WARN "$player not available, will retry";
-        }
-        add_timeout( time() + 5, \&upnp_content_dir_refresh_share_index );
-        return;
-    }
-    my $contentDirProxy = $contentDir->controlProxy;
-    $contentDirProxy->RefreshShareIndex();
+sub startPlaying($self) {
+    return $self->avTransportProxy()->Play( "0", "1" );
 }
 
-###############################################################################
-sub upnp_avtransport_remove_track {
-    my ( $player, $objectid ) = @_;
-
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-
-    my $result = $avTransportProxy->RemoveTrackFromQueue( "0", $objectid );
-    return;
-}
-###############################################################################
-sub upnp_avtransport_play {
-    my ($player) = @_;
-
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-
-    my $result = $avTransportProxy->Play( "0", "1" );
-    return $result;
-}
-###############################################################################
-sub upnp_avtransport_seek {
-    my ( $player, $queue ) = @_;
-
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-
+sub seek($self, $queue) {
     $queue =~ s,^.*/,,;
-
-    my $result = $avTransportProxy->Seek( "0", "TRACK_NR", $queue );
-    return $result;
+    return $self->avTransportProxy()->Seek( "0", "TRACK_NR", $queue );
 }
+
 ###############################################################################
+
 sub upnp_render_mute {
     my ( $player, $on ) = @_;
 
