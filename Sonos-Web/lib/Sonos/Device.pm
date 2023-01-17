@@ -261,15 +261,15 @@ sub getShuffle($self) {
 }
 
 sub switchPlayMode($self, %switch_map) {
-    push %switch_map, reverse %switch_map;
-    my $new_playmode = $switch_map{$self->GetPlayMode()};
+    my %map = (%switch_map, reverse %switch_map);
+    my $new_playmode = $map{$self->GetPlayMode()};
     $self->action("SetPlayMode", $new_playmode)
 }
 
 # if called with $on_or_off, sets repeat mode to this value
 # if called with $on_of_off == undef, switches repeat mode
 sub setRepeat($self, $on_or_off) {
-    # nothing to do
+    # nothing to do if equal
     return if $self->getRepeat() == $on_or_off;
 
     my %switch_repeat = (
@@ -293,41 +293,17 @@ sub setShuffle($self, $on_or_off) {
     $self->switchPlayMode(%switch_shuffle);
 }
 
-###############################################################################
-sub upnp_avtransport_set_uri {
-    my ( $player, $uri, $metadata ) = @_;
+sub setURI( $self, $uri, $metadata ) {
+        return $self->avTransportProxy->SetAVTransportURI( 0, $uri, $metadata );
+}
 
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-    my $result = $avTransportProxy->SetAVTransportURI( 0, $uri, $metadata );
-    return $result;
+sub addURI( $player, $uri, $metadata, $queueSlot ) {
+    return $self->avTransportProxy->AddURIToQueue( 0, $uri, $metadata, $queueSlot );
 }
 
 ###############################################################################
-sub upnp_avtransport_add_uri {
-    my ( $player, $uri, $metadata, $queueSlot ) = @_;
-
-    Log( 2, "player=$player uri=$uri metadata=$metadata" );
-
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-
-    my $result =
-      $avTransportProxy->AddURIToQueue( 0, $uri, $metadata, $queueSlot );
-    return $result;
-}
-
-###############################################################################
-sub upnp_avtransport_standalone_coordinator {
-    my ($player) = @_;
-
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-    my $result = $avTransportProxy->BecomeCoordinatorOfStandaloneGroup(0);
-    return $result;
+sub standaloneCoordinator($self) {
+    return $self->avTransportProxy->BecomeCoordinatorOfStandaloneGroup(0);
 }
 
 
