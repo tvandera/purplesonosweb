@@ -124,63 +124,15 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
 
     INFO "Found " . scalar(@data) . " entries.";
 
+    foreach my $item (@data) {
+        $self->{_items}->{$item->{id}} = $item;
+    }
+
     return \@data;
 }
 
-
-
-###############################################################################
-sub sonos_mkcontainer {
-    my ($parent, $class, $title, $id, $icon, $content) = @_;
-
-    my %data;
-
-    $data{'upnp:class'}       = $class;
-    $data{'dc:title'}         = $title;
-    $data{'parentID'}         = $parent;
-    $data{'id'}               = $id;
-    $data{'upnp:albumArtURI'} = $icon;
-    $data{'res'}->{content}   = $content if (defined $content);
-
-    push (@{$main::CONTAINERS{$parent}},  \%data);
-
-    $main::ITEMS{$data{'id'}} = \%data;
-}
-
-###############################################################################
-sub sonos_mkitem {
-    my ($parent, $class, $title, $id, $content) = @_;
-
-    $main::ITEMS{$id}->{"upnp:class"}   = $class;
-    $main::ITEMS{$id}->{'parentID'}       = $parent;
-    $main::ITEMS{$id}->{"dc:title"}     = $title;
-    $main::ITEMS{$id}->{'id'}             = $id;
-    $main::ITEMS{$id}->{'res'}->{content} = $content if (defined $content);
-}
-###############################################################################
-sub sonos_containers_init {
-
-    $main::MUSICUPDATE = $main::SONOS_UPDATENUM++;
-
-    undef %main::CONTAINERS;
-
-    sonos_mkcontainer("", "object.container", "Favorites", "FV:2", "tiles/favorites.svg");
-    sonos_mkcontainer("", "object.container", "Artists", "A:ARTIST", "tiles/artists.svg");
-    sonos_mkcontainer("", "object.container", "Albums", "A:ALBUM", "tiles/album.svg");
-    sonos_mkcontainer("", "object.container", "Genres", "A:GENRE", "tiles/genre.svg");
-    sonos_mkcontainer("", "object.container", "Composers", "A:COMPOSER", "tiles/composers.svg");
-    sonos_mkcontainer("", "object.container", "Tracks", "A:TRACKS", "tiles/track.svg");
-    #sonos_mkcontainer("", "object.container", "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg");
-    #sonos_mkcontainer("", "object.container", "Folders", "S:", "tiles/folder.svg");
-    sonos_mkcontainer("", "object.container", "Radio", "R:0/0", "tiles/radio_logo.svg");
-    # sonos_mkcontainer("", "object.container", "Line In", "AI:", "tiles/linein.svg");
-    # sonos_mkcontainer("", "object.container", "Playlists", "SQ:", "tiles/sonos_playlists.svg");
-
-    sonos_mkitem("", "object.container", "Music", "");
-}
-###############################################################################
-sub get($self, $objectid, $item) {
-
+sub get($self, $id) {
+    return $self->{_items}->{$id};
 }
 
 ###############################################################################
@@ -212,7 +164,9 @@ sub destroyObject( $self, $objectid ) {
 }
 
 ###############################################################################
+
 sub refreshShareIndex($self) {
+    return if $self->{_updateids}->{ShareIndexInProgress};
     $self->contentDirProxy()->RefreshShareIndex();
 }
 
