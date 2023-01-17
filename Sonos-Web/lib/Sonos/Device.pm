@@ -74,7 +74,11 @@ sub getService($self, $name) {
 }
 
 sub roomInfo($self) {
-    for my $group
+    my $count = 0;
+    for my $group (values %{$self->{_groups}}) {
+        INFO "Group $count: " . join(", ", map { $_->{ZoneName} } @{$group});
+        $count++;
+    }
 }
 
 # called when zonegroups have changed
@@ -86,7 +90,9 @@ sub processZoneGroupTopology ( $self, $service, %properties ) {
 
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
     INFO "Found " . scalar(@groups) . " zone groups: ";
-    $self->{_groups} = map { $_->{Coordinator} => $_ } @groups;
+    $self->{_groups} = { map { $_->{Coordinator} => $_->{ZoneGroupMember} } @groups };
+
+    $self->roomInfo();
 }
 
 # not currently called, should be called from processZoneGroupTopology
