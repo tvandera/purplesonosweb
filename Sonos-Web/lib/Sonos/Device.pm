@@ -122,6 +122,7 @@ sub deviceInfo($self) {
 sub findValue($val) {
     return $val unless ref($val) eq 'HASH';
     return $val->{val} if defined $val->{val};
+    return $val->{item} if defined $val->{item};
 
     while (my ($key, $value) = each %$val) {
         $val->{$key} = findValue($value);
@@ -148,9 +149,12 @@ sub processStateUpdate ( $self, $service, %properties ) {
     # entities. Decode + parse XML + extract "val" attr
     foreach my $key ( keys %instancedata ) {
         my $val = $instancedata{$key};
+        DEBUG "decoding = " . Dumper($val);
+        $val = findValue($val);
         $val = decode_entities($val) if ( $val =~ /^&lt;/ );
         $val = \%{ XMLin($val) }     if ( $val =~ /^</ );
         $val = findValue($val);
+        DEBUG "decoded = " . Dumper($val);
         $instancedata{$key} = $val
     }
 
