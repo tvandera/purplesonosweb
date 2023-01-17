@@ -40,7 +40,8 @@ sub new {
         _upnp => $upnp,
         _subscriptions => {},
         _contentdirectory => undef, #  Sonos::ContentDirectory
-        _avtransport => {},
+        _state => {},
+        _groups => {},
     }, $class;
 
     $self->{_contentdirectory} = Sonos::ContentDirectory->new($self);
@@ -72,6 +73,10 @@ sub getService($self, $name) {
 
 }
 
+sub roomInfo($self) {
+    for my $group
+}
+
 # called when zonegroups have changed
 sub processZoneGroupTopology ( $self, $service, %properties ) {
     my $tree = XMLin(
@@ -80,18 +85,8 @@ sub processZoneGroupTopology ( $self, $service, %properties ) {
     );
 
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
-    DEBUG "Found " . scalar(@groups) . " zone groups: ";
-    foreach my $group (@groups) {
-        my %zonegroup   = %{$group};
-        my $coordinator = $zonegroup{Coordinator};
-        my @members     = @{ $zonegroup{ZoneGroupMember} };
-
-        foreach my $member (@members) {
-            $member->{Coordindator} = $coordinator;
-        }
-    }
-
-
+    INFO "Found " . scalar(@groups) . " zone groups: ";
+    $self->{_groups} = map { $_->{Coordinator} => $_ } @groups;
 }
 
 # not currently called, should be called from processZoneGroupTopology
@@ -113,9 +108,10 @@ sub processThirdPartyMediaServers ( $self, $properties ) {
     }
 }
 
+
 # called when rendering properties (like volume) are changed
 # called when 'currently-playing' has changed
-sub processRenderingControlAndAVTransport ( $self, $service, %properties ) {
+sub processStateUpdate ( $self, $service, %properties ) {
     my $tree = XMLin(
         decode_entities( $properties{LastChange} ),
         forcearray => ["ZoneGroup"],
@@ -137,14 +133,17 @@ sub processRenderingControlAndAVTransport ( $self, $service, %properties ) {
         $instancedata{$key} = $val
     }
 
-    $self->{_state} = \%instancedata;
+    # merge new _state into existing
+    %{$self->{_state}} = ( %{$self->{_state}}, %instancedata);
 }
 
+sub processRenderingControl { processStateUpdate(@_); }
+sub processAVTransport { processStateUpdate(@_); }
 
 # called when anything in ContentDirectory has been updated
 # forward to _contentdirectory member
 sub processContentDirectory ( $self, $service, %properties ) {
-    $self->{_contentdirectory}->processUpdate($service, %properties);
+    # $self->{_contentdirectory}->processUpdate($service, %properties);
 }
 
 ###############################################################################
@@ -191,7 +190,7 @@ sub getVolume($self) {
 }
 
 sub setVolume($self, $value) {
-    $self->renderAction("SetVolume", "Master", $value);)
+    $self->renderAction("SetVolume", "Master", $value);
 }
 
 sub changeVolume($self, $diff) {
@@ -261,7 +260,7 @@ sub setURI( $self, $uri, $metadata ) {
     return $self->avTransportAction( "SetAVTransportURI", $uri, $metadata );
 }
 
-sub addURI( $player, $uri, $metadata, $queueSlot ) {
+sub addURI( $self, $uri, $metadata, $queueSlot ) {
     return $self->avTransportAction( "AddURIToQueue", $uri, $metadata, $queueSlot );
 }
 
