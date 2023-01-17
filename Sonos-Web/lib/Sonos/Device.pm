@@ -40,6 +40,7 @@ sub new {
         _upnp => $upnp,
         _subscriptions => {},
         _contentdirectory => undef, #  Sonos::ContentDirectory
+        _avtransport => {},
     }, $class;
 
     $self->{_contentdirectory} = Sonos::ContentDirectory->new($self);
@@ -113,7 +114,8 @@ sub processThirdPartyMediaServers ( $self, $properties ) {
 }
 
 # called when rendering properties (like volume) are changed
-sub processRenderingControl ( $self, $service, %properties ) {
+# called when 'currently-playing' has changed
+sub processRenderingControlAndAVTransport ( $self, $service, %properties ) {
     my $tree = XMLin(
         decode_entities( $properties{LastChange} ),
         forcearray => ["ZoneGroup"],
@@ -123,28 +125,24 @@ sub processRenderingControl ( $self, $service, %properties ) {
             "Loudness" => "channel"
         }
     );
-    #$self->updateRenderState( $tree->{InstanceID} );
-}
-
-# called when 'currenty-playing' has changed
-sub processAVTransport ( $player, $service, %properties ) {
-    my $tree         = XMLin( decode_entities( $properties{LastChange} ) );
     my %instancedata = %{ $tree->{InstanceID} };
 
-    # decode entities
+    # many of these propoerties are XML html-encodeded
+    # entities. Decode + parse XML + extract "val" attr
     foreach my $key ( keys %instancedata ) {
         my $val = $instancedata{$key};
-        $val                = decode_entities($val) if ( $val =~ /^&lt;/ );
-        $val                = \%{ XMLin($val) }     if ( $val =~ /^</ );
-        $instancedata{$key} = $val;
+        $val = decode_entities($val) if ( $val =~ /^&lt;/ );
+        $val = \%{ XMLin($val) }     if ( $val =~ /^</ );
+        $val = $val->{val} if ref($val) eq 'HASH';
+        $instancedata{$key} = $val
     }
 
-    INFO Dumper(\%instancedata);
-
-    #$self->updateAVTransport( \%instancedata );
+    $self->{_state} = \%instancedata;
 }
 
+
 # called when anything in ContentDirectory has been updated
+# forward to _contentdirectory member
 sub processContentDirectory ( $self, $service, %properties ) {
     $self->{_contentdirectory}->processUpdate($service, %properties);
 }
@@ -253,71 +251,48 @@ sub upnp_avtransport_action {
     my $result = $avTransportProxy->$action("0");
     return $result;
 }
-###############################################################################
-sub upnp_avtransport_repeat {
-    my ( $player, $repeat ) = @_;
 
-    my $str = $main::ZONES{$player}->{AV}->{CurrentPlayMode};
-
-    if ( !defined $repeat ) {
-        return 0 if ( $str eq "NORMAL" || $str eq "SHUFFLE" );
-        return 1;
-    }
-
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-
-    if ( $str eq "NORMAL" ) {
-        $str = "REPEAT_ALL" if ($repeat);
-    }
-    elsif ( $str eq "REPEAT_ALL" ) {
-        $str = "NORMAL" if ( !$repeat );
-    }
-    elsif ( $str eq "SHUFFLE_NOREPEAT" ) {
-        $str = "SHUFFLE" if ($repeat);
-    }
-    elsif ( $str eq "SHUFFLE" ) {
-        $str = "SHUFFLE_NOREPEAT" if ( !$repeat );
-    }
-    my $result = $avTransportProxy->SetPlayMode( "0", $str );
-    $main::ZONES{$player}->{AV}->{CurrentPlayMode} = $str
-      if ( $result->isSuccessful );
-    return $repeat;
+sub getRepeat($self) {
+    return $self->{_state}->{CurrentPlayMode} =~ /^REPEAT/;
 }
-###############################################################################
-sub upnp_avtransport_shuffle {
-    my ( $player, $shuffle ) = @_;
 
-    my $str = $main::ZONES{$player}->{AV}->{CurrentPlayMode};
-
-    if ( !defined $shuffle ) {
-        return 0 if ( $str eq "NORMAL" || $str eq "REPEAT_ALL" );
-        return 1;
-    }
-
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
-
-    if ( $str eq "NORMAL" ) {
-        $str = "SHUFFLE_NOREPEAT" if ($shuffle);
-    }
-    elsif ( $str eq "REPEAT_ALL" ) {
-        $str = "SHUFFLE" if ($shuffle);
-    }
-    elsif ( $str eq "SHUFFLE_NOREPEAT" ) {
-        $str = "NORMAL" if ( !$shuffle );
-    }
-    elsif ( $str eq "SHUFFLE" ) {
-        $str = "REPEAT_ALL" if ( !$shuffle );
-    }
-
-    my $result = $avTransportProxy->SetPlayMode( "0", $str );
-    $main::ZONES{$player}->{AV}->{CurrentPlayMode} = $str
-      if ( $result->isSuccessful );
-    return $shuffle;
+sub getShuffle($self) {
+    return $self->{_state}->{CurrentPlayMode} =~ /^SHUFFLE/;
 }
+
+sub switchPlayMode($self, %switch_map) {
+    push %switch_map, reverse %switch_map;
+    my $new_playmode = $switch_map{$self->GetPlayMode()};
+    $self->action("SetPlayMode", $new_playmode)
+}
+
+# if called with $on_or_off, sets repeat mode to this value
+# if called with $on_of_off == undef, switches repeat mode
+sub setRepeat($self, $on_or_off) {
+    # nothing to do
+    return if $self->getRepeat() == $on_or_off;
+
+    my %switch_repeat = (
+        "NORMAL"  => "REPEAT_ALL",
+        "SHUFFLE" => "SHUFFLE_NOREPEAT",
+    );
+    $self->switchPlayMode(%switch_repeat);
+}
+
+
+# if called with $on_or_off, sets shuffle mode to this value
+# if called with $on_of_off == undef, switches shuffle mode
+sub setShuffle($self, $on_or_off) {
+    # nothing to do
+    return if $self->getShuffle() == $on_or_off;
+
+    my %switch_shuffle = (
+        "NORMAL"     => "SHUFFLE_NOREPEAT",
+        "REPEAT_ALL" => "SHUFFLE",
+    );
+    $self->switchPlayMode(%switch_shuffle);
+}
+
 ###############################################################################
 sub upnp_avtransport_set_uri {
     my ( $player, $uri, $metadata ) = @_;
