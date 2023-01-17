@@ -122,7 +122,7 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
         push( @data, @{ $tree->{container} } ) if ( defined $tree->{container} );
     } while ( $start < $result->getValue("TotalMatches") );
 
-    INFO "Found " . scalar(@data) . " entries.";
+    INFO " .  Found " . scalar(@data) . " entries.";
 
     foreach my $item (@data) {
         $self->{_items}->{$item->{id}} = $item;
