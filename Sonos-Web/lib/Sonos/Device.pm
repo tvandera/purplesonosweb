@@ -178,78 +178,33 @@ sub removeTrackFromQueue($self, $objectid) {
 }
 
 sub startPlaying($self) {
-    return $self->avTransportProxy()->Play( "0", "1" );
+    return $self->avTransportAction("Play", "1" );
 }
 
 sub seek($self, $queue) {
     $queue =~ s,^.*/,,;
-    return $self->avTransportProxy()->Seek( "0", "TRACK_NR", $queue );
+    return $self->avTransportAction("Seek", "TRACK_NR", $queue );
 }
 
-###############################################################################
-
-sub upnp_render_mute {
-    my ( $player, $on ) = @_;
-
-    if ( !defined $on ) {
-        return $main::ZONES{$player}->{RENDER}->{Mute}->{Master}->{val};
-    }
-
-    my $render = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:RenderingControl:1" );
-    my $renderProxy = $render->controlProxy;
-    my $result      = $renderProxy->SetMute( "0", "Master", $on );
-    $main::ZONES{$player}->{RENDER}->{Mute}->{Master}->{val} = $on
-      if ( $result->isSuccessful );
-    return $on;
+sub getVolume($self) {
+    return $self->{_state}->{Volume}->{Master};
 }
-###############################################################################
-sub upnp_render_volume_change {
-    my ( $volzone, $change ) = @_;
 
-    foreach my $player ( keys %main::ZONES ) {
-        if ( $volzone eq $main::ZONES{$player}->{Coordinator} ) {
-            my $vol =
-              $main::ZONES{$player}->{RENDER}->{Volume}->{Master}->{val} +
-              $change;
-            upnp_render_volume( $player, $vol );
-        }
-    }
+sub setVolume($self, $value) {
+    $self->renderAction("SetVolume", "Master", $vol);)
 }
-###############################################################################
-sub upnp_render_volume {
-    my ( $player, $vol ) = @_;
 
-    if ( !defined $vol ) {
-        return $main::ZONES{$player}->{RENDER}->{Volume}->{Master}->{val};
-    }
-
-    $vol = 100 if ( $vol > 100 );
-    $vol = 0   if ( $vol < 0 );
-
-    my $render = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:RenderingControl:1" );
-    my $renderProxy = $render->controlProxy;
-    my $result      = $renderProxy->SetVolume( "0", "Master", $vol );
-    if ( $result->isSuccessful ) {
-        $main::ZONES{$player}->{RENDER}->{Volume}->{Master}->{val} = $vol
-          if ( $result->isSuccessful );
-    }
-    else {
-        Log( 2, "SetVolume error:\n", Dumper($result) );
-    }
-    return $vol;
+sub changeVolume($self, $diff) {
+    my $vol = $self->getVolume() + $diff;
+    $self->setVolume($vol);
 }
-###############################################################################
-sub upnp_avtransport_action {
-    my ( $player, $action ) = @_;
 
-    my $avTransport = upnp_zone_get_service( $player,
-        "urn:schemas-upnp-org:service:AVTransport:1" );
-    my $avTransportProxy = $avTransport->controlProxy;
+sub avtransportAction( $self, $action, @args ) {
+    return $self->avTransportProxy()->$action("0,", @args);
+}
 
-    my $result = $avTransportProxy->$action("0");
-    return $result;
+sub renderAction( $self, $action, @args ) {
+    return $self->renderProxy()->$action("0", @args);
 }
 
 sub getRepeat($self) {
@@ -260,10 +215,19 @@ sub getShuffle($self) {
     return $self->{_state}->{CurrentPlayMode} =~ /^SHUFFLE/;
 }
 
+sub getMute($self) {
+    return $self->{_state}->{Mute}->{Master};
+}
+
+sub setMute($self, $on_or_off) {
+    return if $on_or_off == $self->getMute();
+    return $self->renderAction("SetMute", "Master", $on_or_off)
+}
+
 sub switchPlayMode($self, %switch_map) {
     my %map = (%switch_map, reverse %switch_map);
     my $new_playmode = $map{$self->GetPlayMode()};
-    $self->action("SetPlayMode", $new_playmode)
+    $self->avTransportAction("SetPlayMode", $new_playmode)
 }
 
 # if called with $on_or_off, sets repeat mode to this value
@@ -294,16 +258,15 @@ sub setShuffle($self, $on_or_off) {
 }
 
 sub setURI( $self, $uri, $metadata ) {
-        return $self->avTransportProxy->SetAVTransportURI( 0, $uri, $metadata );
+    return $self->avTransportAction( "SetAVTransportURI", $uri, $metadata );
 }
 
 sub addURI( $player, $uri, $metadata, $queueSlot ) {
-    return $self->avTransportProxy->AddURIToQueue( 0, $uri, $metadata, $queueSlot );
+    return $self->avTransportAction( "AddURIToQueue", $uri, $metadata, $queueSlot );
 }
 
-###############################################################################
 sub standaloneCoordinator($self) {
-    return $self->avTransportProxy->BecomeCoordinatorOfStandaloneGroup(0);
+    return $self->avTransportAction( "BecomeCoordinatorOfStandaloneGroup",);
 }
 
 
