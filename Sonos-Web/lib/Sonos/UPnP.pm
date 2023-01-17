@@ -33,7 +33,7 @@ sub new {
 	$self = $class->SUPER::new(%args);
 
     my $cp = UPnP::ControlPoint->new();
-    my $self = bless {
+    $self = bless {
         _controlpoint => $cp,
         _players => {},
         _subscriptions => {},
