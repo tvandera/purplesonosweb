@@ -73,7 +73,7 @@ sub getService($self, $name) {
 
 }
 
-sub roomInfo($self) {
+sub zoneGroupsInfo($self) {
     my $count = 0;
     for my $group (values %{$self->{_groups}}) {
         INFO "Group $count: " . join(", ", map { $_->{ZoneName} } @{$group});
@@ -92,7 +92,7 @@ sub processZoneGroupTopology ( $self, $service, %properties ) {
     INFO "Found " . scalar(@groups) . " zone groups: ";
     $self->{_groups} = { map { $_->{Coordinator} => $_->{ZoneGroupMember} } @groups };
 
-    $self->roomInfo();
+    $self->zoneGroupsInfo();
 }
 
 # not currently called, should be called from processZoneGroupTopology
@@ -114,6 +114,21 @@ sub processThirdPartyMediaServers ( $self, $properties ) {
     }
 }
 
+sub deviceInfo($self) {
+    DEBUG Dumper($self);
+}
+
+
+sub findValue($val) {
+    return $val unless ref($val) eq 'HASH';
+    return $val->{val} if defined $val->{val};
+
+    while (my ($key, $value) = each %$val) {
+        $val->{$key} = findValue($value);
+    }
+
+    return $val;
+}
 
 # called when rendering properties (like volume) are changed
 # called when 'currently-playing' has changed
@@ -135,12 +150,14 @@ sub processStateUpdate ( $self, $service, %properties ) {
         my $val = $instancedata{$key};
         $val = decode_entities($val) if ( $val =~ /^&lt;/ );
         $val = \%{ XMLin($val) }     if ( $val =~ /^</ );
-        $val = $val->{val} if ref($val) eq 'HASH';
+        $val = findValue($val);
         $instancedata{$key} = $val
     }
 
     # merge new _state into existing
     %{$self->{_state}} = ( %{$self->{_state}}, %instancedata);
+
+    $self->deviceInfo();
 }
 
 sub processRenderingControl { processStateUpdate(@_); }
