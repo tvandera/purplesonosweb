@@ -191,7 +191,7 @@ sub getVolume($self) {
 }
 
 sub setVolume($self, $value) {
-    $self->renderAction("SetVolume", "Master", $vol);)
+    $self->renderAction("SetVolume", "Master", $value);)
 }
 
 sub changeVolume($self, $diff) {
