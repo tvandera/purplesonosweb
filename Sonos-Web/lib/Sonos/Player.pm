@@ -18,6 +18,11 @@ use HTML::Entities;
 use Data::Dumper;
 use Carp;
 
+require Sonos::ZoneGroupTopology;
+require Sonos::ContentDirectory;
+require Sonos::AVTransport;
+require Sonos::RenderingControl;
+
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
 use constant SERVICE_NAMES => (
@@ -52,117 +57,18 @@ sub getUPnP($self) {
     return $self->{_upnp};
 }
 
-# return true when these are all known
-#  - ZoneGroup info
-#  - AVTransport
-#  - RenderState
-#  - ContentDirectory
-sub allInfoKnown($self) {
-    return $self->{_state}->{}
-
-}
-
-sub zoneGroupsInfo($self) {
-    my $count = 0;
-    for my $group (values %{$self->{_groups}}) {
-        INFO "Group $count: " . join(", ", map { $_->{ZoneName} } @{$group});
-        $count++;
-    }
-}
-
-# called when zonegroups have changed
-sub processZoneGroupTopology ( $self, $service, %properties ) {
-    my $tree = XMLin(
-        decode_entities( $properties{"ZoneGroupState"} ),
-        forcearray => [ "ZoneGroup", "ZoneGroupMember" ]
-    );
-
-    my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
-    INFO "Found " . scalar(@groups) . " zone groups: ";
-    $self->{_groups} = { map { $_->{Coordinator} => $_->{ZoneGroupMember} } @groups };
-
-    $self->zoneGroupsInfo();
-}
-
-# not currently called, should be called from processZoneGroupTopology
-sub processThirdPartyMediaServers ( $self, $properties ) {
-    my %mapping = (
-        "SA_RINCON1_" => "Rhapsody",
-        "SA_RINCON4_" => "Pandora",
-        "SA_RINCON6_" => "Sirius"
-    );
-
-    my $tree =
-      XMLin( decode_entities( $properties->{"ThirdPartyMediaServers"} ),
-        forcearray => ["Service"] );
-    for my $item ( @{ $tree->{Service} } ) {
-        while ( my ( $rincon, $service ) = each(%mapping) ) {
-            Sonos::State::addService( $service, $item )
-              if ( $item->{UDN} =~ $rincon );
-        }
-    }
-}
-
 sub deviceInfo($self) {
     DEBUG Dumper($self);
 }
 
 
-sub findValue($val) {
-    return $val unless ref($val) eq 'HASH';
-    return $val->{val} if defined $val->{val};
-    return $val->{item} if defined $val->{item};
 
-    while (my ($key, $value) = each %$val) {
-        $val->{$key} = findValue($value);
-    }
-
-    return $val;
-}
-
-# called when rendering properties (like volume) are changed
-# called when 'currently-playing' has changed
-sub processStateUpdate ( $self, $service, %properties ) {
-    INFO "StateUpdate for " . Dumper($service);
-    my $tree = XMLin(
-        decode_entities( $properties{LastChange} ),
-        forcearray => ["ZoneGroup"],
-        keyattr    => {
-            "Volume"   => "channel",
-            "Mute"     => "channel",
-            "Loudness" => "channel"
-        }
-    );
-    my %instancedata = %{ $tree->{InstanceID} };
-
-    # many of these propoerties are XML html-encodeded
-    # entities. Decode + parse XML + extract "val" attr
-    foreach my $key ( keys %instancedata ) {
-        my $val = $instancedata{$key};
-        $val = findValue($val);
-        $val = decode_entities($val) if ( $val =~ /^&lt;/ );
-        $val = \%{ XMLin($val) }     if ( $val =~ /^</ );
-        $val = findValue($val);
-        $instancedata{$key} = $val
-    }
-
-
-    # merge new _state into existing
-    %{$self->{_state}} = ( %{$self->{_state}}, %instancedata);
-
-    $self->deviceInfo();
-}
-
-sub processRenderingControl { processStateUpdate(@_); }
-sub processAVTransport { processStateUpdate(@_); }
 
 # called when anything in ContentDirectory has been updated
 # forward to _contentdirectory member
 sub processContentDirectory ( $self, $service, %properties ) {
     # $self->{_contentdirectory}->processUpdate($service, %properties);
 }
-
-
 
 sub avTransportProxy($self) {
     return $self->getService("AVTransport")->controlProxy;

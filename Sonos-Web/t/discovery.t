@@ -11,7 +11,7 @@ my $client = Sonos::Discovery->new();
 my @selsockets = $client->{_controlpoint}->sockets();
 my $select = IO::Select->new(@selsockets);
 
-while ($client->numDevices() < 2) {
+while ($client->numPlayers() < 2) {
     my @sockets = $select->can_read(5);
     map { $client->controlPoint()->handleOnce($_) } @sockets;
 }

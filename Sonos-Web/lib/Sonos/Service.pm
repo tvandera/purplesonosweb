@@ -8,6 +8,10 @@ use constant SERVICE_PREFIX => "urn:schemas-upnp-org:service:";
 use constant SERVICE_SUFFIX => ":1";
 
 
+use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init($DEBUG);
+use Data::Dumper;
+
 sub new {
     my($self, $player) = @_;
 	my $class = ref($self) || $self;
@@ -33,8 +37,8 @@ sub renewSubscription($self) {
         $sub->renew();
     } else {
         my $service = $self->getUPnP();
-        $self->{_subscription} = $service->subscribe( sub { $self->update(@_); }  ) or
-            carp("Could not subscribe to \"$name\"");
+        $self->{_subscription} = $service->subscribe( sub { $self->processUpdate(@_); }  ) or
+            carp("Could not subscribe to \"" . $self->fullName() . "\"");
     }
 
     # add_timeout( time() + $main::RENEW_SUB_TIME, \&sonos_renew_subscriptions );
@@ -75,7 +79,60 @@ sub getUPnP($self) {
     return undef;
 }
 
+sub controlProxy($self) {
+    return $self->getUPnP->controlProxy;
+}
+
 sub DESTROY($self)
 {
     $self->getSubscription()->unsubscribe if defined $self->getSubscription();
 }
+
+
+
+sub findValue($val) {
+    return $val unless ref($val) eq 'HASH';
+    return $val->{val} if defined $val->{val};
+    return $val->{item} if defined $val->{item};
+
+    while (my ($key, $value) = each %$val) {
+        $val->{$key} = findValue($value);
+    }
+
+    return $val;
+}
+
+# called when rendering properties (like volume) are changed
+# called when 'currently-playing' has changed
+sub processStateUpdate ( $self, $service, %properties ) {
+    INFO "StateUpdate for " . Dumper($service);
+    my $tree = XMLin(
+        decode_entities( $properties{LastChange} ),
+        forcearray => ["ZoneGroup"],
+        keyattr    => {
+            "Volume"   => "channel",
+            "Mute"     => "channel",
+            "Loudness" => "channel"
+        }
+    );
+    my %instancedata = %{ $tree->{InstanceID} };
+
+    # many of these propoerties are XML html-encodeded
+    # entities. Decode + parse XML + extract "val" attr
+    foreach my $key ( keys %instancedata ) {
+        my $val = $instancedata{$key};
+        $val = findValue($val);
+        $val = decode_entities($val) if ( $val =~ /^&lt;/ );
+        $val = \%{ XMLin($val) }     if ( $val =~ /^</ );
+        $val = findValue($val);
+        $instancedata{$key} = $val
+    }
+
+
+    # merge new _state into existing
+    %{$self->{_state}} = ( %{$self->{_state}}, %instancedata);
+
+    $self->deviceInfo();
+}
+
+1;

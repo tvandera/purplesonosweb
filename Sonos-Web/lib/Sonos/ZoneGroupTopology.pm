@@ -1,10 +1,10 @@
-package Sonos::Groups;
+package Sonos::ZoneGroupTopology;
+
+use base 'Sonos::Service';
 
 use v5.36;
 use strict;
 use warnings;
-
-require UPnP::ControlPoint;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -18,8 +18,6 @@ use HTML::Entities;
 use Data::Dumper;
 use Carp;
 
-package Sonos::GroupInfo;
-
 sub new {
     my($self, $upnp, %args) = @_;
 	my $class = ref($self) || $self;
@@ -28,14 +26,7 @@ sub new {
         _upnp => $upnp,
     }, $class;
 
-    $self->setupServices();
-
     return $self;
-}
-
-sub DESTROY($self)
-{
-    $self{_subscription}->unsubscribe if defined $self->{_subscription};
 }
 
 sub info($self) {
