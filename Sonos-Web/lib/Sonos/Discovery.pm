@@ -5,8 +5,7 @@ use strict;
 use warnings;
 
 require UPnP::ControlPoint;
-require Sonos::Device;
-require Sonos::ContentDirectory;
+require Sonos::Player;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -23,7 +22,7 @@ sub new {
     my $cp = UPnP::ControlPoint->new(%args);
     $self = bless {
         _controlpoint => $cp,
-        _devices => {}, # UDN => UPnP::ControlPoint
+        _players => {}, # UDN => UPnP::ControlPoint
         _zonegroups => {}, # Sonos::ZoneGroup
     }, $class;
 
@@ -32,8 +31,8 @@ sub new {
     return $self;
 }
 
-sub numDevices($self) {
-    return scalar keys %{$self->{_devices}};
+sub numPlayers($self) {
+    return scalar keys %{$self->{_players}};
 }
 
 sub controlPoint($self) {
@@ -51,12 +50,12 @@ sub _discoveryCallback {
     my $location = $device->{LOCATION};
 
     if ( $action eq 'deviceAdded' ) {
-        $self->{_devices}->{$location} = Sonos::Device->new($device);
+        $self->{_players}->{$location} = Sonos::Player->new($device);
         INFO "Found device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
         # DEBUG Dumper($device);
     }
     elsif ( $action eq 'deviceRemoved' ) {
-        delete $self->{_devices}->{$location};
+        delete $self->{_players}->{$location};
     }
     else {
         WARNING( "Unknown action name:" . $action );

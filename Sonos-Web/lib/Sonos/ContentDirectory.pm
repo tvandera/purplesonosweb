@@ -4,6 +4,8 @@ use v5.36;
 use strict;
 use warnings;
 
+use base 'Sonos::Service'
+
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
@@ -22,7 +24,6 @@ sub new {
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _device => $device,
         _containers => {},
         _items => {},
         _updateids => {}
