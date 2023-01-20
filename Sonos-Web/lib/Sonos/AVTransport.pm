@@ -18,17 +18,6 @@ use HTML::Entities;
 use Data::Dumper;
 use Carp;
 
-sub new {
-    my($self, $upnp, %args) = @_;
-	my $class = ref($self) || $self;
-
-    $self = bless {
-        _upnp => $upnp,
-    }, $class;
-
-    return $self;
-}
-
 sub info($self) {
 }
 

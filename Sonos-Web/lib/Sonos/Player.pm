@@ -26,10 +26,10 @@ require Sonos::RenderingControl;
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
 use constant SERVICE_NAMES => (
-    "ZoneGroupTopology",    # zones
-    "ContentDirectory",     # music library
-    "AVTransport",          # currently playing track
-    "RenderingControl"      # volume etc
+    "ZoneGroupTopology", # zones
+    "ContentDirectory",  # music library
+    "AVTransport",       # currently playing track
+    "RenderingControl"   # volume etc
 );
 
 sub new {
