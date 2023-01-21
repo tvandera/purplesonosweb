@@ -49,6 +49,10 @@ sub new {
     return $self;
 }
 
+sub friendlyName($self) {
+    return $self->getUPnP()->{FRIENDLYNAME};
+}
+
 sub getService($self, $name) {
     return $self->{_services}->{$name};
 }

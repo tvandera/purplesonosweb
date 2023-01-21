@@ -38,6 +38,10 @@ sub getSubscription($self) {
     return $self->{_subscription};
 }
 
+sub friendlyName($self) {
+    return $self->shortName() . "@" . $self->getPlayer()->friendlyName()
+}
+
 sub renewSubscription($self) {
     my $sub = $self->getSubscription();
     if (defined $sub) {

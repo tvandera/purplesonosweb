@@ -57,7 +57,7 @@ sub info($self) {
         "album",
     );
 
-    INFO "AVTransport: ";
+    INFO "Update ". $self->friendlyName();
     for (@fields) {
         my $value = $self->$_();
         INFO "  " . $_ . ": " . $value if defined $value;
