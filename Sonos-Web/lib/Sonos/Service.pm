@@ -112,7 +112,6 @@ sub findValue($val) {
 # called when rendering properties (like volume) are changed
 # called when 'currently-playing' has changed
 sub processStateUpdate ( $self, $service, %properties ) {
-    INFO "StateUpdate for " . Dumper($service);
     my $tree = XMLin(
         decode_entities( $properties{LastChange} ),
         forcearray => ["ZoneGroup"],

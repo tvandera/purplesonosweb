@@ -20,8 +20,11 @@ use Carp;
 
 sub info($self) {
     my $count = 0;
-    for my $group (values %{$self->{_groups}}) {
-        INFO "Group $count: " . join(", ", map { $_->{ZoneName} } @{$group});
+    my @groups = values %{$self->{_groups}};
+
+    INFO "Found " . scalar(@groups) . " zone groups: ";
+    for my $group (@groups) {
+        INFO "  $count: " . join(", ", map { $_->{ZoneName} } @{$group});
         $count++;
     }
 }
@@ -34,7 +37,6 @@ sub processUpdate ( $self, $service, %properties ) {
     );
 
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
-    INFO "Found " . scalar(@groups) . " zone groups: ";
     $self->{_groups} = { map { $_->{Coordinator} => $_->{ZoneGroupMember} } @groups };
 
     $self->info();

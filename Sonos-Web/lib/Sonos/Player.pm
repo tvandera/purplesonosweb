@@ -57,13 +57,6 @@ sub getUPnP($self) {
     return $self->{_upnp};
 }
 
-sub deviceInfo($self) {
-    DEBUG Dumper($self);
-}
-
-
-
-
 # called when anything in ContentDirectory has been updated
 # forward to _contentdirectory member
 sub processContentDirectory ( $self, $service, %properties ) {
