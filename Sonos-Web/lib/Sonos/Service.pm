@@ -97,16 +97,31 @@ sub DESTROY($self)
     $self->getSubscription()->unsubscribe if defined $self->getSubscription();
 }
 
-sub findValue($val) {
-    return $val unless ref($val) eq 'HASH';
-    return $val->{val} if defined $val->{val};
-    return $val->{item} if defined $val->{item};
 
-    while (my ($key, $value) = each %$val) {
-        $val->{$key} = findValue($value);
+sub derefHelper($elem) {
+    DEBUG "deref " . Dumper($elem);
+
+    $elem = decode_entities($elem) if ( $elem =~ /^&lt;/ );
+    $elem = \%{ XMLin($elem) }     if ( $elem =~ /^</ );
+
+    # not a hashref -> itself
+    return $elem unless ref($elem) eq 'HASH';
+
+    # empty hashref -> ""
+    my $num = scalar %{$elem};
+    return "" if $num == 0;
+
+    return derefHelper($elem->{val})  if defined $elem->{val} and $num == 1;
+    return derefHelper($elem->{item}) if defined $elem->{item} and $num == 1;
+
+    while (my ($key, $val) = each %$elem) {
+
+        $elem->{$key} = derefHelper($val);
     }
 
-    return $val;
+    DEBUG "dereffed to " . Dumper($elem);
+
+    return $elem;
 }
 
 # called when rendering properties (like volume) are changed
@@ -121,22 +136,17 @@ sub processStateUpdate ( $self, $service, %properties ) {
             "Loudness" => "channel"
         }
     );
-    my %instancedata = %{ $tree->{InstanceID} };
 
-    # many of these propoerties are XML html-encodeded
-    # entities. Decode + parse XML + extract "val" attr
-    foreach my $key ( keys %instancedata ) {
-        my $val = $instancedata{$key};
-        $val = findValue($val);
-        $val = decode_entities($val) if ( $val =~ /^&lt;/ );
-        $val = \%{ XMLin($val) }     if ( $val =~ /^</ );
-        $val = findValue($val);
-        $instancedata{$key} = $val
-    }
-
+    # many of these properties are XML html-encoded entities.
+    # So we:
+    # - decode
+    # - parse XML
+    # - remove extra "val" and "item" attr
+    # - convert {} to ""
+    my $instancedata = derefHelper($tree->{InstanceID});
 
     # merge new _state into existing
-    %{$self->{_state}} = ( %{$self->{_state}}, %instancedata);
+    %{$self->{_state}} = ( %{$self->{_state}}, %{$instancedata});
 
     $self->info();
 }
