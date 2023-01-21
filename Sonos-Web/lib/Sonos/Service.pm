@@ -99,8 +99,6 @@ sub DESTROY($self)
 
 
 sub derefHelper($elem) {
-    DEBUG "deref " . Dumper($elem);
-
     $elem = decode_entities($elem) if ( $elem =~ /^&lt;/ );
     $elem = \%{ XMLin($elem) }     if ( $elem =~ /^</ );
 
@@ -112,14 +110,12 @@ sub derefHelper($elem) {
     return "" if $num == 0;
 
     return derefHelper($elem->{val})  if defined $elem->{val} and $num == 1;
-    return derefHelper($elem->{item}) if defined $elem->{item} and $num == 1;
+    return derefHelper($elem->{item}) if defined $elem->{item};
 
     while (my ($key, $val) = each %$elem) {
 
         $elem->{$key} = derefHelper($val);
     }
-
-    DEBUG "dereffed to " . Dumper($elem);
 
     return $elem;
 }
