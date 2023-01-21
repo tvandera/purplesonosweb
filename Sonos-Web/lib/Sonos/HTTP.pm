@@ -489,24 +489,18 @@ sub http_build_zone_data {
             "object.item.audioItem.audioBroadcast" )
         {
             if ( !ref( $curtrack->{item}->{"r:streamContent"} ) ) {
-                $activedata{ACTIVE_NAME} =
-                  enc( $curtrack->{item}->{"r:streamContent"} );
+                $activedata{ACTIVE_NAME} = enc( $curtrack->{item}->{"r:streamContent"} );
             }
 
             if ( !defined( $curtrack->{item}->{"dc:creator"} ) ) {
-                $activedata{ACTIVE_ALBUM} =
-                  enc( $curtransport->{item}->{"dc:title"} );
+                $activedata{ACTIVE_ALBUM} = enc( $curtransport->{item}->{"dc:title"} );
             }
             else {
-                $activedata{ACTIVE_NAME} =
-                  enc( $curtrack->{item}->{"dc:title"} );
-                $activedata{ACTIVE_ARTIST} =
-                  enc( $curtrack->{item}->{"dc:creator"} );
-                $activedata{ACTIVE_ALBUM} =
-                  enc( $curtrack->{item}->{"upnp:album"} );
+                $activedata{ACTIVE_NAME} = enc( $curtrack->{item}->{"dc:title"} );
+                $activedata{ACTIVE_ARTIST} = enc( $curtrack->{item}->{"dc:creator"} );
+                $activedata{ACTIVE_ALBUM} = enc( $curtrack->{item}->{"upnp:album"} );
                 $activedata{ACTIVE_TRACK_NUM} = -1;
-                $activedata{ACTIVE_TRACK_TOT} =
-                  $curtransport->{item}->{"dc:title"} . " \/";
+                $activedata{ACTIVE_TRACK_TOT} = $curtransport->{item}->{"dc:title"} . " \/";
             }
 
             $activedata{ACTIVE_ISSONG}  = 0;
