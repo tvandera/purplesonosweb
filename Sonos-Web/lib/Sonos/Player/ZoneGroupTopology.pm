@@ -1,6 +1,6 @@
-package Sonos::ZoneGroupTopology;
+package Sonos::Player::ZoneGroupTopology;
 
-use base 'Sonos::Service';
+use base 'Sonos::Player::Service';
 
 use v5.36;
 use strict;

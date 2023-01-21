@@ -1,6 +1,6 @@
-package Sonos::RenderingControl;
+package Sonos::Player::RenderingControl;
 
-use base 'Sonos::Service';
+use base 'Sonos::Player::Service';
 
 use v5.36;
 use strict;

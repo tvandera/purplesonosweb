@@ -1,4 +1,4 @@
-package Sonos::Service;
+package Sonos::Player::Service;
 
 use v5.36;
 use strict;

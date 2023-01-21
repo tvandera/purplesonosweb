@@ -1,6 +1,6 @@
-package Sonos::AVTransport;
+package Sonos::Player::AVTransport;
 
-use base 'Sonos::Service';
+use base 'Sonos::Player::Service';
 
 use v5.36;
 use strict;

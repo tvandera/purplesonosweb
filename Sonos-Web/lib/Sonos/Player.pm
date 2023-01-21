@@ -18,10 +18,10 @@ use HTML::Entities;
 use Data::Dumper;
 use Carp;
 
-require Sonos::ZoneGroupTopology;
-require Sonos::ContentDirectory;
-require Sonos::AVTransport;
-require Sonos::RenderingControl;
+require Sonos::Player::ZoneGroupTopology;
+require Sonos::Player::ContentDirectory;
+require Sonos::Player::AVTransport;
+require Sonos::Player::RenderingControl;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
@@ -42,7 +42,7 @@ sub new {
     }, $class;
 
     for my $name (SERVICE_NAMES) {
-        my $classname = "Sonos::$name";
+        my $classname = "Sonos::Player::$name";
         $self->{_services}->{$name} = $classname->new($self);
     }
 

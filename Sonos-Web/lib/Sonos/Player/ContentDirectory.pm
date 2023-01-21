@@ -1,10 +1,10 @@
-package Sonos::ContentDirectory;
+package Sonos::Player::ContentDirectory;
 
 use v5.36;
 use strict;
 use warnings;
 
-use base 'Sonos::Service';
+use base 'Sonos::Player::Service';
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
