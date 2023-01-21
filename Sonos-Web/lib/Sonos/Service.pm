@@ -7,10 +7,17 @@ use warnings;
 use constant SERVICE_PREFIX => "urn:schemas-upnp-org:service:";
 use constant SERVICE_SUFFIX => ":1";
 
-
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
+
+use XML::Liberal;
+use XML::LibXML::Simple qw(XMLin);
+XML::Liberal->globally_override('LibXML');
+
+use HTML::Entities;
+
 use Data::Dumper;
+use Carp;
 
 sub new {
     my($self, $player) = @_;
@@ -46,9 +53,11 @@ sub renewSubscription($self) {
     return $self->getSubscription();
 }
 
-# service name == class name
+# service name == last part of class name
 sub shortName($self) {
-    return ref $self;
+    my $full_classname = ref $self; # returns Sonos::Player::AVTransport
+    my @parts = split /::/, $full_classname;
+    return $parts[-1]; # only take the AVTransport part
 }
 
 sub fullName($self) {
@@ -87,8 +96,6 @@ sub DESTROY($self)
 {
     $self->getSubscription()->unsubscribe if defined $self->getSubscription();
 }
-
-
 
 sub findValue($val) {
     return $val unless ref($val) eq 'HASH';
@@ -132,7 +139,7 @@ sub processStateUpdate ( $self, $service, %properties ) {
     # merge new _state into existing
     %{$self->{_state}} = ( %{$self->{_state}}, %instancedata);
 
-    $self->deviceInfo();
+    $self->info();
 }
 
 1;

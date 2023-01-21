@@ -11,7 +11,8 @@ sub info($self) {
 
 # handled in base class
 sub processUpdate {
-    processStateUpdate(@_);
+    my $self = shift;
+    $self->processStateUpdate(@_);
 }
 
 1;

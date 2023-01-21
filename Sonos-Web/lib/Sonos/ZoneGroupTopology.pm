@@ -37,7 +37,7 @@ sub processUpdate ( $self, $service, %properties ) {
     INFO "Found " . scalar(@groups) . " zone groups: ";
     $self->{_groups} = { map { $_->{Coordinator} => $_->{ZoneGroupMember} } @groups };
 
-    $self->zoneGroupsInfo();
+    $self->info();
 }
 
 # not currently called, should be called from processZoneGroupTopology
