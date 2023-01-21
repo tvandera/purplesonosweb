@@ -72,6 +72,13 @@ sub populated($self) {
     return $self->{_state};
 }
 
+
+sub prop($self, @path) {
+    my $value = $self->{_state};
+    map { $value = $value->{$_}; } (@path);
+    return $value;
+}
+
 sub getUPnP($self) {
     my $fullname = $self->fullName();
     my $device = $self->getPlayer()->getUPnP();
