@@ -81,12 +81,6 @@ sub log($self, @args) {
     INFO sprintf("[%12s]: ", $self->friendlyName), @args;
 }
 
-# called when anything in ContentDirectory has been updated
-# forward to _contentdirectory member
-sub processContentDirectory ( $self, $service, %properties ) {
-    # $self->{_contentdirectory}->processUpdate($service, %properties);
-}
-
 sub avTransportProxy($self) {
     return $self->getService("AVTransport")->controlProxy;
 }
@@ -100,7 +94,11 @@ sub removeTrackFromQueue($self, $objectid) {
 }
 
 sub startPlaying($self) {
-    return $self->avTransportAction("Play", "1" );
+    return $self->avTransportAction("Play", "1");
+}
+
+sub stopPlaying($self) {
+    return $self->avTransportAction("Stop");
 }
 
 sub seek($self, $queue) {
@@ -121,7 +119,7 @@ sub changeVolume($self, $diff) {
     $self->setVolume($vol);
 }
 
-sub avtransportAction( $self, $action, @args ) {
+sub avTransportAction( $self, $action, @args ) {
     return $self->avTransportProxy()->$action("0,", @args);
 }
 

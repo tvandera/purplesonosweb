@@ -22,8 +22,7 @@ sub new {
     my $cp = UPnP::ControlPoint->new(%args);
     $self = bless {
         _controlpoint => $cp,
-        _players => {}, # UDN => UPnP::ControlPoint
-        _zonegroups => {}, # Sonos::ZoneGroup
+        _players => {}, # UDN => Sonos::Player
     }, $class;
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
@@ -33,6 +32,10 @@ sub new {
 
 sub numPlayers($self) {
     return scalar keys %{$self->{_players}};
+}
+
+sub getPlayer($self, $n) {
+    return (values %{$self->{_players}})[$n];
 }
 
 sub controlPoint($self) {
