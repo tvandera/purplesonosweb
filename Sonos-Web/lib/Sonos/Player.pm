@@ -77,6 +77,10 @@ sub getUPnP($self) {
     return $self->{_upnp};
 }
 
+sub log($self, @args) {
+    INFO sprintf("[%12s]: ", $self->friendlyName), @args;
+}
+
 # called when anything in ContentDirectory has been updated
 # forward to _contentdirectory member
 sub processContentDirectory ( $self, $service, %properties ) {

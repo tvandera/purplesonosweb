@@ -11,7 +11,7 @@ use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
 use Data::Dumper;
-$Data::Dumper::Maxdepth = 3;
+$Data::Dumper::Maxdepth = 4;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 

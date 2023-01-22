@@ -59,7 +59,7 @@ sub renewSubscription($self) {
 
 # service name == last part of class name
 sub shortName($self) {
-    my $full_classname = ref $self; # returns Sonos::Player::AVTransport
+    my $full_classname = ref $self; # e.g. Sonos::Player::AVTransport
     my @parts = split /::/, $full_classname;
     return $parts[-1]; # only take the AVTransport part
 }
@@ -72,14 +72,23 @@ sub getPlayer($self) {
     return $self->{_player};
 }
 
+sub log($self, @args) {
+    $self->getPlayer()->log(@args);
+}
+
 sub populated($self) {
     return $self->{_state};
 }
 
-
 sub prop($self, @path) {
     my $value = $self->{_state};
-    map { $value = $value->{$_}; } (@path);
+    for (@path) {
+        if (ref $value eq 'HASH' and defined $value->{$_}) {
+            $value = $value->{$_};
+        } else {
+            return undef;
+        }
+    }
     return $value;
 }
 
@@ -109,6 +118,12 @@ sub DESTROY($self)
 }
 
 
+# many of these properties are XML html-encoded entities.
+# So we:
+# - decode
+# - parse XML
+# - remove extra "val" and "item" attr
+# - convert {} to ""
 sub derefHelper($elem) {
     $elem = decode_entities($elem) if ( $elem =~ /^&lt;/ );
     $elem = \%{ XMLin($elem) }     if ( $elem =~ /^</ );
@@ -144,16 +159,11 @@ sub processStateUpdate ( $self, $service, %properties ) {
         }
     );
 
-    # many of these properties are XML html-encoded entities.
-    # So we:
-    # - decode
-    # - parse XML
-    # - remove extra "val" and "item" attr
-    # - convert {} to ""
+
     my $instancedata = derefHelper($tree->{InstanceID});
 
     # merge new _state into existing
-    %{$self->{_state}} = ( %{$self->{_state}}, %{$instancedata});
+    %{$self->{_state}} = ( %{$self->{_state}}, %{$instancedata} );
 
     $self->info();
 }

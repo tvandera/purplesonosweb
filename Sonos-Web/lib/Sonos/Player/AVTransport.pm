@@ -37,6 +37,8 @@ sub album($self)   { return $self->metaDataProp("upnp:album"); }
 
 sub class($self) {
     my $full_classname = $self->metaDataProp("upnp:class");
+    return undef unless defined $full_classname;
+
     my @parts = split ".", $full_classname;
     return $parts[-1];
 }
@@ -57,10 +59,10 @@ sub info($self) {
         "album",
     );
 
-    INFO "Update ". $self->friendlyName();
+    $self->log($self->shortName(), ":");
     for (@fields) {
         my $value = $self->$_();
-        INFO "  " . $_ . ": " . $value if defined $value;
+        $self->log("  " . $_ . ": " . $value) if defined $value;
     }
 }
 

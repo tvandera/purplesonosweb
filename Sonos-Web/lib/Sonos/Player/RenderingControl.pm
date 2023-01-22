@@ -13,11 +13,11 @@ use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
 sub info($self) {
-    INFO "Volume: ";
+    $self->log($self->shortName, ":");
     for my $channel ('Master', 'LF', 'RF') {
       my $muted = "";
       $muted = " (muted)" if $self->prop("Mute", $channel);
-      INFO " $channel: " . $self->prop("Volume", $channel) . $muted;
+      $self->log(" $channel: " . $self->prop("Volume", $channel) . $muted);
     }
 }
 

@@ -22,9 +22,9 @@ sub info($self) {
     my $count = 0;
     my @groups = values %{$self->{_groups}};
 
-    INFO "Found " . scalar(@groups) . " zone groups: ";
+    $self->log("Found " . scalar(@groups) . " zone groups: ");
     for my $group (@groups) {
-        INFO "  $count: " . join(", ", map { $_->{ZoneName}  } @{$group});
+        $self->log("  $count: " . join(", ", map { $_->{ZoneName}  } @{$group}));
         $count++;
     }
 }
@@ -49,6 +49,8 @@ sub zoneInfo($self, $uuid) {
 
 # called when zonegroups have changed
 sub processUpdate ( $self, $service, %properties ) {
+    return unless $properties{"ZoneGroupState"};
+
     my $tree = XMLin(
         decode_entities( $properties{"ZoneGroupState"} ),
         forcearray => [ "ZoneGroup", "ZoneGroupMember" ]
