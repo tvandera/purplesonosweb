@@ -93,6 +93,14 @@ sub removeTrackFromQueue($self, $objectid) {
     return $self->avTransportProxy()->RemoveTrackFromQueue( "0", $objectid );
 }
 
+sub isPlaying($self) {
+    return $self->getService("AVTransport")->transportState() eq "PLAYING";
+}
+
+sub isStopped($self) {
+    return $self->getService("AVTransport")->transportState() eq "STOPPED";
+}
+
 sub startPlaying($self) {
     return $self->avTransportAction("Play", "1");
 }
