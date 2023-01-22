@@ -49,8 +49,24 @@ sub new {
     return $self;
 }
 
+sub UDN($self) {
+    my $uuid = $self->getUPnP()->UDN;
+    $uuid =~ s/^uuid://g;
+    return $uuid;
+}
+
 sub friendlyName($self) {
+    return $self->zoneName() if $self->zoneName;
     return $self->getUPnP()->{FRIENDLYNAME};
+}
+
+sub zoneInfo($self) {
+    return $self->getService("ZoneGroupTopology")->zoneInfo($self->UDN);
+}
+
+sub zoneName($self) {
+    return undef if not $self->zoneInfo();
+    return $self->zoneInfo()->{ZoneName};
 }
 
 sub getService($self, $name) {

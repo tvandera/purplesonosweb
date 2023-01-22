@@ -24,9 +24,27 @@ sub info($self) {
 
     INFO "Found " . scalar(@groups) . " zone groups: ";
     for my $group (@groups) {
-        INFO "  $count: " . join(", ", map { $_->{ZoneName} } @{$group});
+        INFO "  $count: " . join(", ", map { $_->{ZoneName}  } @{$group});
         $count++;
     }
+}
+
+sub haveZoneInfo($self) {
+    return defined $self->{_groups};
+}
+
+sub allZones($self) {
+    my $allzones = [ map { @$_ } (values %{$self->{_groups}}) ];
+    return $allzones;
+}
+
+sub zoneInfo($self, $uuid) {
+    return undef unless $self->haveZoneInfo();
+
+    my @matchingzones = grep { $_->{UUID} eq $uuid } @{$self->allZones()};
+    carp "More than one zone with uuid $uuid" unless scalar @matchingzones == 1;
+
+    return $matchingzones[0];
 }
 
 # called when zonegroups have changed
