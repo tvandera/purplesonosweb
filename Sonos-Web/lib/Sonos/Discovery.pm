@@ -7,25 +7,32 @@ use warnings;
 require UPnP::ControlPoint;
 require Sonos::Player;
 
+require IO::Async::Handle;
+require IO::Async::Loop::Select;
+
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
+use Carp;
 use Data::Dumper;
 $Data::Dumper::Maxdepth = 4;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
 sub new {
-    my($self, %args) = @_;
+    my($self, $loop) = @_;
 	my $class = ref($self) || $self;
 
-    my $cp = UPnP::ControlPoint->new(%args);
+    my $cp = UPnP::ControlPoint->new();
     $self = bless {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
+        _loop => undef, # IO::Async::Loop::Select
     }, $class;
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
+
+    $self->addToLoop($loop) if defined $loop;
 
     return $self;
 }
@@ -34,8 +41,15 @@ sub numPlayers($self) {
     return scalar keys %{$self->{_players}};
 }
 
-sub getPlayer($self, $n) {
-    return (values %{$self->{_players}})[$n];
+sub players($self) {
+    return values %{$self->{_players}};
+}
+
+sub zonePlayer($self, $zoneName) {
+    my @matches = grep { $_->zoneName() == $zoneName } $self->players();
+    return undef unless scalar @matches;
+    carp "More than one player for zone \"$zoneName\"" unless scalar @matches == 1;
+    return $matches[0];
 }
 
 sub controlPoint($self) {
@@ -44,6 +58,25 @@ sub controlPoint($self) {
 
 sub sockets($self) {
     return $self->controlPoint()->sockets()
+}
+
+sub addToLoop($self, $loop) {
+    carp "No a IO::Async::Loop::Select" unless $loop isa 'IO::Async::Loop::Select';
+    carp "Already added" if defined $self->{_loop};
+
+    $self->{_loop} = $loop;
+
+    for my $socket ($self->sockets()) {
+        my $handle = IO::Async::Handle->new(
+            handle => $socket,
+            on_read_ready => sub {
+                $self->controlPoint()->handleOnce($socket);
+            },
+            on_write_ready => sub { carp },
+        );
+
+        $loop->add( $handle );
+    }
 }
 
 # callback routine that gets called by UPnP::Controlpoint when a device is added
