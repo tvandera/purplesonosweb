@@ -6,3 +6,4 @@ aa_cache
 *.log
 local
 .vscode
+cpanfile.snapshot
