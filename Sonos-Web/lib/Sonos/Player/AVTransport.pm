@@ -22,7 +22,7 @@ sub currentTrackDuration($self) { return $self->prop("CurrentTrackDuration"); }
 
 # inside CurrentTransport or AVTransportURIMetaData
 sub metaDataProp($self, @path) {
-    my @elements = ( "CurrentTrackMetaData", "AVTransportURIMetaData" );
+    my @elements = ( "AVTransportURIMetaData", "CurrentTrackMetaData");
     for my $el (@elements) {
         my $value = $self->prop($el, @path );
         return $value if defined $value;
@@ -31,14 +31,17 @@ sub metaDataProp($self, @path) {
     return undef;
 }
 
-sub title($self)   { return $self->metaDataProp("dc:title"); }
-sub creator($self) { return $self->metaDataProp("dc:creator"); }
-sub album($self)   { return $self->metaDataProp("upnp:album"); }
+sub title($self)         { return $self->metaDataProp("dc:title"); }
+sub creator($self)       { return $self->metaDataProp("dc:creator"); }
+sub album($self)         { return $self->metaDataProp("upnp:album"); }
+sub streamcontent($self) { return $self->metaDataProp("r:streamContent"); }
 
+# class of what's playing
 sub class($self) {
     my $full_classname = $self->metaDataProp("upnp:class");
     return undef unless defined $full_classname;
 
+    # only the last part
     my @parts = split ".", $full_classname;
     return $parts[-1];
 }
@@ -50,6 +53,7 @@ sub isRadio($self) {
 # CurrentTrack
 
 sub info($self) {
+    DEBUG Dumper($self->{_state});
     my @fields = (
         "transportState",
         "currentPlayMode",
@@ -57,6 +61,7 @@ sub info($self) {
         "title",
         "creator",
         "album",
+        "streamcontent",
     );
 
     $self->log($self->shortName(), ":");
