@@ -19,23 +19,6 @@ XML::Liberal->globally_override('LibXML');
 # Contains music library info
 # caches for ContentDir
 
-sub new {
-    my($self, $device, %args) = @_;
-	my $class = ref($self) || $self;
-
-    $self = bless {
-        _containers => {},
-        _items => {},
-        _updateids => {}
-    }, $class;
-
-    return $self;
-}
-
-sub contentDirProxy($self) {
-    return $self->{_device}->getService("ContentDirectory")->controlProxy;
-}
-
 my @ObjectIDs = (
     [ "FavoritesUpdateID", "Favorites",          "FV:2",        "tiles/favorites.svg" ],
 
@@ -106,7 +89,7 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
     INFO "Fetching " . $objectid;
 
     do {
-        $result = $self->contentDirProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
+        $result = $self->controlProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
 
         return undef unless $result->isSuccessful;
 
