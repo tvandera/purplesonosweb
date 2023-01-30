@@ -7,3 +7,4 @@ aa_cache
 local
 .vscode
 cpanfile.snapshot
+*content_cache.json
