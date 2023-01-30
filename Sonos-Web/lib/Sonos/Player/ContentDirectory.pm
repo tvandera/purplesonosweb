@@ -6,6 +6,8 @@ use warnings;
 
 use base 'Sonos::Player::Service';
 
+use List::MoreUtils qw(zip);
+
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
@@ -19,24 +21,32 @@ XML::Liberal->globally_override('LibXML');
 # Contains music library info
 # caches for ContentDir
 
-my @ObjectIDs = (
-    [ "FavoritesUpdateID", "Favorites",          "FV:2",        "tiles/favorites.svg" ],
+sub lookupTable() {
+    my @keys = (
+        "update_id", "name", "prefix", "icon"
+    );
+    my @table = (
+        [ "FavoritesUpdateID", "Favorites",          "FV:2",        "tiles/favorites.svg" ],
 
-    [ "ShareListUpdateID", "Artists",            "A:ARTIST",    "tiles/artists.svg" ],
-    [ "ShareListUpdateID", "Albums",             "A:ALBUM",     "tiles/album.svg" ],
-    [ "ShareListUpdateID", "Genres",             "A:GENRE",     "tiles/genre.svg" ],
-    [ "ShareListUpdateID", "Composers",          "A:COMPOSER",  "tiles/composers.svg" ],
-    [ "ShareListUpdateID", "Tracks",             "A:TRACKS",    "tiles/track.svg" ],
-    [ "ShareListUpdateID", "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg" ],
-    [ "ShareListUpdateID", "Folders",            "S:",          "tiles/folder.svg" ],
+        [ "ShareListUpdateID", "Artists",            "A:ARTIST",    "tiles/artists.svg" ],
+        [ "ShareListUpdateID", "Albums",             "A:ALBUM",     "tiles/album.svg" ],
+        [ "ShareListUpdateID", "Genres",             "A:GENRE",     "tiles/genre.svg" ],
+        [ "ShareListUpdateID", "Composers",          "A:COMPOSER",  "tiles/composers.svg" ],
+        [ "ShareListUpdateID", "Tracks",             "A:TRACKS",    "tiles/track.svg" ],
+        [ "ShareListUpdateID", "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg" ],
+        [ "ShareListUpdateID", "Folders",            "S:",          "tiles/folder.svg" ],
 
-    [ "RadioLocationUpdateID", "Radio", "R:0/0", "tiles/radio_logo.svg" ],
+        [ "RadioLocationUpdateID", "Radio", "R:0/0", "tiles/radio_logo.svg" ],
 
-    [ "ContainerUpdateIDs", "Line In", "AI:", "tiles/linein.svg" ],
-    [ "ContainerUpdateIDs", "Queue", "Q:0", "tiles/queue.svg" ],
+        [ "ContainerUpdateIDs", "Line In", "AI:", "tiles/linein.svg" ],
+        [ "ContainerUpdateIDs", "Queue", "Q:0", "tiles/queue.svg" ],
 
-    [ "SavedQueuesUpdateID", "Playlists", "SQ:", "tiles/sonos_playlists.svg" ],
-);
+        [ "SavedQueuesUpdateID", "Playlists", "SQ:", "tiles/sonos_playlists.svg" ],
+    );
+
+   my %lookup_table = map { zip(@keys, @$_) } @table;
+   return \%lookup_table;
+}
 
 
 # called when anything in ContentDirectory has been updated
@@ -66,10 +76,12 @@ sub processUpdate ( $self, $service, %properties ) {
 }
 
 
+# finds items in lookupTable that have updateid equal to given $updateid and
+# fetches those
 sub fetchAndCacheByUpdateID {
     my ($self, $updateid)  = @_;
-    my @matching = grep { $_->[0] eq $updateid } @ObjectIDs;
-    map { $self->fetchAndCacheByObjectId($_->[2]) } @matching;
+    my @matching = grep { $_->{update_id} eq $updateid } lookupTable();
+    map { $self->fetchAndCacheByObjectId($_->{prefix}) } @matching;
 }
 
 
@@ -107,6 +119,7 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
     } while ( $start < $result->getValue("TotalMatches") );
 
     INFO " .  Found " . scalar(@data) . " entries.";
+    DEBUG Dumper(@data[0..10]);
 
     foreach my $item (@data) {
         $self->{_items}->{$item->{id}} = $item;
