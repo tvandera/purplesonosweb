@@ -27,6 +27,7 @@ sub new {
     $self = bless {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
+        _contentcache => {},
         _loop => undef, # IO::Async::Loop::Select
     }, $class;
 
@@ -86,7 +87,7 @@ sub _discoveryCallback {
     my $location = $device->{LOCATION};
 
     if ( $action eq 'deviceAdded' ) {
-        $self->{_players}->{$location} = Sonos::Player->new($device);
+        $self->{_players}->{$location} = Sonos::Player->new($device, $self);
         INFO "Found device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
         # DEBUG Dumper($device);
     }

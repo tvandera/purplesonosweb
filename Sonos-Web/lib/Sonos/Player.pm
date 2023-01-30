@@ -33,11 +33,12 @@ use constant SERVICE_NAMES => (
 );
 
 sub new {
-    my($self, $upnp, %args) = @_;
+    my($self, $upnp, $discover, %args) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
         _upnp => $upnp,
+        _discovery => $discover,
         _services => { },
     }, $class;
 
@@ -49,6 +50,9 @@ sub new {
     return $self;
 }
 
+
+# for Sonos this is smtg like RINCON_000E583472BC01400
+# RINCON_<<MAC addresss>><<port>>
 sub UDN($self) {
     my $uuid = $self->getUPnP()->UDN;
     $uuid =~ s/^uuid://g;
