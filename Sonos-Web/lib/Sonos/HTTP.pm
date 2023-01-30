@@ -1,3 +1,4 @@
+use IO::Compress::Gzip qw(gzip $GzipError) ;
 
 ###############################################################################
 # HTTP
@@ -932,7 +933,7 @@ sub http_send_tmpl_response {
 
     my $output = encode( 'utf8', $template->output );
     my $gzoutput;
-    my $status   = gzip \$output => \$gzoutput;
+    my $status   = gzip $output => $gzoutput;
     my $response = HTTP::Response->new(
         200, undef,
         [
