@@ -44,8 +44,8 @@ sub lookupTable() {
         [ "SavedQueuesUpdateID", "Playlists", "SQ:", "tiles/sonos_playlists.svg" ],
     );
 
-   my %lookup_table = map { zip(@keys, @$_) } @table;
-   return \%lookup_table;
+   my @lookup_table = map { { zip(@keys, @$_) } } @table;
+   return @lookup_table;
 }
 
 
@@ -64,15 +64,17 @@ sub processUpdate ( $self, $service, %properties ) {
     foreach my $key (keys %properties) {
         next if ($key !~ /UpdateIDs?$/);
 
-        my $oldvalue = $self->{_updateids}->{$key} || "";
+        my $oldvalue = $self->getUpdateID($key);
         my $newvalue = $properties{$key};
+
+        INFO "Update ID $key: old $oldvalue ?= new $newvalue";
 
         # call fetchAndCache if updated
         $self->fetchAndCacheByUpdateID($key) if $oldvalue ne $newvalue;
     }
 
-    # merge new UpdateIDs into existing ones
-    %{$self->{_updateids}} = ( %{$self->{_updateids}}, %properties);
+    $self->contentCache()->mergeUpdateIDs(%properties);
+
 }
 
 
@@ -119,17 +121,23 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
     } while ( $start < $result->getValue("TotalMatches") );
 
     INFO " .  Found " . scalar(@data) . " entries.";
-    DEBUG Dumper(@data[0..10]);
+    #DEBUG Dumper(@data[0..10]);
 
-    foreach my $item (@data) {
-        $self->{_items}->{$item->{id}} = $item;
-    }
+    $self->contentCache()->addItems(@data);
 
     return \@data;
 }
 
-sub get($self, $id) {
-    return $self->{_items}->{$id};
+sub contentCache($self) {
+    return $self->{_player}->{_discovery}->{_contentcache};
+}
+
+sub getItem($self, $id) {
+    return $self->contentCache()->getItem($id);
+}
+
+sub getUpdateID($self, $id) {
+    return $self->contentCache()->getUpdateID($id);
 }
 
 ###############################################################################

@@ -6,6 +6,7 @@ use warnings;
 
 require UPnP::ControlPoint;
 require Sonos::Player;
+require Sonos::ContentCache;
 
 require IO::Async::Handle;
 require IO::Async::Loop::Select;
@@ -27,7 +28,7 @@ sub new {
     $self = bless {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
-        _contentcache => {},
+        _contentcache => Sonos::ContentCache->new(),
         _loop => undef, # IO::Async::Loop::Select
     }, $class;
 

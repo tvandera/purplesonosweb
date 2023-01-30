@@ -1,4 +1,4 @@
-package Sonos::Player::ContentCache;
+package Sonos::ContentCache;
 
 use v5.36;
 use strict;
@@ -6,6 +6,12 @@ use warnings;
 
 use JSON;
 use File::Slurp;
+
+use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init($DEBUG);
+
+use Data::Dumper;
+use Carp;
 
 use constant CACHE => "content_cache.json";
 
@@ -19,7 +25,7 @@ sub new {
         _items => { },
     }, $class;
 
-    $self->tryLoad(CACHE);
+    $self->load(CACHE);
 
     return $self;
 }
@@ -29,24 +35,32 @@ sub DESTROY($self) {
 }
 
 sub load($self, $filename) {
+    return if not -e $filename;
     my ($updateids, $items) = @{decode_json(read_file($filename))};
     $self->{_updateids} = $updateids if defined $updateids;
     $self->{_items} = $items if defined $items;
 }
 
 sub save($self, $filename) {
-    write_file(encode_json([ $self->{_updateids}, $self->{_items} ]));
+    write_file($filename, encode_json([ $self->{_updateids}, $self->{_items} ]));
 }
 
-sub getUpdateId($self, $id) {
-    return $self->{_updateids}->{$id};
+sub getUpdateID($self, $id) {
+    my $value = $self->{_updateids}->{$id};
+    return "" unless defined $value;
+    return $value;
+}
+
+sub mergeUpdateIDs($self, %ids) {
+     # merge new UpdateIDs into existing ones
+    %{$self->{_updateids}} = ( %{$self->{_updateids}}, %ids);
 }
 
 sub getItem($self, $id) {
     return $self->{_items}->{$id};
 }
 
-sub addItem($self, @items) {
+sub addItems($self, @items) {
     for (@items) {
         $self->{_items}->{$_->{id}} = $_;
     }
