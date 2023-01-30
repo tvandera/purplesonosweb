@@ -49,10 +49,23 @@ sub lookupTable() {
 }
 
 
+# Contains music library cache
+sub new {
+   my ($class, @args) = @_;
+
+    # possibly call Parent->new(@args) first
+    my $self = $class->SUPER::new(@args);
+
+    my $udn = $self->getPlayer()->UDN();
+    $self->{_contentcache} = Sonos::ContentCache->new($udn);
+
+    return $self;
+}
+
 # called when anything in ContentDirectory has been updated
 # i.e.:
 #  'SavedQueuesUpdateID' => 'RINCON_000E583472BC01400,12',
-#  'ContainerUpdateIDs' => 'Q:0,503',
+#  'ContainerUpdateIDs' => 'Q:0,503', <--- Queue is local per player!
 #  'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
 #  'SystemUpdateID' => '131',
 #  'FavoritePresetsUpdateID' => 'RINCON_000E583472BC01400,97',
@@ -64,26 +77,34 @@ sub processUpdate ( $self, $service, %properties ) {
     foreach my $key (keys %properties) {
         next if ($key !~ /UpdateIDs?$/);
 
-        my $oldvalue = $self->getUpdateID($key);
         my $newvalue = $properties{$key};
+
+        # if the UpdateID starts with RINCON_ data is global
+        #    e.g. 'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
+        # otherwise local to the player
+        #    e.g. 'ContainerUpdateIDs' => 'Q:0,503',
+        my $globalcache = $newvalue =~ m/^RINCON_/g;
+        my $cache = $globalcache ? $self->globalCache() : $self->localCache();
+        my $oldvalue = $cache->getUpdateID($key);
 
         INFO "Update ID $key: old $oldvalue ?= new $newvalue";
 
-        # call fetchAndCache if updated
-        $self->fetchAndCacheByUpdateID($key) if $oldvalue ne $newvalue;
+        # call fetch if updated
+        if ($oldvalue ne $newvalue) {
+            my @items = $self->fetchByUpdateID($key);
+            $cache->addItems($key, $newvalue, @items);
+        }
     }
-
-    $self->contentCache()->mergeUpdateIDs(%properties);
-
 }
 
 
 # finds items in lookupTable that have updateid equal to given $updateid and
 # fetches those
-sub fetchAndCacheByUpdateID {
+sub fetchByUpdateID {
     my ($self, $updateid)  = @_;
     my @matching = grep { $_->{update_id} eq $updateid } lookupTable();
-    map { $self->fetchAndCacheByObjectId($_->{prefix}) } @matching;
+    my @items = map { $self->fetchByObjectId($_->{prefix}) } @matching;
+    return @items
 }
 
 
@@ -95,9 +116,9 @@ sub fetchAndCacheByUpdateID {
 # actiontype is
 #  - "BrowseMetadata", or
 #  - "BrowseDirectChildren" (default)
-sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
+sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
     my $start = 0;
-    my @data  = ();
+    my @items  = ();
     my $result;
 
     INFO "Fetching " . $objectid;
@@ -116,28 +137,29 @@ sub fetchAndCacheByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildr
             keyattr    => {}
         );
 
-        push( @data, @{ $tree->{item} } ) if ( defined $tree->{item} );
-        push( @data, @{ $tree->{container} } ) if ( defined $tree->{container} );
+        push( @items, @{ $tree->{item} } ) if ( defined $tree->{item} );
+        push( @items, @{ $tree->{container} } ) if ( defined $tree->{container} );
     } while ( $start < $result->getValue("TotalMatches") );
 
-    INFO " .  Found " . scalar(@data) . " entries.";
-    #DEBUG Dumper(@data[0..10]);
+    INFO " .  Found " . scalar(@items) . " entries.";
+    #DEBUG Dumper(@items[0..10]);
 
-    $self->contentCache()->addItems(@data);
-
-    return \@data;
+    return @items;
 }
 
-sub contentCache($self) {
+sub localCache($self) {
+    return $self->{_contentcache};
+}
+
+sub globalCache($self) {
     return $self->{_player}->{_discovery}->{_contentcache};
 }
 
 sub getItem($self, $id) {
-    return $self->contentCache()->getItem($id);
-}
+    my $local_item = $self->{_items}->{$id};
+    return $local_item if defined $local_item;
 
-sub getUpdateID($self, $id) {
-    return $self->contentCache()->getUpdateID($id);
+    return $self->contentCache()->getItem($id);
 }
 
 ###############################################################################

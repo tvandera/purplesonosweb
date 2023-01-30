@@ -28,7 +28,7 @@ sub new {
     $self = bless {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
-        _contentcache => Sonos::ContentCache->new(),
+        _contentcache => Sonos::ContentCache->new("global"),
         _loop => undef, # IO::Async::Loop::Select
     }, $class;
 

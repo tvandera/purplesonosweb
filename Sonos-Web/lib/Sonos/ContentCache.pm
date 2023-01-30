@@ -13,35 +13,42 @@ Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 use Carp;
 
-use constant CACHE => "content_cache.json";
+use constant BASENAME => "content_cache.json";
 
 # Contains music library cache
 sub new {
-    my($self, %args) = @_;
+    my($self, $name) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
+        _name => $name,
         _updateids => { },
         _items => { },
     }, $class;
 
-    $self->load(CACHE);
+    $self->load();
 
     return $self;
 }
 
-sub DESTROY($self) {
-    $self->save(CACHE);
+sub cacheFileName($self) {
+    return $self->{_name} . "_" . BASENAME;
 }
 
-sub load($self, $filename) {
+sub DESTROY($self) {
+    $self->save();
+}
+
+sub load($self) {
+    my $filename = $self->cacheFileName();
     return if not -e $filename;
     my ($updateids, $items) = @{decode_json(read_file($filename))};
     $self->{_updateids} = $updateids if defined $updateids;
     $self->{_items} = $items if defined $items;
 }
 
-sub save($self, $filename) {
+sub save($self) {
+    my $filename = $self->cacheFileName();
     write_file($filename, encode_json([ $self->{_updateids}, $self->{_items} ]));
 }
 
@@ -51,19 +58,15 @@ sub getUpdateID($self, $id) {
     return $value;
 }
 
-sub mergeUpdateIDs($self, %ids) {
-     # merge new UpdateIDs into existing ones
-    %{$self->{_updateids}} = ( %{$self->{_updateids}}, %ids);
-}
-
 sub getItem($self, $id) {
     return $self->{_items}->{$id};
 }
 
-sub addItems($self, @items) {
+sub addItems($self, $id, $value, @items) {
     for (@items) {
         $self->{_items}->{$_->{id}} = $_;
     }
+    $self->{_updateids}->{$id} = $value;
 }
 
 1;
