@@ -53,7 +53,7 @@ sub isRadio($self) {
 # CurrentTrack
 
 sub info($self) {
-    DEBUG Dumper($self->{_state});
+    #DEBUG Dumper($self->{_state});
     my @fields = (
         "transportState",
         "currentPlayMode",
