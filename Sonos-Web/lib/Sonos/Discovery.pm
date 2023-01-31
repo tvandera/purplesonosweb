@@ -89,10 +89,11 @@ sub _discoveryCallback {
 
     if ( $action eq 'deviceAdded' ) {
         $self->{_players}->{$location} = Sonos::Player->new($device, $self);
-        INFO "Found device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
+        INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
         # DEBUG Dumper($device);
     }
     elsif ( $action eq 'deviceRemoved' ) {
+        INFO "Removed device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
         delete $self->{_players}->{$location};
     }
     else {
