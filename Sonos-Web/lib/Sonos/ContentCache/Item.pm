@@ -1,4 +1,4 @@
-package Sonos::MetaDat;
+package Sonos::ContentCache::Item;
 
 use v5.36;
 use strict;
@@ -11,21 +11,13 @@ use Data::Dumper;
 use Carp;
 
 
-
 sub new {
     my($self, $data) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
         _data => $data,
-        _players => {}, # UDN => Sonos::Player
-        _contentcache => Sonos::ContentCache->new("global"),
-        _loop => undef, # IO::Async::Loop::Select
     }, $class;
-
-    $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
-
-    $self->addToLoop($loop) if defined $loop;
 
     return $self;
 }
@@ -70,7 +62,7 @@ sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber");
 
 # class
 sub class($self) {
-    my $full_classname = $self->metaDataProp("upnp:class");
+    my $full_classname = $self->prop("upnp:class");
     return undef unless defined $full_classname;
 
     # only the last part

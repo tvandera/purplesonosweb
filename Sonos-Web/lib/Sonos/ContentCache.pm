@@ -4,6 +4,8 @@ use v5.36;
 use strict;
 use warnings;
 
+require Sonos::ContentCache::Item;
+
 use JSON;
 use File::Slurp;
 
@@ -58,6 +60,13 @@ sub getVersion($self, $id) {
     return @$value;
 }
 
+sub getItems($self, $parentID) {
+    my @items = values %{$self->{_items}};
+    DEBUG Dumper($self->{_items});
+    DEBUG Dumper(\@items);
+    return grep { $_->parentID eq $parentID } @items;
+}
+
 sub getItem($self, $id) {
     return $self->{_items}->{$id};
 }
@@ -65,7 +74,7 @@ sub getItem($self, $id) {
 sub addItems($self, $id, $location, $version, @items) {
     for (@items) {
         carp "No id: " . Dumper(\@items) unless defined $_->{id};
-        $self->{_items}->{$_->{id}} = $_;
+        $self->{_items}->{$_->{id}} = Sonos::ContentCache::Item->new($_);
     }
     $self->{_updateids}->{$id} = [ $location, $version ];
 }
