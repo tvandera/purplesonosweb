@@ -92,7 +92,7 @@ sub processUpdate ( $self, $service, %properties ) {
 
         my ($existing_location, $existing_version) = $cache->getVersion($key);
 
-        INFO "Update ID $key: old $existing_location,$existing_version ?= new $newvalue";
+        # INFO "Update ID $key: old $existing_location,$existing_version ?= new $newvalue";
 
         # call fetch if updated or not in cache
         if (not $existing_location or $existing_version < $new_version) {
@@ -126,7 +126,7 @@ sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
     my @items  = ();
     my $result;
 
-    INFO "Fetching " . $objectid;
+    $self->getPlayer()->log("Fetching " . $objectid . "...");
 
     do {
         $result = $self->controlProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
@@ -146,7 +146,7 @@ sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
         push( @items, @{ $tree->{container} } ) if ( defined $tree->{container} );
     } while ( $start < $result->getValue("TotalMatches") );
 
-    INFO " .  Found " . scalar(@items) . " entries.";
+    $self->getPlayer()->log(" .  Found " . scalar(@items) . " entries.");
     #DEBUG Dumper(@items[0..10]);
 
     return @items;
