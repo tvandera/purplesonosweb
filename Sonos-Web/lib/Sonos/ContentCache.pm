@@ -52,21 +52,22 @@ sub save($self) {
     write_file($filename, encode_json([ $self->{_updateids}, $self->{_items} ]));
 }
 
-sub getUpdateID($self, $id) {
+sub getVersion($self, $id) {
     my $value = $self->{_updateids}->{$id};
-    return "" unless defined $value;
-    return $value;
+    return ("", -1) unless defined $value;
+    return @$value;
 }
 
 sub getItem($self, $id) {
     return $self->{_items}->{$id};
 }
 
-sub addItems($self, $id, $value, @items) {
+sub addItems($self, $id, $location, $version, @items) {
     for (@items) {
+        carp "No id: " . Dumper(\@items) unless defined $_->{id};
         $self->{_items}->{$_->{id}} = $_;
     }
-    $self->{_updateids}->{$id} = $value;
+    $self->{_updateids}->{$id} = [ $location, $version ];
 }
 
 1;

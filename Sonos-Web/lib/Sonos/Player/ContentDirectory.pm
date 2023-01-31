@@ -78,6 +78,10 @@ sub processUpdate ( $self, $service, %properties ) {
         next if ($key !~ /UpdateIDs?$/);
 
         my $newvalue = $properties{$key};
+        my ($new_location, $new_version) = split /,/, $newvalue;
+        next unless defined $new_location;
+        next unless defined $new_version;
+
 
         # if the UpdateID starts with RINCON_ data is global
         #    e.g. 'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
@@ -85,14 +89,15 @@ sub processUpdate ( $self, $service, %properties ) {
         #    e.g. 'ContainerUpdateIDs' => 'Q:0,503',
         my $globalcache = $newvalue =~ m/^RINCON_/g;
         my $cache = $globalcache ? $self->globalCache() : $self->localCache();
-        my $oldvalue = $cache->getUpdateID($key);
 
-        INFO "Update ID $key: old $oldvalue ?= new $newvalue";
+        my ($existing_location, $existing_version) = $cache->getVersion($key);
 
-        # call fetch if updated
-        if ($oldvalue ne $newvalue) {
+        INFO "Update ID $key: old $existing_location,$existing_version ?= new $newvalue";
+
+        # call fetch if updated or not in cache
+        if (not $existing_location or $existing_version < $new_version) {
             my @items = $self->fetchByUpdateID($key);
-            $cache->addItems($key, $newvalue, @items);
+            $cache->addItems($key, $new_location, $new_version, @items);
         }
     }
 }
@@ -126,7 +131,7 @@ sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
     do {
         $result = $self->controlProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
 
-        return undef unless $result->isSuccessful;
+        return () unless $result->isSuccessful;
 
         $start += $result->getValue("NumberReturned");
 
