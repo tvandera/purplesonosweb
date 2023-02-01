@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Sonos::Player::Service';
 
-use List::MoreUtils qw(zip);
+require Sonos::ContentCache::Item;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -44,8 +44,9 @@ sub lookupTable() {
         [ "SavedQueuesUpdateID", "Playlists", "SQ:", "tiles/sonos_playlists.svg" ],
     );
 
-   my @lookup_table = map { { zip(@keys, @$_) } } @table;
-   return @lookup_table;
+   my %lookup_table;
+   @lookup_table{@keys} = @$_ for @table;
+   return %lookup_table;
 }
 
 
@@ -64,6 +65,7 @@ sub new {
 
 sub queue($self) {
     my @items = $self->localCache()->getItems("Q:0");
+    return sort { $a->baseID() <=> $b->baseID() } @items;
 }
 
 
@@ -107,7 +109,12 @@ sub processUpdate ( $self, $service, %properties ) {
     }
 
     my @queue = $self->queue();
-    $self->getPlayer()->log("Queue:\n" . join("\n", map { $_->as_string() } @queue));
+
+    use Text::Table;
+    my $table = Text::Table->new(Sonos::ContentCache::Item::displayFields());
+    $table->add($_->displayValues()) for @queue;
+
+    $self->getPlayer()->log("Queue:\n" . $table->table());
 }
 
 
