@@ -62,6 +62,11 @@ sub new {
     return $self;
 }
 
+sub queue($self) {
+    my @items = $self->localCache()->getItems("Q:0");
+}
+
+
 # called when anything in ContentDirectory has been updated
 # i.e.:
 #  'SavedQueuesUpdateID' => 'RINCON_000E583472BC01400,12',
@@ -100,6 +105,9 @@ sub processUpdate ( $self, $service, %properties ) {
             $cache->addItems($key, $new_location, $new_version, @items);
         }
     }
+
+    my @queue = $self->queue();
+    $self->getPlayer()->log("Queue:\n" . join("\n", map { $_->as_string() } @queue));
 }
 
 
