@@ -63,10 +63,8 @@ sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber");
 # class
 sub class($self) {
     my $full_classname = $self->prop("upnp:class");
-    return undef unless defined $full_classname;
-
     # only the last part
-    my @parts = split ".", $full_classname;
+    my @parts = split( /\./, $full_classname);
     return $parts[-1];
 }
 
@@ -75,8 +73,8 @@ sub isRadio($self) {
 }
 
 sub as_string($self, %) {
-    #DEBUG Dumper($self->{_data});
     my @fields = (
+        "id",
         "class",
         "title",
         "creator",
