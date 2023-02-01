@@ -37,21 +37,19 @@ sub cacheFileName($self) {
     return $self->{_name} . "_" . BASENAME;
 }
 
-sub DESTROY($self) {
-    $self->save();
-}
-
 sub load($self) {
     my $filename = $self->cacheFileName();
     return if not -e $filename;
     my ($updateids, $items) = @{decode_json(read_file($filename))};
     $self->{_updateids} = $updateids if defined $updateids;
-    $self->{_items} = $items if defined $items;
+    $self->addItemsOnly(@$items) if defined $items;
 }
 
 sub save($self) {
     my $filename = $self->cacheFileName();
-    write_file($filename, encode_json([ $self->{_updateids}, $self->{_items} ]));
+    #unbless items
+    my $allitems = [ map { $_->{_data} } values %{$self->{_items}} ];
+    write_file($filename, encode_json([ $self->{_updateids}, $allitems ]));
 }
 
 sub getVersion($self, $id) {
@@ -62,8 +60,6 @@ sub getVersion($self, $id) {
 
 sub getItems($self, $parentID) {
     my @items = values %{$self->{_items}};
-    DEBUG Dumper($self->{_items});
-    DEBUG Dumper(\@items);
     return grep { $_->parentID eq $parentID } @items;
 }
 
@@ -71,12 +67,18 @@ sub getItem($self, $id) {
     return $self->{_items}->{$id};
 }
 
-sub addItems($self, $id, $location, $version, @items) {
+# only items, no cache id or version info
+sub addItemsOnly($self, @items) {
     for (@items) {
         carp "No id: " . Dumper(\@items) unless defined $_->{id};
         $self->{_items}->{$_->{id}} = Sonos::ContentCache::Item->new($_);
     }
-    $self->{_updateids}->{$id} = [ $location, $version ];
+}
+
+sub addItems($self, $id, $udn, $version, @items) {
+    $self->addItemsOnly(@items);
+    $self->{_updateids}->{$id} = [ $udn, $version ];
+    $self->save();
 }
 
 1;
