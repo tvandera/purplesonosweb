@@ -4,6 +4,8 @@ use v5.36;
 use strict;
 use warnings;
 
+use List::Util "all";
+
 require UPnP::ControlPoint;
 require Sonos::Player;
 require Sonos::ContentCache;
@@ -45,6 +47,12 @@ sub numPlayers($self) {
 
 sub players($self) {
     return values %{$self->{_players}};
+}
+
+sub populated($self) {
+    return
+        ( $self->numPlayers() > 0 and
+         all { $_->populated() } $self->players() );
 }
 
 sub zonePlayer($self, $zoneName) {
