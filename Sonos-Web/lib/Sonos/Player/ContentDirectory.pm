@@ -110,11 +110,15 @@ sub processUpdate ( $self, $service, %properties ) {
 
     my @queue = $self->queue();
 
-    use Text::Table;
-    my $table = Text::Table->new(Sonos::ContentCache::Item::displayFields());
-    $table->add($_->displayValues()) for @queue;
+    if (scalar @queue) {
+        use Text::Table;
+        my $table = Text::Table->new(Sonos::ContentCache::Item::displayFields());
+        $table->add($_->displayValues()) for @queue;
 
-    $self->getPlayer()->log("Queue:\n" . $table->table());
+        $self->getPlayer()->log("Queue:\n" . $table->table());
+    } else {
+        $self->getPlayer()->log("Queue empty.");
+    }
 }
 
 
