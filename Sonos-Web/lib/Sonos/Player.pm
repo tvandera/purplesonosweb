@@ -4,6 +4,8 @@ use v5.36;
 use strict;
 use warnings;
 
+use List::Util "all";
+
 require UPnP::ControlPoint;
 
 use Log::Log4perl qw(:easy);
@@ -48,6 +50,10 @@ sub new {
     }
 
     return $self;
+}
+
+sub populated($self) {
+    return all { $_->populated() } values %{$self->{_services}};
 }
 
 
