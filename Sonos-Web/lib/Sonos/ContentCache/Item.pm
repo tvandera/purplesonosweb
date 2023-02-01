@@ -68,21 +68,34 @@ sub class($self) {
     return $parts[-1];
 }
 
+sub baseID($self) {
+    my $full_id = $self->prop("id");
+    # only the last part
+    my @parts = split( /\//, $full_id);
+    return $parts[-1];
+}
+
 sub isRadio($self) {
     return $self->class() eq "audioBroadcast";
 }
 
-sub as_string($self, %) {
-    my @fields = (
+
+sub displayFields() {
+    return  (
         "id",
         "class",
         "title",
         "creator",
         "album",
     );
+}
 
-    my @values = map { $self->$_() } @fields;
-    return join " - ", @values;
+sub displayValues($self) {
+    return map { $self->$_() } displayFields();
+}
+
+sub as_string($self) {
+    return join " - ", $self->diplayValues;
 }
 
 
