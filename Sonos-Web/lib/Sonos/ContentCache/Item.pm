@@ -12,14 +12,19 @@ use Carp;
 
 
 sub new {
-    my($self, $data) = @_;
+    my($self, $cache, $data) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
+        _cache => $cache,
         _data => $data,
     }, $class;
 
     return $self;
+}
+
+sub cache($self) {
+    return $self->{_cache};
 }
 
 sub prop($self, @path) {
@@ -77,6 +82,10 @@ sub baseID($self) {
 
 sub isRadio($self) {
     return $self->class() eq "audioBroadcast";
+}
+
+sub getAlbumArt($self, $baseurl) {
+    return $self->cache()->albumArtHelper($self->albumArtURI, $baseurl);
 }
 
 
