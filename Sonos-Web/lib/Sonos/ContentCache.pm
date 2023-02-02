@@ -55,12 +55,14 @@ sub load($self) {
 
     $self->{_updateids} = $updateids if defined $updateids;
     $self->addItemsOnly(@$items) if defined $items;
-    $self->{_album_art} = $album_art if defined $album_art;
 
-    # my @aa_files = glob(join("/", $self->albumArtDir(), "*"));
-    # for (@aa_files) {
-    #     $self->{_album_art}->{$_} = read_file($_);
-    # }
+    for (values %$album_art) {
+        # blob = readfile($sha)
+        $filename = join "/", $self->albumArtDir(), $_->[0];
+        $_->[2] = read_file($filename);
+    }
+
+    $self->{_album_art} = $album_art;
 }
 
 sub save($self) {
