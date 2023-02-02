@@ -8,3 +8,4 @@ local
 .vscode
 cpanfile.snapshot
 *content_cache.json
+album_art
