@@ -18,22 +18,10 @@ use Data::Dumper;
 my $loop = IO::Async::Loop::Select->new;
 my $client = Sonos::Discovery->new($loop);
 
-my $timer = IO::Async::Timer::Periodic->new(
-   interval => 1,
-
-   on_tick => sub {
-        return unless $client->populated();
-        print STDERR "All done.\n";
-        my $sec = 5;
-        while ($sec--) {
-            printf "Stopping in %d seconds...\r", $sec;
-            select()->flush();
-            sleep 1
-        }
-        $loop->stop();
-   },
-)->start();
-
-$loop->add($timer);
+$SIG{INT} = sub {
+    print STDERR "Ctrl-C - stopping in 1 sec\n";
+    sleep(1);
+    $loop->stop();
+};
 
 $loop->run;
