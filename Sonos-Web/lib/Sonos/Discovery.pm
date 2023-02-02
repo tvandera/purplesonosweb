@@ -31,7 +31,7 @@ sub new {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
         _contentcache => Sonos::ContentCache->new("global"),
-        _loop => $loop, # IO::Async::Loop::Select
+        _loop => undef, # IO::Async::Loop::Select -> added by addToLoop
     }, $class;
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
