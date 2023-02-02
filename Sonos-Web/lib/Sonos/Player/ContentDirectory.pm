@@ -11,6 +11,7 @@ require Sonos::ContentCache::Item;
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
+use List::MoreUtils qw(zip);
 use Data::Dumper;
 use Carp;
 
@@ -22,9 +23,7 @@ XML::Liberal->globally_override('LibXML');
 # caches for ContentDir
 
 sub lookupTable() {
-    my @keys = (
-        "update_id", "name", "prefix", "icon"
-    );
+    my @keys = ( "update_id", "name", "prefix", "icon");
     my @table = (
         [ "FavoritesUpdateID", "Favorites",          "FV:2",        "tiles/favorites.svg" ],
 
@@ -44,9 +43,7 @@ sub lookupTable() {
         [ "SavedQueuesUpdateID", "Playlists", "SQ:", "tiles/sonos_playlists.svg" ],
     );
 
-   my %lookup_table;
-   @lookup_table{@keys} = @$_ for @table;
-   return %lookup_table;
+   return map { { zip(@keys, @$_) } } @table;
 }
 
 
