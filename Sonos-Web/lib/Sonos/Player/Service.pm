@@ -72,6 +72,10 @@ sub getPlayer($self) {
     return $self->{_player};
 }
 
+sub baseURL($self) {
+    return $self->getPlayer()->location();
+}
+
 sub log($self, @args) {
     $self->getPlayer()->log(@args);
 }
