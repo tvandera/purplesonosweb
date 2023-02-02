@@ -65,6 +65,11 @@ sub UDN($self) {
     return $uuid;
 }
 
+# http://192.168.2.102:1400/xml/device_description.xml
+sub location($self) {
+    return $self->getUPnP()->{LOCATION};
+}
+
 sub friendlyName($self) {
     return $self->zoneName() if $self->zoneName;
     return $self->getUPnP()->{FRIENDLYNAME};
