@@ -77,7 +77,8 @@ sub log($self, @args) {
 }
 
 sub populated($self) {
-    return $self->{_state};
+    my $not_empty = keys %{ $self->{_state} };
+    return $not_empty;
 }
 
 sub prop($self, @path) {
