@@ -1,116 +1,48 @@
+package Sonos::HTTP;
+
+use v5.36;
+use strict;
+use warnings;
+
+use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init($DEBUG);
+use Data::Dumper;
+use Carp;
+
+require IO::Async::Listener;
+require HTTP::Daemon;
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 
 ###############################################################################
 # HTTP
 ###############################################################################
 
-%main::HTTP_HANDLERS = ();
+sub new {
+    my($self, $loop, $discover, %args) = @_;
+	my $class = ref($self) || $self;
+
+    $self = bless {
+        _discovery => $discover,
+        _daemon => HTTP::Daemon->new(ReuseAddr => 1, ReusePort => 1, %args),
+        _loop => undef,
+    }, $class;
 
 
-###############################################################################
-sub http_quit {
-    $main::daemon->close();
+    my $handle = IO::Async::Listener->new(
+         handle => $self->{_daemon},
+         on_accept => sub {
+            $self->http_handle_request(@_); }
+    );
+
+    $loop->add( $handle );
+
+    print STDERR "Listening on " . $self->{_daemon}->url;
 }
 
 ###############################################################################
-sub http_register_handler {
-    my ( $path, $callback ) = @_;
-
-    $main::HTTP_HANDLERS{$path} = $callback;
-}
-
-###############################################################################
-sub http_albumart_request {
-    my ( $c, $r ) = @_;
-
-    my $uri = $r->uri;
-    my %qf  = $uri->query_form;
-    my $sha = sha256_hex($uri);
-    my $text;
-
-    delete $qf{zone}
-      if ( exists $qf{zone} && !exists $main::ZONES{ $qf{zone} } );
-
-    if ( defined $main::AACACHE{$sha} ) {
-        $text = $main::AACACHE{$sha};
-    }
-    else {
-        my @zones    = keys(%main::ZONES);
-        my $zone     = $main::ZONES{ $zones[0] }->{Coordinator};
-        my $ipport   = $main::ZONES{$zone}->{IPPORT};
-        my $request  = "http://$ipport" . $uri;
-        my $response = $main::useragent->get($request);
-        my $image    = Image::Magick->new();
-
-        if ( $response->is_success() ) {
-            $image->Read( blob => $response->content );
-            $image->Set( 'quality' => '80' );
-            $image->Resize( 'width' => 200, 'height' => 200 );
-            ($text) = $image->ImageToBlob( "filename" => "dummy.jpg" );
-            $main::AACACHE{$sha} = $text;
-        }
-        else {
-            Log( 3, "error for " . $uri );
-            $image->Set( size => '200x200' );
-            $image->ReadImage('canvas:black');
-            ($text) = $image->ImageToBlob( "filename" => "dummy.jpg" );
-        }
-    }
-
-    my $response =
-      HTTP::Response->new( 200, undef, [ "Content-Type" => "image/jpg" ],
-        $text );
-    $c->send_response($response);
-    $c->force_last_request;
-}
-###############################################################################
-sub http_base_url {
-    my ($r) = @_;
-
-    my $baseurl;
-
-    if ( !defined $r || !$r->header("host") ) {
-        $baseurl =
-            "http://"
-          . UPnP::Common::getLocalIPAddress() . ":"
-          . $main::HTTP_PORT;
-    }
-    else {
-        $baseurl = "http://" . $r->header("host");
-    }
-
-    return $baseurl;
-}
-###############################################################################
-sub http_check_password {
-    my ( $c, $r ) = @_;
-
-    if ( $main::PASSWORD ne "" ) {
-        my $auth    = $r->header("Authorization");
-        my $senderr = 1;
-        if ( defined $auth && $auth =~ /Basic +(.*)/ ) {
-            my ( $name, $pass ) = split( /:/, decode_base64($1) );
-            $senderr = 0 if ( $main::PASSWORD eq $pass );
-        }
-
-        if ($senderr) {
-            my $response = HTTP::Response->new(
-                401, undef,
-                [ "WWW-Authenticate" => "Basic realm=\"SonosWeb\"" ],
-                "Please provide correct password"
-            );
-            Log( 3, "Sending response to " . $r->url );
-            $c->send_response($response);
-            $c->force_last_request;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-###############################################################################
-sub http_handle_request {
-    my ( $c, $r ) = @_;
+sub http_handle_request($self, $handle, $c) {
+    print "on accept: c = " . Dumper($c);
+    my $r = $c->get_request;
 
     # No r, just return
     if ( !$r || !$r->uri ) {
@@ -121,7 +53,7 @@ sub http_handle_request {
     my $uri = $r->uri;
 
     my $path    = $uri->path;
-    my $baseurl = http_base_url($r);
+    my $baseurl = "/"; #http_base_url($r);
 
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         $c->send_redirect("$baseurl/$main::DEFAULT");
