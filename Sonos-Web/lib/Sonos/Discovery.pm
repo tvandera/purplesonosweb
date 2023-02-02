@@ -31,7 +31,7 @@ sub new {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
         _contentcache => Sonos::ContentCache->new("global"),
-        _loop => undef, # IO::Async::Loop::Select
+        _loop => $loop, # IO::Async::Loop::Select
     }, $class;
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
@@ -96,7 +96,7 @@ sub _discoveryCallback {
     my $location = $device->{LOCATION};
 
     if ( $action eq 'deviceAdded' ) {
-        $self->{_players}->{$location} = Sonos::Player->new($device, $self);
+        $self->{_players}->{$location} = Sonos::Player->new($device, $self) unless defined $self->{_players}->{$location};
         INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
         # DEBUG Dumper($device);
     }
