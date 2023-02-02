@@ -11,6 +11,7 @@ use Carp;
 
 require IO::Async::Listener;
 require HTTP::Daemon;
+use URI::WithBase;
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 
 ###############################################################################
@@ -24,14 +25,14 @@ sub new {
     $self = bless {
         _discovery => $discover,
         _daemon => HTTP::Daemon->new(ReuseAddr => 1, ReusePort => 1, %args),
-        _loop => undef,
+        _loop => $loop,
+        _default_page => ($args{DefaultPage} || "status.xml"),
     }, $class;
 
 
     my $handle = IO::Async::Listener->new(
          handle => $self->{_daemon},
-         on_accept => sub {
-            $self->http_handle_request(@_); }
+         on_accept => sub { $self->http_handle_request(@_); }
     );
 
     $loop->add( $handle );
@@ -39,24 +40,30 @@ sub new {
     print STDERR "Listening on " . $self->{_daemon}->url;
 }
 
+sub baseURL($self) {
+    return $self->{_daemon}->url;
+}
+
+sub defaultURL($self) {
+    return URI::WithBase->new($self->{_default_page}, $self->baseURL);
+}
+
 ###############################################################################
 sub http_handle_request($self, $handle, $c) {
-    print "on accept: c = " . Dumper($c);
     my $r = $c->get_request;
+    my $baseurl = $self->baseURL();
 
     # No r, just return
     if ( !$r || !$r->uri ) {
-        Log( 1, "Missing Request" );
+        carp("Missing Request");
         return;
     }
 
     my $uri = $r->uri;
-
     my $path    = $uri->path;
-    my $baseurl = "/"; #http_base_url($r);
 
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
-        $c->send_redirect("$baseurl/$main::DEFAULT");
+        $c->send_redirect($self->defaultURL);
         $c->force_last_request;
         return;
     }
