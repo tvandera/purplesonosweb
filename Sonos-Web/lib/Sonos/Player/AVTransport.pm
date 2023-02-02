@@ -34,7 +34,8 @@ sub metaDataProp($self, @path) {
 sub title($self)         { return $self->metaDataProp("dc:title"); }
 sub creator($self)       { return $self->metaDataProp("dc:creator"); }
 sub album($self)         { return $self->metaDataProp("upnp:album"); }
-sub streamcontent($self) { return $self->metaDataProp("r:streamContent"); }
+sub streamContent($self) { return $self->metaDataProp("r:streamContent"); }
+sub radioShow($self)     { return $self->metaDataProp("r:radioShowMd"); }
 
 # class of what's playing
 sub class($self) {
@@ -61,7 +62,8 @@ sub info($self) {
         "title",
         "creator",
         "album",
-        "streamcontent",
+        "streamContent",
+        "radioShow",
     );
 
     $self->log($self->shortName(), ":");
