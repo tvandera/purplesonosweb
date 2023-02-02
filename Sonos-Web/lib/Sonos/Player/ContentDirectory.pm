@@ -47,7 +47,6 @@ sub lookupTable() {
 }
 
 
-# Contains music library cache
 sub new {
    my ($class, @args) = @_;
 
@@ -106,6 +105,10 @@ sub processUpdate ( $self, $service, %properties ) {
     }
 
     my @queue = $self->queue();
+
+    for (@queue) {
+        $_->getAlbumArt($self->baseURL());
+    }
 
     if (scalar @queue) {
         use Text::Table;
