@@ -6,7 +6,7 @@ use warnings;
 
 require Sonos::ContentCache::Item;
 
-use JSON;
+use JSON::XS;
 use File::Slurp;
 require URI::WithBase;
 use Digest::SHA qw(sha256_hex);
