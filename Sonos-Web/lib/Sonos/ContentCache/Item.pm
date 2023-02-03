@@ -64,6 +64,7 @@ sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
 sub albumArtURI($self)         { return $self->prop("upnp:albumArtURI"); }
 sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber"); }
+sub description($self)         { return $self->prop("r:desciption"); }
 
 # class
 sub class($self) {
@@ -73,6 +74,11 @@ sub class($self) {
     return $parts[-1];
 }
 
+sub realclass($self) {
+    # FIXME
+    return $self->class;
+}
+
 sub baseID($self) {
     my $full_id = $self->prop("id");
     # only the last part
@@ -80,9 +86,10 @@ sub baseID($self) {
     return $parts[-1];
 }
 
-sub isRadio($self) {
-    return $self->class() eq "audioBroadcast";
-}
+sub isRadio($self) { return $self->class() eq "audioBroadcast"; }
+sub isSong($self)  { return $self->class() eq "musicTrack"; }
+sub isAlbum($self) { return $self->class() eq "musicAlbum"; }
+sub isFav($self)   { return $self->class() eq "favorite"; }
 
 sub getAlbumArt($self, $baseurl) {
     return $self->cache()->albumArtHelper($self->albumArtURI, $baseurl);
