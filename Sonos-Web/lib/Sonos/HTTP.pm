@@ -11,8 +11,14 @@ use Carp;
 
 require IO::Async::Listener;
 require HTTP::Daemon;
+use HTTP::Status ":constants";
 use URI::WithBase;
+use File::Spec::Functions 'catfile';
 use IO::Compress::Gzip qw(gzip $GzipError) ;
+use MIME::Types;
+
+
+require HTML::Template::Compiled;
 
 ###############################################################################
 # HTTP
@@ -27,17 +33,20 @@ sub new {
         _daemon => HTTP::Daemon->new(ReuseAddr => 1, ReusePort => 1, %args),
         _loop => $loop,
         _default_page => ($args{DefaultPage} || "status.xml"),
+        _mime_types =>  MIME::Types->new,
     }, $class;
 
 
     my $handle = IO::Async::Listener->new(
          handle => $self->{_daemon},
-         on_accept => sub { $self->http_handle_request(@_); }
+         on_accept => sub { $self->handle_request(@_); }
     );
 
     $loop->add( $handle );
 
-    print STDERR "Listening on " . $self->{_daemon}->url;
+    print STDERR "Listening on " . $self->{_daemon}->url . "\n";
+
+    return $self;
 }
 
 sub baseURL($self) {
@@ -48,19 +57,21 @@ sub defaultURL($self) {
     return URI::WithBase->new($self->{_default_page}, $self->baseURL);
 }
 
+sub mimeTypeOf($self, $p) {
+    return $self->{_mime_types}->mimeTypeOf($p);
+}
+
 ###############################################################################
-sub http_handle_request($self, $handle, $c) {
+sub handle_request($self, $handle, $c) {
     my $r = $c->get_request;
     my $baseurl = $self->baseURL();
 
     # No r, just return
-    if ( !$r || !$r->uri ) {
-        carp("Missing Request");
-        return;
-    }
+    return unless ( $r && $r->uri );
 
-    my $uri = $r->uri;
-    my $path    = $uri->path;
+    my $uri  = $r->uri;
+    my %qf   = $uri->query_form;
+    my $path = $uri->path;
 
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         $c->send_redirect($self->defaultURL);
@@ -68,38 +79,9 @@ sub http_handle_request($self, $handle, $c) {
         return;
     }
 
-    my %qf = $uri->query_form;
-    delete $qf{zone}
-      if ( exists $qf{zone} && !exists $main::ZONES{ $qf{zone} } );
-
-    if ( $main::HTTP_HANDLERS{$path} ) {
-        my $callback = $main::HTTP_HANDLERS{$path};
-        &$callback( $c, $r );
-        return;
-    }
-
     # Find where on disk
-    my $diskpath;
-    my $tmplhook;
-    if ( -e "html/$path" ) {
-        $diskpath = "html$path";
-    }
-    else {
-        my @parts  = split( "/", $path );
-        my $plugin = $parts[1];
-        splice( @parts, 0, 2 );
-        my $restpath = join( "/", @parts );
-        if (   $main::PLUGINS{$plugin}
-            && $main::PLUGINS{$plugin}->{html}
-            && -e $main::PLUGINS{$plugin}->{html} . $restpath )
-        {
-            $diskpath = $main::PLUGINS{$plugin}->{html} . $restpath;
-            $tmplhook = $main::PLUGINS{$plugin}->{tmplhook};
-        }
-    }
-
-    # File doesn't exist
-    if ( !$diskpath ) {
+    my $diskpath = catfile("html", $path);
+    if ( ! -e $diskpath ) {
         $c->send_error(HTTP::Status::RC_NOT_FOUND);
         $c->force_last_request;
         return;
@@ -107,20 +89,13 @@ sub http_handle_request($self, $handle, $c) {
 
     # File is a directory, redirect for the browser
     if ( -d $diskpath ) {
-        if ( $path =~ /\/$/ ) {
-            $c->send_redirect( $baseurl . $path . "index.html" );
-        }
-        else {
-            $c->send_redirect( $baseurl . $path . "/index.html" );
-        }
+        $c->send_redirect(catfile($baseurl, $path, "index.html"));
         $c->force_last_request;
         return;
     }
 
     # File isn't HTML/XML/JSON, just send it back raw
-    if (   !( $path =~ /\.html/ )
-        && !( $path =~ /\.xml/ )
-        && !( $path =~ /\.json/ ) )
+    if (  $path !~ /\.(html|xml|json)/ )
     {
         $c->send_file_response($diskpath);
         $c->force_last_request;
@@ -131,13 +106,11 @@ sub http_handle_request($self, $handle, $c) {
     my $response = 0;
 
     if ( exists $qf{action} ) {
-        return if ( http_check_password( $c, $r ) );
-
         if ( exists $qf{zone} ) {
-            $response = http_handle_zone_action( $c, $r, $path );
+            $response = handle_zone_action( $c, $r, $path );
         }
         if ( !$response ) {
-            $response = http_handle_action( $c, $r, $path );
+            $response = handle_action( $c, $r, $path );
         }
     }
 
@@ -145,30 +118,31 @@ sub http_handle_request($self, $handle, $c) {
         $response = 1;
     }
 
+    my $tmplhook;
     if ( $response == 2 ) {
-        sonos_add_waiting( "AV", "*", \&http_send_tmpl_response, $c, $r,
+        sonos_add_waiting( "AV", "*", \& send_tmpl_response, $c, $r,
             $diskpath, $tmplhook );
     }
     elsif ( $response == 3 ) {
-        sonos_add_waiting( "RENDER", "*", \&http_send_tmpl_response, $c, $r,
+        sonos_add_waiting( "RENDER", "*", \& send_tmpl_response, $c, $r,
             $diskpath, $tmplhook );
     }
     elsif ( $response == 4 ) {
-        sonos_add_waiting( "QUEUE", "*", \&http_send_tmpl_response, $c, $r,
+        sonos_add_waiting( "QUEUE", "*", \& send_tmpl_response, $c, $r,
             $diskpath, $tmplhook );
     }
     elsif ( $response == 5 ) {
-        sonos_add_waiting( "*", "*", \&http_send_tmpl_response, $c, $r,
+        sonos_add_waiting( "*", "*", \& send_tmpl_response, $c, $r,
             $diskpath, $tmplhook );
     }
     else {
-        http_send_tmpl_response( "*", "*", $c, $r, $diskpath, $tmplhook );
+        send_tmpl_response( "*", "*", $c, $r, $diskpath, $tmplhook );
     }
 
 }
 
 ###############################################################################
-sub http_handle_zone_action {
+sub handle_zone_action {
     my ( $c, $r, $path ) = @_;
 
     my %qf = $r->uri->query_form;
@@ -331,7 +305,7 @@ sub http_handle_zone_action {
 }
 
 ###############################################################################
-sub http_handle_action {
+sub handle_action {
     my ( $c, $r, $path ) = @_;
 
     my %qf = $r->uri->query_form;
@@ -359,40 +333,22 @@ sub http_handle_action {
 }
 
 ###############################################################################
-sub http_build_zone_data {
-    my ( $zone, $updatenum, $active_zone ) = @_;
+sub build_zone_data {
+    my ( $self, $player, $updatenum, $active_player ) = @_;
     my %activedata;
 
-    $activedata{HAS_ACTIVE_ZONE} = int( defined $active_zone );
-    $activedata{ACTIVE_ZONE}     = enc( $main::ZONES{$zone}->{ZoneName} );
+    $activedata{HAS_ACTIVE_ZONE} = int( defined $active_player );
+    $activedata{ACTIVE_ZONE}     = enc( $player->zoneName() );
     $activedata{ACTIVE_ZONEID}   = uri_escape($zone);
-    $activedata{ACTIVE_VOLUME} =
-      int( $main::ZONES{$zone}->{RENDER}->{Volume}->{Master}->{val} );
-    $activedata{ZONE_ACTIVE} =
-      defined $active_zone && int( $zone eq $active_zone );
+    $activedata{ACTIVE_VOLUME}   = $player->getVolume();
+    $activedata{ZONE_ACTIVE}     = int( $player == $active_player );
 
-    my $lastupdate;
-    if ( $main::ZONES{$zone}->{RENDER}->{LASTUPDATE} >
-        $main::ZONES{$zone}->{AV}->{LASTUPDATE} )
-    {
-        $lastupdate = $main::ZONES{$zone}->{RENDER}->{LASTUPDATE};
-    }
-    else {
-        $lastupdate = $main::ZONES{$zone}->{AV}->{LASTUPDATE};
-    }
+    $activedata{ACTIVE_LASTUPDATE} = $player->lastUpdate();
+    $activedata{ACTIVE_UPDATED}    = ( $player->lastUpdate() > $updatenum );
+    $activedata{ACTIVE_MUTED}      = $player->getMuted();
 
-    $activedata{ACTIVE_LASTUPDATE} = $lastupdate;
-    $activedata{ACTIVE_UPDATED}    = ( $lastupdate > $updatenum );
-
-    if ( $main::ZONES{$zone}->{RENDER}->{Mute}->{Master}->{val} ) {
-        $activedata{ACTIVE_MUTED} = 1;
-    }
-    else {
-        $activedata{ACTIVE_MUTED} = 0;
-    }
-
-    my $curtrack     = $main::ZONES{$zone}->{AV}->{CurrentTrackMetaData};
-    my $curtransport = $main::ZONES{$zone}->{AV}->{AVTransportURIMetaData};
+    my $curtrack     = $player->currentTrack();
+    my $curtransport = $player->currentTransport();
 
     $activedata{ACTIVE_NAME}           = "";
     $activedata{ACTIVE_ARTIST}         = "";
@@ -557,40 +513,26 @@ sub http_build_zone_data {
 }
 
 ###############################################################################
-sub http_build_queue_data {
-    my ( $zone, $updatenum ) = @_;
+sub build_queue_data {
+    my ($self, $player, $updatenum ) = @_;
 
     my %queuedata;
 
-    $queuedata{QUEUE_ZONE}       = enc( $main::ZONES{$zone}->{ZoneName} );
-    $queuedata{QUEUE_ZONEID}     = uri_escape_utf8($zone);
-    $queuedata{QUEUE_LASTUPDATE} = $main::QUEUEUPDATE{$zone};
-    $queuedata{QUEUE_UPDATED}    = ( $main::QUEUEUPDATE{$zone} > $updatenum );
+    $queuedata{QUEUE_ZONE}       = $player->zoneName;
+    $queuedata{QUEUE_ZONEID}     = uri_escape_utf8($player->UDN);
+    $queuedata{QUEUE_LASTUPDATE} = $player->lastQueueUpdate();
+    $queuedata{QUEUE_UPDATED}    = ( $player->lastQueueUpdate() > $updatenum );
 
-    my $i         = 1;
-    my @loop_data = ();
-    my $q         = $main::ZONES{$zone}->{QUEUE};
-    $q = () unless $q;
-
-    foreach my $queue (@$q) {
-        my %row_data;
-        my $av      = $main::ZONES{$zone}->{AV};
-        my $playing = ( $av->{TransportState} eq "PLAYING" );
-
-        $row_data{QUEUE_NAME}   = enc( $queue->{"dc:title"} );
-        $row_data{QUEUE_ALBUM}  = enc( $queue->{"upnp:album"} );
-        $row_data{QUEUE_ARTIST} = enc( $queue->{"dc:creator"} );
-        $row_data{QUEUE_TRACK_NUM} =
-          enc( $queue->{"upnp:originalTrackNumber"} );
-        $row_data{QUEUE_ALBUMART} = enc( $queue->{"upnp:albumArtURI"} );
-        $row_data{QUEUE_ARG}      = "zone="
-          . uri_escape_utf8($zone)
-          . "&queue="
-          . uri_escape_utf8( $queue->{id} );
-        $row_data{QUEUE_ID} = $queue->{id};
-        push( @loop_data, \%row_data );
-        $i++;
-    }
+    my @loop_data = map {
+        {
+            "QUEUE_NAME"      => enc( $_->{"dc:title"} ),
+            "QUEUE_ALBUM"     => enc( $_->{"upnp:album"} ),
+            "QUEUE_ARTIST"    => enc( $_->{"dc:creator"} ),
+            "QUEUE_TRACK_NUM" => enc( $_->{"upnp:originalTrackNumber"} ),
+            "QUEUE_ALBUMART"  => enc( $_->{"upnp:albumArtURI"} ),
+            "QUEUE_ID"        =>      $_->{id}
+        }
+    } $player->queue();
 
     $queuedata{QUEUE_LOOP} = \@loop_data;
     $queuedata{QUEUE_JSON} = to_json( \@loop_data, { pretty => 1 } );
@@ -598,16 +540,14 @@ sub http_build_queue_data {
     return \%queuedata;
 }
 
-sub http_build_music_data {
+sub build_music_data {
+    my $self      = shift;
     my $qf        = shift;
     my $updatenum = shift;
     my %musicdata;
 
     my @music_loop_data = ();
     my @page_loop_data  = ();
-    my $firstsearch     = ( $qf->{firstsearch} ? $qf->{firstsearch} : 0 );
-    my $maxsearch       = $main::MAX_SEARCH;
-    $maxsearch = $qf->{maxsearch} if ( $qf->{maxsearch} );
 
     my $albumart = "";
 
@@ -616,149 +556,45 @@ sub http_build_music_data {
     $mpath = ""           if ( $mpath eq "/" );
     my $msearch = $qf->{msearch};
     my $item    = sonos_music_entry($mpath);
-    my $name    = enc( $item->{'dc:title'} );
 
     $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
     $musicdata{"MUSIC_PATH"}       = enc($mpath);
-    $musicdata{"MUSIC_NAME"}       = enc( $item->{'dc:title'} );
-    $musicdata{"MUSIC_ARTIST"}     = enc( $item->{'dc:creator'} );
-    $musicdata{"MUSIC_ALBUM"}      = enc( $item->{'upnp:album'} );
+
+    $musicdata{"MUSIC_NAME"}    = enc( $item->title  );
+    $musicdata{"MUSIC_ARTIST"}  = enc( $item->creator);
+    $musicdata{"MUSIC_ALBUM"}   = enc( $item->album  );
+    $musicdata{"MUSIC_CLASS"}   = enc( $item->class  );
+    $musicdata{"MUSIC_CONTENT"} = uri_escape_utf8( $item->content  );
+    $musicdata{"MUSIC_PARENT"}  = uri_escape_utf8( $item->parentID );
+    $musicdata{"MUSIC_ARG"}     = uri_escape_utf8( $item->id );
+    $musicdata{"MUSIC_ISSONG"}  = int( $item->isSong() );
+    $musicdata{"MUSIC_ISRADIO"} = int( $item->isRadio() );
+    $musicdata{"MUSIC_ISALBUM"} = int( $item->isAlbum() );
+    $musicdata{"MUSIC_ISFAV"}   = int( $item->isFav() );
+
     $musicdata{"MUSIC_UPDATED"}    = ( $mpath ne ""
           || ( !$qf->{NoWait} && ( $main::MUSICUPDATE > $updatenum ) ) );
-    $musicdata{"MUSIC_PARENT"} = uri_escape_utf8( $item->{parentID} )
-      if ( defined $item && defined $item->{parentID} );
+
     my $music_arg = $musicdata{MUSIC_ARG} = "mpath=" . uri_escape_utf8($mpath);
 
-    my $class = $item->{'upnp:class'};
-    $musicdata{"MUSIC_CLASS"} = enc($class);
-
-    $musicdata{MUSIC_ISSONG}  = int( $class =~ /musicTrack$/ );
-    $musicdata{MUSIC_ISRADIO} = int( $class =~ /audioBroadcast$/ );
-    $musicdata{MUSIC_ISALBUM} = int( $class =~ /musicAlbum$/ );
-
-    my $elements = sonos_containers_get( $mpath, $item );
-
-    $musicdata{MUSIC_ISPAGED} = int( scalar @{$elements} > $maxsearch )
-      if $elements;
-    my $from            = "";
-    my $to              = "";
-    my $count           = 0;
-    my $has_non_letters = 0;
+    my $elements = $self->getSystem()->globalCache()->getItems($mpath);
     foreach my $music ( @{$elements} ) {
-        my $name   = $music->{"dc:title"};
-        my $letter = uc( substr( $name, 0, 1 ) );
-        $from = $letter unless $from;
-        $count++;
+        next if ( $msearch && $music->title() !~ m/$msearch/i );
 
-        if ( ( $count > $maxsearch ) && ( $letter ne $to ) ) {
-            my %data;
-            $data{PAGE_NAME} = enc("$from-$to") unless ( $from eq $to );
-            $data{PAGE_NAME} = enc($from) if ( $from eq $to );
-            $data{PAGE_ARG} =
-                "$music_arg&from="
-              . uri_escape_utf8($from) . "&to="
-              . uri_escape_utf8($to);
-            push @page_loop_data, \%data;
-            $count = 0;
-            $from  = $letter;
-        }
-
-        $to = $letter;
-    }
-
-    # last
-    my %data;
-    $data{PAGE_NAME} = enc("$from-$to") unless ( $from eq $to );
-    $data{PAGE_NAME} = enc($from) if ( $from eq $to );
-    $data{PAGE_ARG} =
-        "$music_arg&from="
-      . uri_escape_utf8($from) . "&to="
-      . uri_escape_utf8($to);
-    push @page_loop_data, \%data;
-    $musicdata{"PAGE_LOOP"} = \@page_loop_data;
-
-    $from = decode( 'utf8', $qf->{from} );
-    $to   = decode( 'utf8', $qf->{to} );
-    foreach my $music ( @{$elements} ) {
-        my %row_data;
-
-        my $class     = $music->{"upnp:class"};
-        my $realclass = sonos_music_realclass($music);
-        my $name      = $music->{"dc:title"};
-        my $letter    = uc( substr( $name, 0, 1 ) );
-        next if ( $msearch && $name !~ m/$msearch/i );
-        next if ( $from    && $letter lt $from );
-        next if ( $to      && $letter gt $to );
-
-        $row_data{MUSIC_NAME}      = enc($name);
-        $row_data{MUSIC_CLASS}     = enc($class);
-        $row_data{MUSIC_PATH}      = enc( $music->{id} );
-        $row_data{MUSIC_REALCLASS} = enc($realclass);
-        $row_data{MUSIC_ARG}       = "mpath=" . uri_escape_utf8( $music->{id} );
-        $row_data{"MUSIC_ALBUMART"}  = sonos_music_albumart($music);
-        $musicdata{"MUSIC_ALBUMART"} = $row_data{"MUSIC_ALBUMART"}
-          unless $musicdata{"MUSIC_ALBUMART"};
-        $row_data{"MUSIC_ALBUM"}  = enc( $music->{"upnp:album"} );
-        $row_data{"MUSIC_ARTIST"} = enc( $music->{"dc:creator"} );
-        $row_data{"MUSIC_DESC"}   = enc( $music->{"r:description"} );
-        $row_data{MUSIC_TRACK_NUM} =
-          enc( $music->{"upnp:originalTrackNumber"} );
-
-        $row_data{MUSIC_ISFAV}   = int( $class     =~ /favorite$/ );
-        $row_data{MUSIC_ISSONG}  = int( $realclass =~ /musicTrack$/ );
-        $row_data{MUSIC_ISRADIO} = int( $realclass =~ /audioBroadcast$/ );
-        $row_data{MUSIC_ISALBUM} = int( $realclass =~ /musicAlbum$/ );
-
-        push( @music_loop_data, \%row_data );
-        last if ( !$from && $#music_loop_data > $firstsearch + $maxsearch );
-    }
-
-    splice( @music_loop_data, 0, $firstsearch ) if ( $firstsearch > 0 );
-    if ( $#music_loop_data > $maxsearch ) {
-        $musicdata{"MUSIC_ERROR"} = "More then $maxsearch matching items.<BR>";
+        # FILL IN SAME as above
     }
 
     $musicdata{"MUSIC_LOOP"} = \@music_loop_data;
 
     return \%musicdata;
 }
-###############################################################################
-# Sort items by coordinators first, for linked zones sort under their coordinator
-sub http_zone_sort_linked () {
-    my $c = $main::ZONES{ $main::ZONES{$main::a}->{Coordinator} }->{ZoneName}
-      cmp $main::ZONES{ $main::ZONES{$main::b}->{Coordinator} }->{ZoneName};
-    return $c if ( $c != 0 );
-    return -1 if ( $main::ZONES{$main::a}->{Coordinator} eq $main::a );
-    return 1  if ( $main::ZONES{$main::b}->{Coordinator} eq $main::b );
-    return $main::ZONES{$main::a}->{ZoneName}
-      cmp $main::ZONES{$main::b}->{ZoneName};
-}
-###############################################################################
-# Sort items by coordinators first, for linked zones sort under their coordinator
-sub http_zone_sort () {
-    return $main::ZONES{$main::a}->{ZoneName}
-      cmp $main::ZONES{$main::b}->{ZoneName};
-}
 
 ###############################################################################
-sub http_zones {
-    my ($linked) = @_;
+sub build_map {
+    my ( $self, $qf, $params ) = @_;
 
-    my @zkeys =
-      grep ( !exists $main::ZONES{$_}->{Invisible}, keys %main::ZONES );
-
-    if ( defined $linked && $linked ) {
-        return ( sort http_zone_sort_linked(@zkeys) );
-    }
-    else {
-        return ( sort http_zone_sort(@zkeys) );
-    }
-}
-
-###############################################################################
-sub http_build_map {
-    my ( $qf, $params ) = @_;
+    my $player = $self->getSystem()->getPlayer($qf->{zone} || undef;
 
     my $updatenum = 0;
     $updatenum = $qf->{lastupdate} if ( $qf->{lastupdate} );
@@ -768,8 +604,7 @@ sub http_build_map {
     # globals
     {
         my $globals = {};
-        my $host = UPnP::Common::getLocalIPAddress() . ":" . $main::HTTP_PORT;
-        $globals->{"BASE_URL"}             = "http://$host";
+        $globals->{"BASE_URL"}             = $self->baseURL();
         $globals->{"VERSION"}              = $main::VERSION;
         $globals->{"LAST_UPDATE"}          = $main::LASTUPDATE;
         $globals->{"LAST_UPDATE_READABLE"} = localtime $main::LASTUPDATE;
@@ -789,68 +624,45 @@ sub http_build_map {
     }
 
     if ( grep /^ZONES_/i, @$params ) {
-        my @zones = map { http_build_zone_data( $_, $updatenum, $qf->{zone} ); }
-          main::http_zones(1);
+        my @zones = map { build_zone_data( $_, $updatenum, $qf->{zone} ); } $self->system()->zones();
         $map{ZONES_LOOP} = \@zones;
         $map{ZONES_JSON} = to_json( \@zones, { pretty => 1 } );
     }
 
     if ( grep /^ALL_QUEUE_/i, @$params ) {
-        my @queues =
-          map { http_build_queue_data( $_, $updatenum ); } main::http_zones(1);
+        my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->getPlayers();
         $map{ALL_QUEUE_LOOP} = \@queues;
         $map{ALL_QUEUE_JSON} = to_json( \@queues, { pretty => 1 } );
     }
 
     if ( exists $qf->{zone} ) {
-        my $queue = http_build_queue_data( $qf->{zone}, $updatenum );
+        my $queue = build_queue_data( $qf->{zone}, $updatenum );
         $map{QUEUE_JSON} = to_json( $queue, { pretty => 1 } );
         %map = ( %map, %$queue );
     }
 
     if ( grep /^MUSIC_/i, @$params ) {
-        my $music = http_build_music_data( $qf, $updatenum );
+        my $music = build_music_data( $qf, $updatenum );
         $map{MUSIC_JSON} = to_json( $music, { pretty => 1 } );
         %map = ( %map, %$music );
     }
 
     if ( exists $qf->{zone} ) {
-        my $zone = http_build_zone_data( $qf->{zone}, $updatenum, $qf->{zone} );
+        my $zone = build_zone_data( $qf->{zone}, $updatenum, $qf->{zone} );
         %map = ( %map, %$zone );
     }
-
-    if ( grep /^PLUGIN_/i, @$params ) {
-        my @loop_data = ();
-
-        foreach my $plugin ( sort ( keys %main::PLUGINS ) ) {
-            next if ( !$main::PLUGINS{$plugin}->{link} );
-            my %row_data;
-            $row_data{PLUGIN_LINK} = $main::PLUGINS{$plugin}->{link};
-            $row_data{PLUGIN_NAME} = $main::PLUGINS{$plugin}->{name};
-
-            push( @loop_data, \%row_data );
-        }
-
-        $map{"PLUGIN_LOOP"} = \@loop_data;
-        $map{"PLUGIN_JZON"} = to_json( \@loop_data, { pretty => 1 } );
-    }
-
-    # Log(4, "\nParams = " . Dumper($params));
-    # Log(4, "\nData = " . Dumper(\%map) . "\n");
 
     return \%map;
 
 }
 
 ###############################################################################
-sub http_send_tmpl_response {
+sub send_tmpl_response {
     my ( $what, $zone, $c, $r, $diskpath, $tmplhook ) = @_;
 
     my %qf = $r->uri->query_form;
-    delete $qf{zone}
-      if ( exists $qf{zone} && !exists $main::ZONES{ $qf{zone} } );
 
-    # One of ours templates, now fill in the parts we know
+    # One of our templates, now fill in the parts we know
     my $template = HTML::Template::Compiled->new(
         filename          => $diskpath,
         die_on_bad_params => 0,
@@ -859,17 +671,10 @@ sub http_send_tmpl_response {
         loop_context_vars => 1
     );
     my @params = $template->param();
-    my $map    = http_build_map( \%qf, \@params );
+    my $map    = build_map( \%qf, \@params );
     $template->param(%$map);
 
-    &$tmplhook( $c, $r, $diskpath, $template ) if ($tmplhook);
-
-    my $content_type = "text/html; charset=ISO-8859-1";
-    if ( $r->uri->path =~ /\.xml/ ) {
-        $content_type = "text/xml; charset=ISO-8859-1";
-    }
-    if ( $r->uri->path =~ /\.json/ ) { $content_type = "application/json"; }
-
+    my $content_type = $self->mimeTypeOf($diskpath);
     my $output = encode( 'utf8', $template->output );
     my $gzoutput;
     my $status   = gzip $output => $gzoutput;
