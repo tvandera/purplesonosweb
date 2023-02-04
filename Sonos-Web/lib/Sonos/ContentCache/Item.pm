@@ -66,6 +66,14 @@ sub albumArtURI($self)         { return $self->prop("upnp:albumArtURI"); }
 sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber"); }
 sub description($self)         { return $self->prop("r:desciption"); }
 
+#   if ( !ref( $curtrack->{item}->{"r:streamContent"} ) ) {
+#       $activedata{ACTIVE_NAME} = enc( $curtrack->{item}->{"r:streamContent"} );
+#   }
+
+#   if ( !defined( $curtrack->{item}->{"dc:creator"} ) ) {
+#       $activedata{ACTIVE_ALBUM} = enc( $curtransport->{item}->{"dc:title"} );
+#   }
+
 # class
 sub class($self) {
     my $full_classname = $self->prop("upnp:class");
