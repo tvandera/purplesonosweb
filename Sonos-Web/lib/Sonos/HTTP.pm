@@ -336,10 +336,12 @@ sub handle_action {
 sub build_zone_data {
     my ( $self, $player, $updatenum, $active_player ) = @_;
     my %activedata;
+    my $zoneName = $player->zoneName();
+    my $lastupdate = -1;
 
     $activedata{HAS_ACTIVE_ZONE} = int( defined $active_player );
     $activedata{ACTIVE_ZONE}     = enc( $player->zoneName() );
-    $activedata{ACTIVE_ZONEID}   = uri_escape($zone);
+    $activedata{ACTIVE_ZONEID}   = uri_escape($player->UDN());
     $activedata{ACTIVE_VOLUME}   = $player->getVolume();
     $activedata{ZONE_ACTIVE}     = int( $player == $active_player );
 
@@ -350,114 +352,35 @@ sub build_zone_data {
     my $curtrack     = $player->currentTrack();
     my $curtransport = $player->currentTransport();
 
-    $activedata{ACTIVE_NAME}           = "";
-    $activedata{ACTIVE_ARTIST}         = "";
-    $activedata{ACTIVE_ALBUM}          = "";
-    $activedata{ACTIVE_ISSONG}         = 1;
-    $activedata{ACTIVE_ISRADIO}        = 0;
-    $activedata{ACTIVE_TRACK_NUM}      = 0;
-    $activedata{ACTIVE_TRACK_TOT}      = 0;
-    $activedata{ACTIVE_TRACK_TOT_0}    = 0;
-    $activedata{ACTIVE_TRACK_TOT_1}    = 0;
-    $activedata{ACTIVE_TRACK_TOT_GT_1} = 0;
-    $activedata{ACTIVE_MODE}           = 0;
-    $activedata{ACTIVE_PAUSED}         = 0;
-    $activedata{ACTIVE_STOPPED}        = 0;
-    $activedata{ACTIVE_PLAYING}        = 0;
-    $activedata{ACTIVE_SHUFFLE}        = 0;
-    $activedata{ACTIVE_REPEAT}         = 0;
-    $activedata{ACTIVE_LENGTH}         = 0;
-    $activedata{ACTIVE_ALBUMART}       = "";
-    $activedata{ACTIVE_CONTENT}        = "";
-
     if ($curtrack) {
-        if ( $curtrack->{item}->{res}{content} ) {
-            $activedata{ACTIVE_CONTENT} = $curtrack->{item}->{res}{content};
-        }
+        $activedata{ACTIVE_ALBUMART} = uri_escape_utf8($curtrack->albumArtURI());
+        $activedata{ACTIVE_NAME}    = enc( $curtrack->title() );
+        $activedata{ACTIVE_ARTIST}  = enc( $curtrack->creator() );
+        $activedata{ACTIVE_ALBUM}   = enc( $curtrack->album() );
+        $activedata{ACTIVE_CONTENT} = enc( $curtrack->content() );
+        $activedata{ACTIVE_LENGTH}  = $curtrack->lengthInSeconds();
 
-        if ( $curtrack->{item}->{"upnp:albumArtURI"} ) {
-            $activedata{ACTIVE_ALBUMART} =
-              $curtrack->{item}->{"upnp:albumArtURI"};
-        }
-
-        if (   $curtransport
-            && $curtransport->{item}->{"upnp:class"} eq
-            "object.item.audioItem.audioBroadcast" )
-        {
-            if ( !ref( $curtrack->{item}->{"r:streamContent"} ) ) {
-                $activedata{ACTIVE_NAME} = enc( $curtrack->{item}->{"r:streamContent"} );
-            }
-
-            if ( !defined( $curtrack->{item}->{"dc:creator"} ) ) {
-                $activedata{ACTIVE_ALBUM} = enc( $curtransport->{item}->{"dc:title"} );
-            }
-            else {
-                $activedata{ACTIVE_NAME} = enc( $curtrack->{item}->{"dc:title"} );
-                $activedata{ACTIVE_ARTIST} = enc( $curtrack->{item}->{"dc:creator"} );
-                $activedata{ACTIVE_ALBUM} = enc( $curtrack->{item}->{"upnp:album"} );
-                $activedata{ACTIVE_TRACK_NUM} = -1;
-                $activedata{ACTIVE_TRACK_TOT} = $curtransport->{item}->{"dc:title"} . " \/";
-            }
-
-            $activedata{ACTIVE_ISSONG}  = 0;
-            $activedata{ACTIVE_ISRADIO} = 1;
-        }
-        else {
-
-            $activedata{ACTIVE_NAME} = enc( $curtrack->{item}->{"dc:title"} );
-            $activedata{ACTIVE_ARTIST} =
-              enc( $curtrack->{item}->{"dc:creator"} );
-            $activedata{ACTIVE_ALBUM} =
-              enc( $curtrack->{item}->{"upnp:album"} );
-            $activedata{ACTIVE_TRACK_NUM} =
-              $main::ZONES{$zone}->{AV}->{CurrentTrack};
-            $activedata{ACTIVE_TRACK_TOT} =
-              $main::ZONES{$zone}->{AV}->{NumberOfTracks};
-            $activedata{ACTIVE_TRACK_TOT_0} =
-              ( $main::ZONES{$zone}->{AV}->{NumberOfTracks} == 0 );
-            $activedata{ACTIVE_TRACK_TOT_1} =
-              ( $main::ZONES{$zone}->{AV}->{NumberOfTracks} == 1 );
-            $activedata{ACTIVE_TRACK_TOT_GT_1} =
-              ( $main::ZONES{$zone}->{AV}->{NumberOfTracks} > 1 );
-        }
-        if ( $main::ZONES{$zone}->{AV}->{TransportState} eq "PAUSED_PLAYBACK" )
-        {
-            $activedata{ACTIVE_MODE}   = 2;
-            $activedata{ACTIVE_PAUSED} = 1;
-        }
-        elsif ( $main::ZONES{$zone}->{AV}->{TransportState} eq "STOPPED" ) {
-            $activedata{ACTIVE_MODE}    = 0;
-            $activedata{ACTIVE_STOPPED} = 1;
-        }
-        else {
-            $activedata{ACTIVE_MODE}    = 1;
-            $activedata{ACTIVE_PLAYING} = 1;
-        }
-
-        if ( $main::ZONES{$zone}->{AV}->{CurrentPlayMode} eq "NORMAL" ) {
-        }
-        elsif ( $main::ZONES{$zone}->{AV}->{CurrentPlayMode} eq "REPEAT_ALL" ) {
-            $activedata{ACTIVE_REPEAT} = 1;
-        }
-        elsif (
-            $main::ZONES{$zone}->{AV}->{CurrentPlayMode} eq "SHUFFLE_NOREPEAT" )
-        {
-            $activedata{ACTIVE_SHUFFLE} = 1;
-        }
-        elsif ( $main::ZONES{$zone}->{AV}->{CurrentPlayMode} eq "SHUFFLE" ) {
-            $activedata{ACTIVE_SHUFFLE} = 1;
-            $activedata{ACTIVE_REPEAT}  = 1;
-        }
+        $activedata{ACTIVE_TRACK_NUM} = enc($curtrack->currentTrack());
+        $activedata{ACTIVE_TRACK_TOT} = enc($curtrack->numberOfTracks());
+        # $activedata{ACTIVE_TRACK_TOT_0} = ( $main::ZONES{$zone}->{AV}->{NumberOfTracks} == 0 );
+        # $activedata{ACTIVE_TRACK_TOT_1} = ( $main::ZONES{$zone}->{AV}->{NumberOfTracks} == 1 );
+        # $activedata{ACTIVE_TRACK_TOT_GT_1} = ( $main::ZONES{$zone}->{AV}->{NumberOfTracks} > 1 );
     }
 
-    if ( $main::ZONES{$zone}->{AV}->{CurrentTrackDuration} ) {
-        my @parts =
-          split( ":", $main::ZONES{$zone}->{AV}->{CurrentTrackDuration} );
-        $activedata{ACTIVE_LENGTH} =
-          $parts[0] * 3600 + $parts[1] * 60 + $parts[2];
-    }
 
-    my $nexttrack = $main::ZONES{$zone}->{AV}->{"r:NextTrackMetaData"};
+    my $av = $player->avTransport();
+
+    my $transportstate = $av->transportState();
+    my %transport_states = ( "TRANSITIONING" => 3, "PAUSED_PLAYBACK" => 2, "PLAYING" => 1, "STOPPED" => 0);
+    $activedata{"ACTIVE_MODE"} = $transport_states{$transportstate};
+    $activedata{"ACTIVE_$_"}   = ($transportstate eq $_) for (keys %transport_states);
+
+    my $playmode = $av->currentPlayMode();
+    $activedata{ACTIVE_REPEAT} = $av->isRepeat();
+    $activedata{ACTIVE_SHUFFLE} = $av->isShuffle();
+
+
+    my $nexttrack = $av->nextTrack();
     if ($nexttrack) {
         $activedata{NEXT_NAME}   = enc( $nexttrack->{item}->{"dc:title"} );
         $activedata{NEXT_ARTIST} = enc( $nexttrack->{item}->{"dc:creator"} );
@@ -470,42 +393,29 @@ sub build_zone_data {
     $activedata{ZONE_ID}     = $activedata{ACTIVE_ZONEID};
     $activedata{ZONE_NAME}   = $activedata{ACTIVE_ZONE};
     $activedata{ZONE_VOLUME} = $activedata{ACTIVE_VOLUME};
-    $activedata{ZONE_ARG}    = "zone=" . uri_escape_utf8($zone) . "&";
+    $activedata{ZONE_ARG}    = "zone=$zoneName&";
 
-    my $icon = $main::ZONES{$zone}->{Icon};
-    $icon =~ s/^x-rincon-roomicon://;
-    $activedata{ZONE_ICON} = $icon;
-
+    $activedata{ZONE_ICON} = $player->icon();
     $activedata{ZONE_LASTUPDATE} = $lastupdate;
-    my $num_linked = $#{ $main::ZONES{$zone}->{Members} };
+    my $num_linked = $player->zoneSize();
     $activedata{ZONE_NUMLINKED} = $num_linked;
     $activedata{ZONE_FANCYNAME} = $activedata{ZONE_NAME};
     $activedata{ZONE_FANCYNAME} .= " + " . $num_linked if $num_linked;
 
-    my @members;
-    foreach ( @{ $main::ZONES{$zone}->{Members} } ) {
-        my %memberdata;
-        $memberdata{"ZONE_NAME"} = $main::ZONES{$_}->{ZoneName};
-        $memberdata{"ZONE_ID"}   = $_;
-        $memberdata{"ZONE_LINKED"} =
-          int( $main::ZONES{$_}->{Coordinator} ne $_ );
-        $memberdata{"ZONE_ICON"} = $main::ZONES{$_}->{Icon};
-        $memberdata{"ZONE_ICON"} =~ s/^x-rincon-roomicon://;
-        push @members, \%memberdata;
-    }
-    $activedata{ZONE_MEMBERS} = \@members;
+    $activedata{ZONE_MEMBERS} = [
+        map {
+            {
+                "ZONE_NAME" => $_->zoneName(),
+                "ZONE_ID"   => $_->UDN(),
+                "ZONE_LINKED" => int( ! $_->isCoordinator() ),
+                "ZONE_ICON" => $_->icon(),
+            }
+        } @{$player->zoneMembers()}
+    ];
 
-    if ( $main::ZONES{$zone}->{Coordinator} eq $zone ) {
-        $activedata{ZONE_LINKED}    = 0;
-        $activedata{ZONE_LINK}      = "";
-        $activedata{ZONE_LINK_NAME} = "";
-    }
-    else {
-        $activedata{ZONE_LINKED} = 1;
-        $activedata{ZONE_LINK}   = $main::ZONES{$zone}->{Coordinator};
-        $activedata{ZONE_LINK_NAME} =
-          enc( $main::ZONES{ $main::ZONES{$zone}->{Coordinator} }->{ZoneName} );
-    }
+    $activedata{ZONE_LINKED}    = ! $player->isCoordinator();
+    $activedata{ZONE_LINK}      = $player->coordinator()->UDN();
+    $activedata{ZONE_LINK_NAME} = $player->coordinator()->zoneName();
 
     $activedata{ACTIVE_JSON} = to_json( \%activedata, { pretty => 1 } );
 
