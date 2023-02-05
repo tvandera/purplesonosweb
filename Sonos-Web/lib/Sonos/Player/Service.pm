@@ -27,6 +27,7 @@ sub new {
         _player => $player,
         _subscription => undef,
         _state => {},
+        _callbacks => [],
     }, $class;
 
     $self->renewSubscription();
@@ -121,6 +122,15 @@ sub action( $self, $action, @args ) {
     return $self->controlProxy()->$action("0", @args);
 }
 
+sub addCallBack($self, $callback) {
+    push @{$self->{_callbacks}}, $callback;
+}
+
+sub doCallBacks($self) {
+    $_->($self) for @{$self->{_callbacks}};
+    $self->{_callbacks} = [];
+}
+
 sub DESTROY($self)
 {
     $self->getSubscription()->unsubscribe if defined $self->getSubscription();
@@ -172,6 +182,8 @@ sub processUpdate ( $self, $service, %properties ) {
 
     # merge new _state into existing
     %{$self->{_state}} = ( %{$self->{_state}}, %{$instancedata} );
+
+    $self->doCallBacks();
 
     $self->info();
 }

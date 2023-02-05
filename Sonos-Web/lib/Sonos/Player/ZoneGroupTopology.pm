@@ -42,7 +42,7 @@ sub zoneInfo($self, $uuid) {
     return undef unless $self->haveZoneInfo();
 
     my @matchingzones = grep { $_->{UUID} eq $uuid } @{$self->allZones()};
-    carp "More than one zone with uuid $uuid" unless scalar @matchingzones == 1;
+    carp "No / More than one zone with uuid $uuid" unless scalar @matchingzones == 1;
 
     return $matchingzones[0];
 }
@@ -59,10 +59,12 @@ sub processUpdate ( $self, $service, %properties ) {
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
     $self->{_groups} = { map { $_->{Coordinator} => $_->{ZoneGroupMember} } @groups };
 
+    $self->doCallBacks();
+
     $self->info();
 }
 
-# not currently called, should be called from processZoneGroupTopology
+# not currently called, should be called from processUpdate
 sub processThirdPartyMediaServers ( $self, $properties ) {
     my %mapping = (
         "SA_RINCON1_" => "Rhapsody",

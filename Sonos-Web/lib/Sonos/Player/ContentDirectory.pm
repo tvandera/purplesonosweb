@@ -104,6 +104,8 @@ sub processUpdate ( $self, $service, %properties ) {
         }
     }
 
+    $self->doCallBacks();
+
     my @queue = $self->queue();
 
     for (@queue) {
