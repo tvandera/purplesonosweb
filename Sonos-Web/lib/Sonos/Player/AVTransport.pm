@@ -1,6 +1,8 @@
 package Sonos::Player::AVTransport;
 
-use base 'Sonos::Player::Service', 'Sonos::MetaData';
+use base 'Sonos::Player::Service';
+
+require Sonos::MetaData;
 
 use v5.36;
 use strict;
@@ -20,29 +22,15 @@ sub currentTrack($self)         { return $self->prop("CurrentTrack"); }
 sub numberOfTracks($self)       { return $self->prop("NumberOfTracks"); }
 sub currentTrackDuration($self) { return $self->prop("CurrentTrackDuration"); }
 
-# override prop to also look inside CurrentTrackMetaData or
-# AVTransportURIMetaData
-sub prop($self, @path) {
-    my $result = $self->SUPER::prop(@path);
-    return $result if defined $result;
-    $result = $self->SUPER::prop("AVTransportURIMetaData", @path);
-    return $result if defined $result;
-    $result = $self->SUPER::prop("CurrentTrackMetaData", @path);
-    return $result;
-}
-
+sub nextTrack($self) { return Sonos::MetaData->new($self->prop("r:NextTrackMetaData")); }
+sub curTrack($self)  { return Sonos::MetaData->new($self->prop("CurrentTrackMetaData")); }
+sub curTransport($self)  { return Sonos::MetaData->new($self->prop("AVTransportURIMetaData")); }
 
 sub info($self) {
     #DEBUG Dumper($self->{_state});
     my @fields = (
         "transportState",
         "currentPlayMode",
-        "class",
-        "title",
-        "creator",
-        "album",
-        "streamContent",
-        "radioShow",
     );
 
     $self->log($self->shortName(), ":");
@@ -50,6 +38,14 @@ sub info($self) {
         my $value = $self->$_();
         $self->log("  " . $_ . ": " . $value) if defined $value;
     }
+    $self->log("  Current Track:");
+    $self->curTrack()->log($self, " " x 4);
+
+    $self->log("  Current Transport:");
+    $self->curTransport()->log($self, " " x 4);
+
+    $self->log("  Next Track:");
+    $self->curTransport()->log($self, " " x 4);
 }
 
 1;
