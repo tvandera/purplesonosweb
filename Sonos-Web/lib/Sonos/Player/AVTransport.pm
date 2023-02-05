@@ -22,9 +22,11 @@ sub currentTrack($self)         { return $self->prop("CurrentTrack"); }
 sub numberOfTracks($self)       { return $self->prop("NumberOfTracks"); }
 sub currentTrackDuration($self) { return $self->prop("CurrentTrackDuration"); }
 
-sub nextTrack($self) { return Sonos::MetaData->new($self->prop("r:NextTrackMetaData")); }
-sub curTrack($self)  { return Sonos::MetaData->new($self->prop("CurrentTrackMetaData")); }
+sub nextTrack($self)     { return Sonos::MetaData->new($self->prop("r:NextTrackMetaData")); }
+sub curTrack($self)      { return Sonos::MetaData->new($self->prop("CurrentTrackMetaData")); }
 sub curTransport($self)  { return Sonos::MetaData->new($self->prop("AVTransportURIMetaData")); }
+
+sub isRadio($self)       { return $self->curTransport()->isRadio(); }
 
 sub info($self) {
     #DEBUG Dumper($self->{_state});
