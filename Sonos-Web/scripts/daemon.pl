@@ -10,7 +10,7 @@ require IO::Async::Loop::Select;
 use IO::Async::Timer::Periodic;
 
 require Sonos::Discovery;
-# require Sonos::HTTP;
+require Sonos::HTTP;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -18,7 +18,7 @@ use Data::Dumper;
 
 my $loop = IO::Async::Loop::Select->new;
 my $discover = Sonos::Discovery->new($loop);
-# my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPort => 8080);
+my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPort => 8080);
 
 $SIG{INT} = sub {
     print STDERR "Ctrl-C - stopping\n";
