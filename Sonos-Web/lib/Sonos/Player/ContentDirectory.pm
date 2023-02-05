@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Sonos::Player::Service';
 
-require Sonos::ContentCache::Item;
+require Sonos::MetaData;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -88,7 +88,7 @@ sub processUpdate ( $self, $service, %properties ) {
 
         # if the UpdateID starts with RINCON_ data is global
         #    e.g. 'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
-        # otherwise local to the player
+        # otherwise local to the player (player's queue)
         #    e.g. 'ContainerUpdateIDs' => 'Q:0,503',
         my $globalcache = $newvalue =~ m/^RINCON_/g;
         my $cache = $globalcache ? $self->globalCache() : $self->localCache();
@@ -112,7 +112,7 @@ sub processUpdate ( $self, $service, %properties ) {
 
     if (scalar @queue) {
         use Text::Table;
-        my $table = Text::Table->new(Sonos::ContentCache::Item::displayFields());
+        my $table = Text::Table->new(Sonos::MetaData::displayFields());
         $table->add($_->displayValues()) for @queue;
 
         $self->getPlayer()->log("Queue:\n" . $table->table());

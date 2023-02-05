@@ -1,4 +1,4 @@
-package Sonos::ContentCache::Item;
+package Sonos::MetaData;
 
 use v5.36;
 use strict;
@@ -65,6 +65,8 @@ sub album($self)               { return $self->prop("upnp:album"); }
 sub albumArtURI($self)         { return $self->prop("upnp:albumArtURI"); }
 sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber"); }
 sub description($self)         { return $self->prop("r:desciption"); }
+sub streamContent($self)       { return $self->prop("r:streamContent"); }
+sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 
 #   if ( !ref( $curtrack->{item}->{"r:streamContent"} ) ) {
 #       $activedata{ACTIVE_NAME} = enc( $curtrack->{item}->{"r:streamContent"} );

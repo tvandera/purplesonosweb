@@ -1,6 +1,6 @@
 package Sonos::Player::AVTransport;
 
-use base 'Sonos::Player::Service';
+use base 'Sonos::Player::Service', 'Sonos::MetaData';
 
 use v5.36;
 use strict;
@@ -20,38 +20,18 @@ sub currentTrack($self)         { return $self->prop("CurrentTrack"); }
 sub numberOfTracks($self)       { return $self->prop("NumberOfTracks"); }
 sub currentTrackDuration($self) { return $self->prop("CurrentTrackDuration"); }
 
-# inside CurrentTransport or AVTransportURIMetaData
-sub metaDataProp($self, @path) {
-    my @elements = ( "AVTransportURIMetaData", "CurrentTrackMetaData");
-    for my $el (@elements) {
-        my $value = $self->prop($el, @path );
+# override prop to also look inside CurrentTrackMetaData or
+# AVTransportURIMetaData
+sub prop($self, @path) {
+    my @elements = ( (), "AVTransportURIMetaData", "CurrentTrackMetaData");
+    for (@elements) {
+        my $value = $self->SUPER::prop($_, @path );
         return $value if defined $value;
     }
 
     return undef;
 }
 
-sub title($self)         { return $self->metaDataProp("dc:title"); }
-sub creator($self)       { return $self->metaDataProp("dc:creator"); }
-sub album($self)         { return $self->metaDataProp("upnp:album"); }
-sub streamContent($self) { return $self->metaDataProp("r:streamContent"); }
-sub radioShow($self)     { return $self->metaDataProp("r:radioShowMd"); }
-
-# class of what's playing
-sub class($self) {
-    my $full_classname = $self->metaDataProp("upnp:class");
-    return undef unless defined $full_classname;
-
-    # only the last part
-    my @parts = split ".", $full_classname;
-    return $parts[-1];
-}
-
-sub isRadio($self) {
-    return $self->class() eq "audioBroadcast";
-}
-
-# CurrentTrack
 
 sub info($self) {
     #DEBUG Dumper($self->{_state});
@@ -71,12 +51,6 @@ sub info($self) {
         my $value = $self->$_();
         $self->log("  " . $_ . ": " . $value) if defined $value;
     }
-}
-
-# forward processUpdate to Service base class
-sub processUpdate {
-    my $self = shift;
-    $self->processStateUpdate(@_);
 }
 
 1;

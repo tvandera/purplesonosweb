@@ -4,7 +4,7 @@ use v5.36;
 use strict;
 use warnings;
 
-require Sonos::ContentCache::Item;
+require Sonos::MetaData;
 
 use JSON::XS;
 use File::Slurp;
@@ -129,7 +129,7 @@ sub albumArtHelper($self, $uri, $baseurl) {
 sub addItemsOnly($self, @items) {
     for (@items) {
         carp "No id: " . Dumper(\@items) unless defined $_->{id};
-        $self->{_items}->{$_->{id}} = Sonos::ContentCache::Item->new($self, $_);
+        $self->{_items}->{$_->{id}} = Sonos::MetaData->new($self, $_);
     }
 }
 
