@@ -27,15 +27,30 @@ sub cache($self) {
     return $self->{_cache};
 }
 
+
+# TYPE=SNG|TITLE Why does it always rain on me?|ARTIST TRAVIS|ALBUM
+
+sub streamContentProp($self, $prop = undef) {
+    my $value = $self->prop("r:streamContent");
+    my ($type, $title, $artist, $album);
+
+    if ($value =~ /TYPE=(\w+)\|TITLE (.*)\|ARTIST (.*)\|ALBUM (.*)/) {
+        ($type, $title, $artist, $album) = ($1, $2, $3, $4);
+    } else {
+        return $value; # as is
+    }
+
+    my %mapping = ( "TITLE" => $title, "ARTIST" => $artist, "ALBUM" => $album );
+    return $mapping{$prop} if $prop;
+    return "$title - $artist - $album";
+}
+
 sub prop($self, @path) {
     my $value = $self->{_data};
     for (@path) {
-        if (ref $value eq 'HASH' and defined $value->{$_}) {
-            $value = $value->{$_};
-        } else {
-            return undef;
-        }
+        $value = $value->{$_} if (ref $value eq 'HASH');
     }
+
     return $value;
 }
 
@@ -65,7 +80,12 @@ sub album($self)               { return $self->prop("upnp:album"); }
 sub albumArtURI($self)         { return $self->prop("upnp:albumArtURI"); }
 sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber"); }
 sub description($self)         { return $self->prop("r:desciption"); }
-sub streamContent($self)       { return $self->prop("r:streamContent"); }
+
+sub streamContent($self)       { return $self->streamContentProp(); }
+sub streamContentTitle($self)  { return $self->streamContentProp("TITLE"); }
+sub streamContentArtist($self) { return $self->streamContentProp("ARTIST"); }
+sub streamContentAlbum($self)  { return $self->streamContentProp("ALBUM"); }
+
 sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 
 #   if ( !ref( $curtrack->{item}->{"r:streamContent"} ) ) {
@@ -104,7 +124,6 @@ sub isFav($self)   { return $self->class() eq "favorite"; }
 sub getAlbumArt($self, $baseurl) {
     return $self->cache()->albumArtHelper($self->albumArtURI, $baseurl);
 }
-
 
 sub displayFields() {
     return  (
