@@ -65,14 +65,14 @@ sub UDN($self) {
     return $uuid;
 }
 
-# http://192.168.2.102:1400/xml/device_description.xml
+# http://192.168.x.y:1400/xml/device_description.xml
 sub location($self) {
     return $self->getUPnP()->{LOCATION};
 }
 
 
-# Living room or
-# 192.168.2.102 - Sonos Play:5
+# "Living room" if defined or
+# "192.168.x.y - Sonos Play:5"
 sub friendlyName($self) {
     return $self->zoneName() if $self->zoneName;
     return $self->getUPnP()->{FRIENDLYNAME};
@@ -93,7 +93,7 @@ sub getService($self, $name) {
     return $self->{_services}->{$name};
 }
 
-# UPnP::Service object
+# UPnP::ControlPoint object
 sub getUPnP($self) {
     return $self->{_upnp};
 }
@@ -149,50 +149,6 @@ sub getShuffle($self) {
     return $self->{_state}->{CurrentPlayMode} =~ /^SHUFFLE/;
 }
 
-
-# ---- queue ----
-
-sub seek($self, $queue) {
-    $queue =~ s,^.*/,,;
-    return $self->avTransportAction("Seek", "TRACK_NR", $queue );
-}
-
-sub removeTrackFromQueue($self, $objectid) {
-    return $self->avTransportProxy()->RemoveTrackFromQueue( "0", $objectid );
-}
-
-# -- RenderingControl
-
-sub renderProxy($self) {
-    return $self->getService("RenderingControl")->controlProxy;
-}
-
-sub renderAction( $self, $action, @args ) {
-    return $self->renderProxy()->$action("0", @args);
-}
-
-sub getVolume($self) {
-    return $self->{_state}->{Volume}->{Master};
-}
-
-sub setVolume($self, $value) {
-    $self->renderAction("SetVolume", "Master", $value);
-}
-
-sub changeVolume($self, $diff) {
-    my $vol = $self->getVolume() + $diff;
-    $self->setVolume($vol);
-}
-
-sub getMute($self) {
-    return $self->{_state}->{Mute}->{Master};
-}
-
-sub setMute($self, $on_or_off) {
-    return if $on_or_off == $self->getMute();
-    return $self->renderAction("SetMute", "Master", $on_or_off)
-}
-
 sub switchPlayMode($self, %switch_map) {
     my %map = (%switch_map, reverse %switch_map);
     my $new_playmode = $map{$self->GetPlayMode()};
@@ -224,5 +180,17 @@ sub setShuffle($self, $on_or_off) {
         "REPEAT_ALL" => "SHUFFLE",
     );
     $self->switchPlayMode(%switch_shuffle);
+}
+
+
+# ---- queue ----
+
+sub seek($self, $queue) {
+    $queue =~ s,^.*/,,;
+    return $self->avTransportAction("Seek", "TRACK_NR", $queue );
+}
+
+sub removeTrackFromQueue($self, $objectid) {
+    return $self->avTransportProxy()->RemoveTrackFromQueue( "0", $objectid );
 }
 
