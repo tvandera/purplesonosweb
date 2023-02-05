@@ -108,7 +108,6 @@ sub albumArtHelper($self, $uri, $baseurl) {
     }
 
     my $full_uri  = URI::WithBase->new($uri, $baseurl);
-    DEBUG "Full uri: " . $full_uri->abs();
     my $response = $self->{_useragent}->get($full_uri->abs());
     carp "$uri not found" unless $response->is_success();
 
