@@ -23,13 +23,12 @@ sub currentTrackDuration($self) { return $self->prop("CurrentTrackDuration"); }
 # override prop to also look inside CurrentTrackMetaData or
 # AVTransportURIMetaData
 sub prop($self, @path) {
-    my @elements = ( (), "AVTransportURIMetaData", "CurrentTrackMetaData");
-    for (@elements) {
-        my $value = $self->SUPER::prop($_, @path );
-        return $value if defined $value;
-    }
-
-    return undef;
+    my $result = $self->SUPER::prop(@path);
+    return $result if defined $result;
+    $result = $self->SUPER::prop("AVTransportURIMetaData", @path);
+    return $result if defined $result;
+    $result = $self->SUPER::prop("CurrentTrackMetaData", @path);
+    return $result;
 }
 
 
