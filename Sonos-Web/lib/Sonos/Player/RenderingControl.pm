@@ -29,18 +29,18 @@ sub getMute($self, $channel = "Master") {
     return $self->prop("Mute", $channel);
 }
 
-sub setVolume($self, $value) {
-    $self->action("SetVolume", "Master", $value);
+sub setVolume($self, $value, $channel = "Master") {
+    $self->action("SetVolume", $channel, $value);
 }
 
-sub changeVolume($self, $diff) {
-    my $vol = $self->getVolume() + $diff;
-    $self->setVolume($vol);
+sub changeVolume($self, $diff, $channel = "Master") {
+    my $vol = $self->getVolume($channel) + $diff;
+    $self->setVolume($vol, $channel);
 }
 
-sub setMute($self, $on_or_off) {
-    return if $on_or_off == $self->getMute();
-    return $self->action("SetMute", "Master", $on_or_off)
+sub setMute($self, $on_or_off, $channel = "Master") {
+    return if $on_or_off == $self->getMute($channel);
+    return $self->action("SetMute", $channel, $on_or_off)
 }
 
 
