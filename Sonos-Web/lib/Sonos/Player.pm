@@ -4,7 +4,7 @@ use v5.36;
 use strict;
 use warnings;
 
-use List::Util "all";
+use List::Util qw(all max);
 
 require UPnP::ControlPoint;
 
@@ -56,6 +56,10 @@ sub populated($self) {
     return all { $_->populated() } values %{$self->{_services}};
 }
 
+sub lastUpdate($self) {
+    my @values = map { $_->lastUpdate() } values %{$self->{_services}};
+    return max @values;
+}
 
 # for Sonos this is smtg like RINCON_000E583472BC01400
 # RINCON_<<MAC addresss>><<port>>

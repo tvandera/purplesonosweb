@@ -69,6 +69,10 @@ sub fullName($self) {
     SERVICE_PREFIX . $self->shortName() . SERVICE_SUFFIX;
 }
 
+sub lastUpdate($self) {
+    return $self->{_state}->{LASTUPDATE} || -1;
+}
+
 sub getPlayer($self) {
     return $self->{_player};
 }
