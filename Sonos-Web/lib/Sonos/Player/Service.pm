@@ -153,7 +153,7 @@ sub derefHelper($elem) {
 
 # called when rendering properties (like volume) are changed
 # called when 'currently-playing' has changed
-sub processStateUpdate ( $self, $service, %properties ) {
+sub processUpdate ( $self, $service, %properties ) {
     my $tree = XMLin(
         decode_entities( $properties{LastChange} ),
         forcearray => ["ZoneGroup"],
@@ -163,7 +163,6 @@ sub processStateUpdate ( $self, $service, %properties ) {
             "Loudness" => "channel"
         }
     );
-
 
     my $instancedata = derefHelper($tree->{InstanceID});
 
