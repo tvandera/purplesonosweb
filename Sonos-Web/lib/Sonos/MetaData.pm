@@ -29,11 +29,11 @@ sub cache($self) {
 
 
 # TYPE=SNG|TITLE Why does it always rain on me?|ARTIST TRAVIS|ALBUM
-
 sub streamContentProp($self, $prop = undef) {
     my $value = $self->prop("r:streamContent");
-    my ($type, $title, $artist, $album);
+    return $value unless $value;
 
+    my ($type, $title, $artist, $album);
     if ($value =~ /TYPE=(\w+)\|TITLE (.*)\|ARTIST (.*)\|ALBUM (.*)/) {
         ($type, $title, $artist, $album) = ($1, $2, $3, $4);
     } else {
@@ -151,7 +151,8 @@ sub as_string($self) {
 sub log($self, $logger, $indent) {
     for (displayFields()) {
         my $value = $self->$_();
-        $logger->log($indent . $_ . ": " . $value) if defined $value;
+        next unless defined $value and $value ne "";
+        $logger->log($indent . $_ . ": " . $value);
     }
 }
 
