@@ -96,7 +96,8 @@ sub _discoveryCallback {
     my $location = $device->{LOCATION};
 
     if ( $action eq 'deviceAdded' ) {
-        $self->{_players}->{$location} = Sonos::Player->new($device, $self) unless defined $self->{_players}->{$location};
+        return if defined $self->{_players}->{$location};
+        $self->{_players}->{$location} = Sonos::Player->new($device, $self);
         INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
         # DEBUG Dumper($device);
     }
