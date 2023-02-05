@@ -117,6 +117,10 @@ sub controlProxy($self) {
     return $self->getUPnP->controlProxy;
 }
 
+sub action( $self, $action, @args ) {
+    return $self->controlProxy()->$action("0", @args);
+}
+
 sub DESTROY($self)
 {
     $self->getSubscription()->unsubscribe if defined $self->getSubscription();
