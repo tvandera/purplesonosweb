@@ -6,7 +6,7 @@ use File::Copy;
 use strict;
 
 ###############################################################################
-# Add/update a magic song 
+# Add/update a magic song
 sub add {
     my ($artist, $album, $song, $url) = @_;
 
@@ -133,7 +133,7 @@ sub html {
     my ($c, $r, $diskpath, $template) = @_;
 
     my %qf = $r->uri->query_form;
-     
+
     if ($template->query(name => "MAGICSONG_LOOP")) {
         my @loop_data = ();
 
@@ -220,7 +220,7 @@ sub edit {
         delete $cmd->{friendly};
         $cmd->{url}      = $qf{url};
     }
-    
+
     if ($id eq "new") {
         $main::PREFS{MagicSong}->{maxid}++;
         $id = $main::PREFS{MagicSong}->{maxid};
