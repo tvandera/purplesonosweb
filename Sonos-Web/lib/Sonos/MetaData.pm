@@ -12,7 +12,7 @@ use Carp;
 
 
 sub new {
-    my($self, $cache, $data) = @_;
+    my($self, $data, $cache) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
@@ -136,6 +136,7 @@ sub displayFields() {
         "title",
         "creator",
         "album",
+        "streamContent",
     );
 }
 
@@ -147,5 +148,11 @@ sub as_string($self) {
     return join " - ", $self->diplayValues;
 }
 
+sub log($self, $logger, $indent) {
+    for (displayFields()) {
+        my $value = $self->$_();
+        $logger->log($indent . $_ . ": " . $value) if defined $value;
+    }
+}
 
 1;

@@ -128,7 +128,7 @@ sub albumArtHelper($self, $uri, $baseurl) {
 sub addItemsOnly($self, @items) {
     for (@items) {
         carp "No id: " . Dumper(\@items) unless defined $_->{id};
-        $self->{_items}->{$_->{id}} = Sonos::MetaData->new($self, $_);
+        $self->{_items}->{$_->{id}} = Sonos::MetaData->new($_, $self);
     }
 }
 
