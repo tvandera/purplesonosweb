@@ -17,7 +17,6 @@ use File::Spec::Functions 'catfile';
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use MIME::Types;
 
-
 require HTML::Template::Compiled;
 
 ###############################################################################
@@ -102,146 +101,51 @@ sub handle_request($self, $handle, $c) {
         return;
     }
 
-# 0 - not handled, 1 - handled send reply, >= 2 - handled routine will send reply
-    my $response = 0;
+    my $handled = 0;
 
     if ( exists $qf{action} ) {
-        if ( exists $qf{zone} ) {
-            $response = handle_zone_action( $c, $r, $path );
-        }
-        if ( !$response ) {
-            $response = handle_action( $c, $r, $path );
-        }
+        $handled = handle_zone_action( $c, $r, $path ) if ( exists $qf{zone} );
+        $handled ||= handle_action( $c, $r, $path );
     }
 
     if ( $qf{NoWait} ) {
-        $response = 1;
+        $handled = 1;
     }
 
     my $tmplhook;
-    if ( $response == 2 ) {
-        sonos_add_waiting( "AV", "*", \& send_tmpl_response, $c, $r,
-            $diskpath, $tmplhook );
-    }
-    elsif ( $response == 3 ) {
-        sonos_add_waiting( "RENDER", "*", \& send_tmpl_response, $c, $r,
-            $diskpath, $tmplhook );
-    }
-    elsif ( $response == 4 ) {
-        sonos_add_waiting( "QUEUE", "*", \& send_tmpl_response, $c, $r,
-            $diskpath, $tmplhook );
-    }
-    elsif ( $response == 5 ) {
-        sonos_add_waiting( "*", "*", \& send_tmpl_response, $c, $r,
-            $diskpath, $tmplhook );
-    }
-    else {
-        send_tmpl_response( "*", "*", $c, $r, $diskpath, $tmplhook );
-    }
-
+    my @common_args = ( "*", \& send_tmpl_response, $c, $r, $diskpath, $tmplhook );
 }
 
 ###############################################################################
 sub handle_zone_action {
-    my ( $c, $r, $path ) = @_;
-
+    my ($self, $c, $r, $path ) = @_;
     my %qf = $r->uri->query_form;
-    delete $qf{zone}
-      if ( exists $qf{zone} && !exists $main::ZONES{ $qf{zone} } );
     my $mpath = decode( "UTF-8", $qf{mpath} );
+    my $zone = $self->getPlayer($qf{zone});
 
-    my $zone = $qf{zone};
-    if ( $qf{action} eq "Remove" ) {
-        upnp_avtransport_remove_track( $zone, $qf{queue} );
-        return 4;
-    }
-    elsif ( $qf{action} eq "RemoveAll" ) {
-        upnp_avtransport_action( $zone, "RemoveAllTracksFromQueue" );
-        return 4;
-    }
-    elsif ( $qf{action} eq "Play" ) {
-        if ( $main::ZONES{$zone}->{AV}->{TransportState} eq "PLAYING" ) {
-            return 1;
-        }
-        else {
-            upnp_avtransport_play($zone);
-            return 2;
-        }
-    }
-    elsif ( $qf{action} eq "Pause" ) {
-        if ( $main::ZONES{$zone}->{AV}->{TransportState} eq "PAUSED_PLAYBACK" )
-        {
-            return 1;
-        }
-        else {
-            upnp_avtransport_action( $zone, $qf{action} );
-            return 2;
-        }
-    }
-    elsif ( $qf{action} eq "Stop" ) {
-        if ( $main::ZONES{$zone}->{AV}->{TransportState} eq "STOPPED" ) {
-            return 1;
-        }
-        else {
-            upnp_avtransport_action( $zone, $qf{action} );
-            return 2;
-        }
-    }
-    elsif ( $qf{action} =~ /(Next|Previous)/ ) {
-        upnp_avtransport_action( $zone, $qf{action} );
-        return 2;
-    }
-    elsif ( $qf{action} eq "ShuffleOn" ) {
-        upnp_avtransport_shuffle( $zone, 1 );
-        return 1;
-    }
-    elsif ( $qf{action} eq "ShuffleOff" ) {
-        upnp_avtransport_shuffle( $zone, 0 );
-        return 1;
-    }
-    elsif ( $qf{action} eq "RepeatOn" ) {
-        upnp_avtransport_repeat( $zone, 1 );
-        return 1;
-    }
-    elsif ( $qf{action} eq "RepeatOff" ) {
-        upnp_avtransport_repeat( $zone, 0 );
-        return 1;
-    }
-    elsif ( $qf{action} eq "Seek" ) {
-        if ( !( $main::ZONES{$zone}->{AV}->{AVTransportURI} =~ /queue/ ) ) {
-            sonos_avtransport_set_queue($zone);
-        }
-        upnp_avtransport_seek( $zone, $qf{queue} );
-        return 2;
-    }
-    elsif ( $qf{action} eq "MuteOn" ) {
-        upnp_render_mute( $zone, 1 );
-        return 3;
-    }
-    elsif ( $qf{action} eq "MuteOff" ) {
-        upnp_render_mute( $zone, 0 );
-        return 3;
-    }
-    elsif ( $qf{action} eq "MuchSofter" ) {
-        upnp_render_volume_change( $zone, -5 );
-        return 3;
-    }
-    elsif ( $qf{action} eq "Softer" ) {
-        upnp_render_volume_change( $zone, -1 );
-        return 3;
-    }
-    elsif ( $qf{action} eq "Louder" ) {
-        upnp_render_volume_change( $zone, +1 );
-        return 3;
-    }
-    elsif ( $qf{action} eq "MuchLouder" ) {
-        upnp_render_volume_change( $zone, +5 );
-        return 3;
-    }
-    elsif ( $qf{action} eq "SetVolume" ) {
-        upnp_render_volume( $zone, $qf{volume} );
-        return 3;
-    }
+    my %action_table (
+        # ContentDirectory actions
+        "Remove" => sub { $player->removeTrack( $qf{queue} ); return 4; },
+        "RemoveAll" => sub { $player->removeAll() return 4; },
+
+        # AVtransport Actions
+        "Play" ) {
+   "Pause" ) {
+    "Stop" ) {
+"ShuffleOn" ) {
+q "ShuffleOff" ) {
+ "RepeatOn" ) {
+"RepeatOff" ) {
+ "Seek" ) {
+
+        # Render actions
+ "MuteOn" ) {
+"MuteOff" ) {
+ "MuchSofter" ) {
+   "Softer" ) {
+ "Louder" ) {
+   "MuchLouder" ) {
+   "SetVolume" ) {
     elsif ( $qf{action} eq "Save" ) {
         upnp_avtransport_save( $zone, $qf{savename} );
         return 0;
@@ -307,10 +211,8 @@ sub handle_zone_action {
 ###############################################################################
 sub handle_action {
     my ( $c, $r, $path ) = @_;
-
     my %qf = $r->uri->query_form;
-    delete $qf{zone}
-      if ( exists $qf{zone} && !exists $main::ZONES{ $qf{zone} } );
+
 
     if ( $qf{action} eq "ReIndex" ) {
         sonos_reindex();
@@ -504,7 +406,8 @@ sub build_music_data {
 sub build_map {
     my ( $self, $qf, $params ) = @_;
 
-    my $player = $self->getSystem()->getPlayer($qf->{zone} || undef;
+    my $player = undef;
+    $player = $self->getSystem()->getPlayer($qf->{zone}) if $qf->{zone};
 
     my $updatenum = 0;
     $updatenum = $qf->{lastupdate} if ( $qf->{lastupdate} );
@@ -528,8 +431,7 @@ sub build_map {
         $globals->{"ZONES_LASTUPDATE"}   = $main::ZONESUPDATE;
         $globals->{"ZONES_UPDATED"}      = ( $main::ZONESUPDATE > $updatenum );
 
-        $map{GLOBALS_JSON} =
-          to_json( $globals, { pretty => 1 }, { pretty => 1 } );
+        $map{GLOBALS_JSON} = to_json( $globals, { pretty => 1 } );
         %map = ( %map, %$globals );
     }
 
@@ -588,7 +490,7 @@ sub send_tmpl_response {
     my $output = encode( 'utf8', $template->output );
     my $gzoutput;
     my $status   = gzip $output => $gzoutput;
-    my $response = HTTP::Response->new(
+    my $handled = HTTP::Response->new(
         200, undef,
         [
             Connection         => "close",
@@ -600,7 +502,7 @@ sub send_tmpl_response {
         ],
         $gzoutput
     );
-    $c->send_response($response);
+    $c->send_response($handled);
     $c->force_last_request;
     $c->close;
 }
