@@ -70,11 +70,15 @@ sub location($self) {
     return $self->getUPnP()->{LOCATION};
 }
 
+
+# Living room or
+# 192.168.2.102 - Sonos Play:5
 sub friendlyName($self) {
     return $self->zoneName() if $self->zoneName;
     return $self->getUPnP()->{FRIENDLYNAME};
 }
 
+# info the zone associated with this player
 sub zoneInfo($self) {
     return $self->getService("ZoneGroupTopology")->zoneInfo($self->UDN);
 }
@@ -84,10 +88,12 @@ sub zoneName($self) {
     return $self->zoneInfo()->{ZoneName};
 }
 
+# Sonos::Service object for given name
 sub getService($self, $name) {
     return $self->{_services}->{$name};
 }
 
+# UPnP::Service object
 sub getUPnP($self) {
     return $self->{_upnp};
 }
@@ -96,16 +102,15 @@ sub log($self, @args) {
     INFO sprintf("[%12s]: ", $self->friendlyName), @args;
 }
 
+
+# -- AVTransport --
+
 sub avTransportProxy($self) {
     return $self->getService("AVTransport")->controlProxy;
 }
 
-sub renderProxy($self) {
-    return $self->getService("RenderingControl")->controlProxy;
-}
-
-sub removeTrackFromQueue($self, $objectid) {
-    return $self->avTransportProxy()->RemoveTrackFromQueue( "0", $objectid );
+sub avTransportAction( $self, $action, @args ) {
+    return $self->avTransportProxy()->$action("0,", @args);
 }
 
 sub isPlaying($self) {
@@ -124,9 +129,46 @@ sub stopPlaying($self) {
     return $self->avTransportAction("Stop");
 }
 
+sub setURI( $self, $uri, $metadata ) {
+    return $self->avTransportAction( "SetAVTransportURI", $uri, $metadata );
+}
+
+sub addURI( $self, $uri, $metadata, $queueSlot ) {
+    return $self->avTransportAction( "AddURIToQueue", $uri, $metadata, $queueSlot );
+}
+
+sub standaloneCoordinator($self) {
+    return $self->avTransportAction( "BecomeCoordinatorOfStandaloneGroup",);
+}
+
+sub getRepeat($self) {
+    return $self->{_state}->{CurrentPlayMode} =~ /^REPEAT/;
+}
+
+sub getShuffle($self) {
+    return $self->{_state}->{CurrentPlayMode} =~ /^SHUFFLE/;
+}
+
+
+# ---- queue ----
+
 sub seek($self, $queue) {
     $queue =~ s,^.*/,,;
     return $self->avTransportAction("Seek", "TRACK_NR", $queue );
+}
+
+sub removeTrackFromQueue($self, $objectid) {
+    return $self->avTransportProxy()->RemoveTrackFromQueue( "0", $objectid );
+}
+
+# -- RenderingControl
+
+sub renderProxy($self) {
+    return $self->getService("RenderingControl")->controlProxy;
+}
+
+sub renderAction( $self, $action, @args ) {
+    return $self->renderProxy()->$action("0", @args);
 }
 
 sub getVolume($self) {
@@ -140,22 +182,6 @@ sub setVolume($self, $value) {
 sub changeVolume($self, $diff) {
     my $vol = $self->getVolume() + $diff;
     $self->setVolume($vol);
-}
-
-sub avTransportAction( $self, $action, @args ) {
-    return $self->avTransportProxy()->$action("0,", @args);
-}
-
-sub renderAction( $self, $action, @args ) {
-    return $self->renderProxy()->$action("0", @args);
-}
-
-sub getRepeat($self) {
-    return $self->{_state}->{CurrentPlayMode} =~ /^REPEAT/;
-}
-
-sub getShuffle($self) {
-    return $self->{_state}->{CurrentPlayMode} =~ /^SHUFFLE/;
 }
 
 sub getMute($self) {
@@ -199,17 +225,4 @@ sub setShuffle($self, $on_or_off) {
     );
     $self->switchPlayMode(%switch_shuffle);
 }
-
-sub setURI( $self, $uri, $metadata ) {
-    return $self->avTransportAction( "SetAVTransportURI", $uri, $metadata );
-}
-
-sub addURI( $self, $uri, $metadata, $queueSlot ) {
-    return $self->avTransportAction( "AddURIToQueue", $uri, $metadata, $queueSlot );
-}
-
-sub standaloneCoordinator($self) {
-    return $self->avTransportAction( "BecomeCoordinatorOfStandaloneGroup",);
-}
-
 
