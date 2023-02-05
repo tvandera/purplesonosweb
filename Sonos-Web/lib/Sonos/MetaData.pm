@@ -37,12 +37,16 @@ sub streamContentProp($self, $prop = undef) {
     if ($value =~ /TYPE=(\w+)\|TITLE (.*)\|ARTIST (.*)\|ALBUM (.*)/) {
         ($type, $title, $artist, $album) = ($1, $2, $3, $4);
     } else {
-        return $value; # as is
+        return $value; # as is if no match
     }
 
+    # return single field if requested
     my %mapping = ( "TITLE" => $title, "ARTIST" => $artist, "ALBUM" => $album );
     return $mapping{$prop} if $prop;
-    return "$title - $artist - $album";
+
+    # return non-empty fields, joined with a " - "
+    my @fields = grep { $_ } ( $title, $artist, $album );
+    return join " - ", @fields;
 }
 
 sub prop($self, @path) {
