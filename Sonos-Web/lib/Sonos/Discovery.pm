@@ -45,18 +45,18 @@ sub numPlayers($self) {
     return scalar keys %{$self->{_players}};
 }
 
-sub players($self) {
+sub getPlayers($self) {
     return values %{$self->{_players}};
 }
 
 sub populated($self) {
     return
         ( $self->numPlayers() > 0 and
-         all { $_->populated() } $self->players() );
+         all { $_->populated() } $self->getPlayers() );
 }
 
 sub zonePlayer($self, $zoneName) {
-    my @matches = grep { $_->zoneName() == $zoneName } $self->players();
+    my @matches = grep { $_->zoneName() == $zoneName } $self->getPlayers();
     return undef unless scalar @matches;
     carp "More than one player for zone \"$zoneName\"" unless scalar @matches == 1;
     return $matches[0];

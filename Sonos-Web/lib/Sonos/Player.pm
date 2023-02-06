@@ -82,15 +82,6 @@ sub friendlyName($self) {
     return $self->getUPnP()->{FRIENDLYNAME};
 }
 
-# info the zone associated with this player
-sub zoneInfo($self) {
-    return $self->getService("ZoneGroupTopology")->zoneInfo($self->UDN);
-}
-
-sub zoneName($self) {
-    return undef if not $self->zoneInfo();
-    return $self->zoneInfo()->{ZoneName};
-}
 
 # Sonos::Service object for given name
 sub getService($self, $name) {
@@ -106,8 +97,28 @@ sub log($self, @args) {
     INFO sprintf("[%12s]: ", $self->friendlyName), @args;
 }
 
+# -- ZoneGroupTopology --
+
+sub zoneGroupTopology($self) {
+    return $self->getService("ZoneGroupTopology");
+}
+
+sub zoneName($self) {
+    return $self->zoneGroupTopology()->zoneName();
+}
+
+# -- RenderingControl --
+
+sub renderingControl($self) {
+    return $self->getService("RenderingControl");
+}
+
 
 # -- AVTransport --
+
+sub avTransport($self) {
+    return $self->getService("AVTransport");
+}
 
 sub avTransportProxy($self) {
     return $self->getService("AVTransport")->controlProxy;

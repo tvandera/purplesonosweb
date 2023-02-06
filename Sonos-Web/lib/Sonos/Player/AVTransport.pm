@@ -21,10 +21,16 @@ sub currentPlayMode($self)      { return $self->prop("CurrentPlayMode"); }
 sub currentTrack($self)         { return $self->prop("CurrentTrack"); }
 sub numberOfTracks($self)       { return $self->prop("NumberOfTracks"); }
 sub currentTrackDuration($self) { return $self->prop("CurrentTrackDuration"); }
+sub lengthInSeconds($self) {
+    my $duration = $self->currentTrackDuration();
+    my ($hours, $minutes, $seconds) = split(":", $duration);
+    return $hours*3600 + $minutes*60 + $seconds;
+}
 
 sub nextTrack($self)     { return Sonos::MetaData->new($self->prop("r:NextTrackMetaData")); }
 sub curTrack($self)      { return Sonos::MetaData->new($self->prop("CurrentTrackMetaData")); }
 sub curTransport($self)  { return Sonos::MetaData->new($self->prop("AVTransportURIMetaData")); }
+sub curMetaData($self)   { return $self->isRadio() ? $self->curTransport() : $self->curTrack(); }
 
 sub isRadio($self)       { return $self->curTransport()->isRadio(); }
 

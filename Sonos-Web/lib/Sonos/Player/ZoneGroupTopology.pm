@@ -29,6 +29,10 @@ sub info($self) {
     }
 }
 
+sub UDN($self) {
+    return $self->getPlayer()->UDN();
+}
+
 sub haveZoneInfo($self) {
     return defined $self->{_groups};
 }
@@ -38,8 +42,54 @@ sub allZones($self) {
     return $allzones;
 }
 
-sub zoneInfo($self, $uuid) {
+sub isCoordinator($self) {
+    my ($coordinator, $members) = $self->zoneGroupInfo();
+    return $self->getUDN() eq $coordinator;
+}
+
+sub numMembers($self) {
+    my ($coordinator, $members) = $self->zoneGroupInfo();
+    return scalar @$members;
+}
+
+sub zoneName($self) {
     return undef unless $self->haveZoneInfo();
+    return $self->zoneInfo()->{ZoneName};
+}
+
+sub icon($self) {
+    return undef unless $self->haveZoneInfo();
+    my $icon = $self->zoneInfo()->{Icon};
+    $icon =~ s/^x-rincon-roomicon://;
+    return $icon;
+}
+
+# check if $uuid is in ZoneGroup with Coordinator == $coordinator
+sub isInZoneGroup($self, $coordinator, $uuid = undef) {
+    return undef unless $self->haveZoneInfo();
+    $uuid = $self->UDN() unless defined $uuid;
+
+    my $info = $self->{_groups}->{$coordinator};
+    return scalar grep { $_->{UUID} eq $uuid } @$info;
+}
+
+# returns $coordinator and $groupinfo for ZoneGroup that
+# contains player with $uuid
+sub zoneGroupInfo($self, $uuid = undef) {
+    return undef unless $self->haveZoneInfo();
+    $uuid = $self->getPlayer()->UDN() unless defined $uuid;
+
+    for my $coordinator (keys %{$self->{_groups}}) {
+        next unless $self->isInZoneGroup($coordinator, $uuid);
+        return $coordinator, $self->{_groups}->{$coordinator};
+    }
+
+    return undef, undef;
+}
+
+sub zoneInfo($self, $uuid = undef) {
+    return undef unless $self->haveZoneInfo();
+    $uuid = $self->getPlayer()->UDN() unless defined $uuid;
 
     my @matchingzones = grep { $_->{UUID} eq $uuid } @{$self->allZones()};
     carp "No / More than one zone with uuid $uuid" unless scalar @matchingzones == 1;

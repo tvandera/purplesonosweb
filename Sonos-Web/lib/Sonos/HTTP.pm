@@ -52,6 +52,18 @@ sub new {
     return $self;
 }
 
+sub getSystem($self) {
+    return $self->{_discovery};
+}
+
+sub getPlayers($self) {
+    return $self->getSystem()->getPlayers();
+}
+
+sub zonePlayer($self, $name) {
+    return $self->getSystem()->zonePlayer($name);
+}
+
 sub baseURL($self) {
     return $self->{_daemon}->url;
 }
@@ -62,6 +74,10 @@ sub defaultURL($self) {
 
 sub mimeTypeOf($self, $p) {
     return $self->{_mime_types}->mimeTypeOf($p);
+}
+
+sub diskpath($self, $path) {
+    return catfile("html", $path);
 }
 
 ###############################################################################
@@ -83,7 +99,7 @@ sub handle_request($self, $handle, $c) {
     }
 
     # Find where on disk
-    my $diskpath = catfile("html", $path);
+    my $diskpath = $self->diskpath($path);
     if ( ! -e $diskpath ) {
         $c->send_error(HTTP::Status::RC_NOT_FOUND);
         $c->force_last_request;
@@ -97,8 +113,8 @@ sub handle_request($self, $handle, $c) {
         return;
     }
 
-    # File isn't HTML/XML/JSON, just send it back raw
-    if (  $path !~ /\.(html|xml|json)/ )
+    # File isn't HTML/XML/JSON/JS, just send it back raw
+    if (  $path !~ /\.(html|xml|js|json)$/ )
     {
         $c->send_file_response($diskpath);
         $c->force_last_request;
@@ -237,12 +253,12 @@ sub handle_action {
     return 1;
 }
 
-sub build_item_data($prefix, $item) {
+sub build_item_data($self, $prefix, $item) {
     return (
-        $prefix . "_NAME"    => enc( $item->title() ),
-        $prefix . "_ARTIST"  => enc( $item->creator() ),
-        $prefix . "_ALBUM"   => enc( $item->album() ),
-        $prefix . "_CLASS"   => enc( $item->class  ),
+        $prefix . "_NAME"    => encode_entities( $item->title() ),
+        $prefix . "_ARTIST"  => encode_entities( $item->creator() ),
+        $prefix . "_ALBUM"   => encode_entities( $item->album() ),
+        $prefix . "_CLASS"   => encode_entities( $item->class  ),
         $prefix . "_CONTENT" => uri_escape_utf8( $item->content  ),
         $prefix . "_PARENT"  => uri_escape_utf8( $item->parentID ),
         $prefix . "_ARG"     => uri_escape_utf8( $item->id ),
@@ -254,56 +270,58 @@ sub build_item_data($prefix, $item) {
 }
 
 ###############################################################################
-sub build_zone_data {
-    my ( $self, $player, $updatenum, $active_player ) = @_;
+sub build_zone_data($self, $player, $updatenum, $active_player ) {
     my %activedata;
-    my $zoneName = $player->zoneName();
+
+    my $render = $player->renderingControl();
+    my $av = $player->avTransport();
+    my $zonename = $player->zoneName();
+    my $item = $av->curMetaData();
+    my $number_of_tracks = $av->numberOfTracks();
+    my $transportstate = $av->transportState();
+    my %transport_states = ( "TRANSITIONING" => 3, "PAUSED_PLAYBACK" => 2, "PLAYING" => 1, "STOPPED" => 0);
+    my $nexttrack = $av->nextTrack();
+
+    my $zonetopology  = $player->zoneGroupTopology();
+    my $num_linked = $zonetopology->numMembers() - 1;
 
     $activedata{HAS_ACTIVE_ZONE}   = int( defined $active_player );
-    $activedata{ACTIVE_ZONE}       = enc( $player->zoneName() );
+    $activedata{ACTIVE_ZONE}       = encode_entities( $zonename );
     $activedata{ACTIVE_ZONEID}     = uri_escape($player->UDN());
     $activedata{ZONE_ACTIVE}       = int( $player == $active_player );
     $activedata{ACTIVE_LASTUPDATE} = $player->lastUpdate();
     $activedata{ACTIVE_UPDATED}    = ( $player->lastUpdate() > $updatenum );
 
-    my $render = $player->renderingControl();
     $activedata{ACTIVE_VOLUME}   = $render->getVolume();
-    $activedata{ACTIVE_MUTED}    = $render->getMuted();
+    $activedata{ACTIVE_MUTED}    = $render->getMute();
 
-    my $av = $player->avTransport();
-    my $item = $av->isRadio() ? $av->curTransport() : $av->curTrack();
-    %activedata = ( %activedata, $self->build_item("ACTIVE", $item) );
+    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $item) );
 
     $activedata{ACTIVE_LENGTH}   = $av->lengthInSeconds();
-    $activedata{ACTIVE_TRACK_NUM} = enc($av->currentTrack());
+    $activedata{ACTIVE_TRACK_NUM} = encode_entities($av->currentTrack());
 
-    my $numberOfTracks = $av->numberOfTracks();
-    $activedata{ACTIVE_TRACK_TOT} = enc($numberOfTracks);
-    $activedata{ACTIVE_TRACK_TOT_0} = ( $numberOfTracks == 0 );
-    $activedata{ACTIVE_TRACK_TOT_1} = ( $numberOfTracks == 1 );
-    $activedata{ACTIVE_TRACK_TOT_GT_1} = ( $numberOfTracks > 1 );
+    $activedata{ACTIVE_TRACK_TOT} = encode_entities($number_of_tracks);
+    $activedata{ACTIVE_TRACK_TOT_0} = ( $number_of_tracks == 0 );
+    $activedata{ACTIVE_TRACK_TOT_1} = ( $number_of_tracks == 1 );
+    $activedata{ACTIVE_TRACK_TOT_GT_1} = ( $number_of_tracks > 1 );
 
-    my $transportstate = $av->transportState();
-    my %transport_states = ( "TRANSITIONING" => 3, "PAUSED_PLAYBACK" => 2, "PLAYING" => 1, "STOPPED" => 0);
     $activedata{"ACTIVE_MODE"} = $transport_states{$transportstate};
     $activedata{"ACTIVE_$_"}   = ($transportstate eq $_) for (keys %transport_states);
 
     $activedata{ACTIVE_REPEAT} = $av->isRepeat();
     $activedata{ACTIVE_SHUFFLE} = $av->isShuffle();
 
-    my $nexttrack = $av->nextTrack();
-    %activedata = ( %activedata, $self->build_item("NEXT", $nexttrack) );
+    %activedata = ( %activedata, $self->build_item_data("NEXT", $nexttrack) );
 
     $activedata{ZONE_MODE}   = $activedata{ACTIVE_MODE};
     $activedata{ZONE_MUTED}  = $activedata{ACTIVE_MUTED};
     $activedata{ZONE_ID}     = $activedata{ACTIVE_ZONEID};
     $activedata{ZONE_NAME}   = $activedata{ACTIVE_ZONE};
     $activedata{ZONE_VOLUME} = $activedata{ACTIVE_VOLUME};
-    $activedata{ZONE_ARG}    = "zone=$zoneName&";
+    $activedata{ZONE_ARG}    = "zone=$zonename&";
 
-    $activedata{ZONE_ICON} = $player->icon();
+    $activedata{ZONE_ICON} = $zonetopology->icon();
     $activedata{ZONE_LASTUPDATE} = $player->lastUpdate();
-    my $num_linked = $player->zoneSize();
     $activedata{ZONE_NUMLINKED} = $num_linked;
     $activedata{ZONE_FANCYNAME} = $activedata{ZONE_NAME};
     $activedata{ZONE_FANCYNAME} .= " + " . $num_linked if $num_linked;
@@ -339,7 +357,7 @@ sub build_queue_data {
     $queuedata{QUEUE_LASTUPDATE} = $player->lastQueueUpdate();
     $queuedata{QUEUE_UPDATED}    = ( $player->lastQueueUpdate() > $updatenum );
 
-    my @loop_data = map { $self->build_item("QUEUE", $_) } $player->queue();
+    my @loop_data = map { $self->build_item_data("QUEUE", $_) } $player->queue();
     $queuedata{QUEUE_LOOP} = \@loop_data;
     $queuedata{QUEUE_JSON} = to_json( \@loop_data, { pretty => 1 } );
 
@@ -365,9 +383,9 @@ sub build_music_data {
 
     $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
-    $musicdata{"MUSIC_PATH"}       = enc($mpath);
+    $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
 
-    %musicdata = (%musicdata, $self->build_item("MUSIC", $item));
+    %musicdata = (%musicdata, $self->build_item_data("MUSIC", $item));
 
     $musicdata{"MUSIC_UPDATED"}    = ( $mpath ne ""
           || ( !$qf->{NoWait} && ( $main::MUSICUPDATE > $updatenum ) ) );
@@ -390,7 +408,7 @@ sub build_map {
     my ( $self, $qf, $params ) = @_;
 
     my $player = undef;
-    $player = $self->getSystem()->getPlayer($qf->{zone}) if $qf->{zone};
+    $player = $self->zonePlayer($qf->{zone}) if $qf->{zone};
 
     my $updatenum = 0;
     $updatenum = $qf->{lastupdate} if ( $qf->{lastupdate} );
@@ -418,11 +436,11 @@ sub build_map {
         %map = ( %map, %$globals );
     }
 
-    # if ( grep /^ZONES_/i, @$params ) {
-    #     my @zones = map { build_zone_data( $_, $updatenum, $qf->{zone} ); } $self->system()->zones();
-    #     $map{ZONES_LOOP} = \@zones;
-    #     $map{ZONES_JSON} = to_json( \@zones, { pretty => 1 } );
-    # }
+    if ( grep /^ZONES_/i, @$params ) {
+        my @zones = map { $self->build_zone_data( $_, $updatenum, $player); } $self->getPlayers();
+        $map{ZONES_LOOP} = \@zones;
+        $map{ZONES_JSON} = to_json( \@zones, { pretty => 1 } );
+    }
 
     # if ( grep /^ALL_QUEUE_/i, @$params ) {
     #     my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->getPlayers();
@@ -478,8 +496,7 @@ sub send_tmpl_response {
             Connection         => "close",
             "Content-Type"     => $content_type,
             "Pragma"           => "no-cache",
-            "Cache-Control"    =>
-              "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"
+            "Cache-Control"    => "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"
         ],
         $output
     );

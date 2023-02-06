@@ -20,9 +20,10 @@ my $loop = IO::Async::Loop::Select->new;
 my $discover = Sonos::Discovery->new($loop);
 my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPort => 8080);
 
+print STDERR "\$SIG{INT} = " . $SIG{INT} . "\n";
 $SIG{INT} = sub {
     print STDERR "Ctrl-C - stopping\n";
     $loop->stop();
-};
+} unless ref $SIG{INT};
 
 $loop->run;
