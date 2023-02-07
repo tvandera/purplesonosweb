@@ -20,7 +20,7 @@ use Carp;
 
 sub info($self) {
     my $count = 0;
-    my @groups = values %{$self->{_groups}};
+    my @groups = values %{$self->{_zonegroups}};
 
     $self->log("Found " . scalar(@groups) . " zone groups: ");
     for my $group (@groups) {
@@ -34,22 +34,25 @@ sub UDN($self) {
 }
 
 sub haveZoneInfo($self) {
-    return defined $self->{_groups};
+    return defined $self->{_zonegroups};
 }
 
+# flattens values zonegroups
 sub allZones($self) {
-    my $allzones = [ map { @$_ } (values %{$self->{_groups}}) ];
-    return $allzones;
+    my @allzones = map { @$_ } (values %{$self->{_zonegroups}});
+    return { map { $_->{UUID} => $_ } @allzones };
+}
+
+sub coordinator($self) {
+    return $self->zoneInfo($self->{_mycoordinator});
 }
 
 sub isCoordinator($self) {
-    my ($coordinator, $members) = $self->zoneGroupInfo();
-    return $self->getUDN() eq $coordinator;
+    return $self->UDN() eq $self->{_mycoordinator};
 }
 
 sub numMembers($self) {
-    my ($coordinator, $members) = $self->zoneGroupInfo();
-    return scalar @$members;
+    return scalar @{$self->{_myzonemmembers}};
 }
 
 sub zoneName($self) {
@@ -69,7 +72,7 @@ sub isInZoneGroup($self, $coordinator, $uuid = undef) {
     return undef unless $self->haveZoneInfo();
     $uuid = $self->UDN() unless defined $uuid;
 
-    my $info = $self->{_groups}->{$coordinator};
+    my $info = $self->{_zonegroups}->{$coordinator};
     return scalar grep { $_->{UUID} eq $uuid } @$info;
 }
 
@@ -79,9 +82,9 @@ sub zoneGroupInfo($self, $uuid = undef) {
     return undef unless $self->haveZoneInfo();
     $uuid = $self->getPlayer()->UDN() unless defined $uuid;
 
-    for my $coordinator (keys %{$self->{_groups}}) {
+    for my $coordinator (keys %{$self->{_zonegroups}}) {
         next unless $self->isInZoneGroup($coordinator, $uuid);
-        return $coordinator, $self->{_groups}->{$coordinator};
+        return $coordinator, $self->{_zonegroups}->{$coordinator};
     }
 
     return undef, undef;
@@ -90,11 +93,7 @@ sub zoneGroupInfo($self, $uuid = undef) {
 sub zoneInfo($self, $uuid = undef) {
     return undef unless $self->haveZoneInfo();
     $uuid = $self->getPlayer()->UDN() unless defined $uuid;
-
-    my @matchingzones = grep { $_->{UUID} eq $uuid } @{$self->allZones()};
-    carp "No / More than one zone with uuid $uuid" unless scalar @matchingzones == 1;
-
-    return $matchingzones[0];
+    return $self->allZones()->{$uuid};
 }
 
 # called when zonegroups have changed
@@ -107,7 +106,18 @@ sub processUpdate ( $self, $service, %properties ) {
     );
 
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
-    $self->{_groups} = { map { $_->{Coordinator} => $_->{ZoneGroupMember} } @groups };
+    for (@groups) {
+        my $coordinator = $_->{Coordinator};
+        my $members = $_->{ZoneGroupMember};
+        $self->{_zonegroups}->{$coordinator} = $members;
+        my ($myzoneinfo) = grep { $_->{UUID} eq $self->UDN() } @$members;
+        next unless $myzoneinfo;
+
+        # it's my zonegroup
+        $self->{_myzoneinfo} = $myzoneinfo;
+        $self->{_mycoordinator} = $coordinator;
+        $self->{_myzonemmembers} = $members;
+    }
 
     $self->doCallBacks();
 

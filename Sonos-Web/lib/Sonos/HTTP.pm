@@ -329,17 +329,17 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     $activedata{ZONE_MEMBERS} = [
         map {
             {
-                "ZONE_NAME" => $_->zoneName(),
-                "ZONE_ID"   => $_->UDN(),
-                "ZONE_LINKED" => int( ! $_->isCoordinator() ),
-                "ZONE_ICON" => $_->icon(),
+                "ZONE_NAME" => $_->{ZoneName},
+                "ZONE_ID"   => $_->{UUID},
+                "ZONE_LINKED" => -1, #int( ! $_->isCoordinator() ),
+                "ZONE_ICON" => $_->{Icon},
             }
-        } @{$player->zoneMembers()}
+        } values %{$zonetopology->allZones()}
     ];
 
-    $activedata{ZONE_LINKED}    = ! $player->isCoordinator();
-    $activedata{ZONE_LINK}      = $player->coordinator()->UDN();
-    $activedata{ZONE_LINK_NAME} = $player->coordinator()->zoneName();
+    $activedata{ZONE_LINKED}    = ! $zonetopology->isCoordinator();
+    $activedata{ZONE_LINK}      = $zonetopology->coordinator()->{UUID};
+    $activedata{ZONE_LINK_NAME} = $zonetopology->coordinator()->{ZoneName};
 
     $activedata{ACTIVE_JSON} = to_json( \%activedata, { pretty => 1 } );
 
