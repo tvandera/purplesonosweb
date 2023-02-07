@@ -10,7 +10,6 @@ Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 use Carp;
 
-
 sub new {
     my($self, $data, $cache) = @_;
 	my $class = ref($self) || $self;
@@ -25,6 +24,10 @@ sub new {
 
 sub cache($self) {
     return $self->{_cache};
+}
+
+sub populated($self) {
+    return $self->{_data};
 }
 
 
@@ -103,6 +106,7 @@ sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 # class
 sub class($self) {
     my $full_classname = $self->prop("upnp:class");
+    carp "No class in " . Dumper($self) unless $full_classname;
     # only the last part
     my @parts = split( /\./, $full_classname);
     return $parts[-1];
@@ -115,6 +119,7 @@ sub realclass($self) {
 
 sub baseID($self) {
     my $full_id = $self->prop("id");
+    return undef unless $full_id;
     # only the last part
     my @parts = split( /\//, $full_id);
     return $parts[-1];
@@ -149,6 +154,8 @@ sub as_string($self) {
 }
 
 sub log($self, $logger, $indent) {
+    return unless $self->populated();
+
     for (displayFields()) {
         my $value = $self->$_();
         next unless defined $value and $value ne "";

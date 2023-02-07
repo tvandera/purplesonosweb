@@ -46,14 +46,12 @@ sub info($self) {
         my $value = $self->$_();
         $self->log("  " . $_ . ": " . $value) if defined $value;
     }
-    $self->log("  Current Track:");
-    $self->curTrack()->log($self, " " x 4);
+    for ( "curTrack", "curTransport", "nextTrack" ) {
+        next unless $self->$_()->populated();
+        $self->log("  $_:");
+        $self->$_()->log($self, " " x 4);
+    }
 
-    $self->log("  Current Transport:");
-    $self->curTransport()->log($self, " " x 4);
-
-    $self->log("  Next Track:");
-    $self->curTransport()->log($self, " " x 4);
 }
 
 sub isPlaying($self) {
