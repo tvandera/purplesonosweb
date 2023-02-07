@@ -56,10 +56,8 @@ sub populated($self) {
 }
 
 sub zonePlayer($self, $zoneName) {
-    my @matches = grep { $_->zoneName() == $zoneName } $self->getPlayers();
-    return undef unless scalar @matches;
-    carp "More than one player for zone \"$zoneName\"" unless scalar @matches == 1;
-    return $matches[0];
+    my ($player) = grep { $_->zoneName() eq $zoneName } $self->getPlayers();
+    return $player;
 }
 
 sub controlPoint($self) {
