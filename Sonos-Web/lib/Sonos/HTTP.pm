@@ -52,6 +52,10 @@ sub new {
     return $self;
 }
 
+sub version($self) {
+    return "0.99";
+}
+
 sub getSystem($self) {
     return $self->{_discovery};
 }
@@ -413,6 +417,7 @@ sub build_music_data {
     foreach my $music ( @{$elements} ) {
         next if ( $msearch && $music->title() !~ m/$msearch/i );
 
+
     }
 
     $musicdata{"MUSIC_LOOP"} = \@music_loop_data;
@@ -436,9 +441,9 @@ sub build_map {
     {
         my $globals = {};
         $globals->{"BASE_URL"}             = $self->baseURL();
-        $globals->{"VERSION"}              = $main::VERSION;
-        $globals->{"LAST_UPDATE"}          = $main::LASTUPDATE;
-        $globals->{"LAST_UPDATE_READABLE"} = localtime $main::LASTUPDATE;
+        $globals->{"VERSION"}              = $self->version();
+        $globals->{"LAST_UPDATE"}          = $self->lastUpdate();
+        $globals->{"LAST_UPDATE_READABLE"} = localtime $self->lastUpdate();
 
         my @keys    = grep !/action|rand|mpath|msearch|link/, ( keys %$qf );
         my $all_arg = "";
