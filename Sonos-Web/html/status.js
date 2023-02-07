@@ -1,1 +1,3 @@
-var globals = <TMPL_VAR NAME=GLOBALS_JSON>
+var globals = <TMPL_VAR NAME=GLOBALS_JSON>;
+var zones = <TMPL_VAR NAME=ZONES_JSON>;
+var active = <TMPL_VAR NAME=ACTIVE_JSON>;
