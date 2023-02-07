@@ -32,7 +32,10 @@ sub curTrack($self)      { return Sonos::MetaData->new($self->prop("CurrentTrack
 sub curTransport($self)  { return Sonos::MetaData->new($self->prop("AVTransportURIMetaData")); }
 sub curMetaData($self)   { return $self->isRadio() ? $self->curTransport() : $self->curTrack(); }
 
-sub isRadio($self)       { return $self->curTransport()->isRadio(); }
+sub isRadio($self) {
+    return $self->curTransport()->populated()
+        && $self->curTransport()->isRadio();
+}
 
 sub info($self) {
     #DEBUG Dumper($self->{_state});
