@@ -254,19 +254,36 @@ sub handle_action {
 }
 
 sub build_item_data($self, $prefix, $item) {
-    return (
-        $prefix . "_NAME"    => encode_entities( $item->title() ),
-        $prefix . "_ARTIST"  => encode_entities( $item->creator() ),
-        $prefix . "_ALBUM"   => encode_entities( $item->album() ),
-        $prefix . "_CLASS"   => encode_entities( $item->class  ),
-        $prefix . "_CONTENT" => uri_escape_utf8( $item->content  ),
-        $prefix . "_PARENT"  => uri_escape_utf8( $item->parentID ),
-        $prefix . "_ARG"     => uri_escape_utf8( $item->id ),
-        $prefix . "_ISSONG"  => int( $item->isSong() ),
-        $prefix . "_ISRADIO" => int( $item->isRadio() ),
-        $prefix . "_ISALBUM" => int( $item->isAlbum() ),
-        $prefix . "_ISFAV"   => int( $item->isFav() ),
-    );
+
+    if ($item->populated()) {
+        return (
+            $prefix . "_NAME"    => encode_entities( $item->title() ),
+            $prefix . "_ARTIST"  => encode_entities( $item->creator() ),
+            $prefix . "_ALBUM"   => encode_entities( $item->album() ),
+            $prefix . "_CLASS"   => encode_entities( $item->class  ),
+            $prefix . "_CONTENT" => uri_escape_utf8( $item->content  ),
+            $prefix . "_PARENT"  => uri_escape_utf8( $item->parentID ),
+            $prefix . "_ARG"     => uri_escape_utf8( $item->id ),
+            $prefix . "_ISSONG"  => int( $item->isSong() ),
+            $prefix . "_ISRADIO" => int( $item->isRadio() ),
+            $prefix . "_ISALBUM" => int( $item->isAlbum() ),
+            $prefix . "_ISFAV"   => int( $item->isFav() ),
+        );
+    } else {
+        return (
+            $prefix . "_NAME"    => "",
+            $prefix . "_ARTIST"  => "",
+            $prefix . "_ALBUM"   => "",
+            $prefix . "_CLASS"   => "",
+            $prefix . "_CONTENT" => "",
+            $prefix . "_PARENT"  => "",
+            $prefix . "_ARG"     => "",
+            $prefix . "_ISSONG"  => 0,
+            $prefix . "_ISRADIO" => 0,
+            $prefix . "_ISALBUM" => 0,
+            $prefix . "_ISFAV"   => 0,
+        );
+    }
 }
 
 ###############################################################################
