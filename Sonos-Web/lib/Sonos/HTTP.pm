@@ -123,8 +123,8 @@ sub handle_request($self, $handle, $c) {
 
     my $handled = 1;
     if ( exists $qf{action} ) {
-        $handled = handle_zone_action( $c, $r, $path ) if ( exists $qf{zone} );
-        $handled ||= handle_action( $c, $r, $path );
+        $handled = $self->handle_zone_action( $c, $r, $path ) if ( exists $qf{zone} );
+        $handled ||= $self->handle_action( $c, $r, $path );
     }
     $handled = 1 if ( $qf{NoWait} );
 
@@ -138,7 +138,7 @@ sub handle_zone_action {
     my ($self, $c, $r, $path ) = @_;
     my %qf = $r->uri->query_form;
     my $mpath = decode( "UTF-8", $qf{mpath} );
-    my $zone = $self->getPlayer($qf{zone});
+    my $zone = $self->zonePlayer($qf{zone});
 
 
 #     my %action_table (
@@ -229,7 +229,7 @@ sub handle_zone_action {
 
 ###############################################################################
 sub handle_action {
-    my ( $c, $r, $path ) = @_;
+    my ($self,  $c, $r, $path ) = @_;
     my %qf = $r->uri->query_form;
 
 
@@ -460,10 +460,10 @@ sub build_map {
     #     %map = ( %map, %$music );
     # }
 
-    # if ( exists $qf->{zone} ) {
-    #     my $zone = build_zone_data( $qf->{zone}, $updatenum, $qf->{zone} );
-    #     %map = ( %map, %$zone );
-    # }
+    if ( $player ) {
+        my $zone = $self->build_zone_data( $player, $updatenum, $player );
+        %map = ( %map, %$zone );
+    }
 
     return \%map;
 
