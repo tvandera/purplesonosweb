@@ -64,6 +64,27 @@ sub queue($self) {
     return sort { $a->baseID() <=> $b->baseID() } @items;
 }
 
+sub info($self) {
+    $self->logQueue();
+}
+
+sub logQueue($self) {
+    my @queue = $self->queue();
+
+    for (@queue) {
+        $_->getAlbumArt($self->baseURL());
+    }
+
+    if (scalar @queue) {
+        use Text::Table;
+        my $table = Text::Table->new(Sonos::MetaData::displayFields());
+        $table->add($_->displayValues()) for @queue;
+
+        $self->getPlayer()->log("Queue:\n" . $table->table());
+    } else {
+        $self->getPlayer()->log("Queue empty.");
+    }
+}
 
 # called when anything in ContentDirectory has been updated
 # i.e.:
@@ -75,7 +96,7 @@ sub queue($self) {
 #  'FavoritesUpdateID' => 'RINCON_000E583472BC01400,98',
 #  'RadioLocationUpdateID' => 'RINCON_000E585187D201400,347',
 #  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
-sub processUpdate ( $self, $service, %properties ) {
+sub processUpdateIDs ( $self, $service, %properties ) {
     # check if anything was updated
     foreach my $key (keys %properties) {
         next if ($key !~ /UpdateIDs?$/);
@@ -103,24 +124,16 @@ sub processUpdate ( $self, $service, %properties ) {
             $cache->addItems($key, $new_location, $new_version, @items);
         }
     }
+}
 
-    $self->doCallBacks();
+sub processUpdate {
+    my $self = shift;
 
-    my @queue = $self->queue();
+    $self->processUpdateIDs(@_);
+    $self->SUPER::processUpdate(@_);
 
-    for (@queue) {
-        $_->getAlbumArt($self->baseURL());
-    }
+    $self->logQueue();
 
-    if (scalar @queue) {
-        use Text::Table;
-        my $table = Text::Table->new(Sonos::MetaData::displayFields());
-        $table->add($_->displayValues()) for @queue;
-
-        $self->getPlayer()->log("Queue:\n" . $table->table());
-    } else {
-        $self->getPlayer()->log("Queue empty.");
-    }
 }
 
 

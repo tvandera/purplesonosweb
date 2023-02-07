@@ -22,7 +22,7 @@ sub info($self) {
     my $count = 0;
     my @groups = values %{$self->{_zonegroups}};
 
-    $self->log("Found " . scalar(@groups) . " zone groups: ");
+    $self->log("Found " . scalar(@groups) . " zone groups at " . $self->lastUpdateReadable());
     for my $group (@groups) {
         $self->log("  $count: " . join(", ", map { $_->{ZoneName}  } @{$group}));
         $count++;
@@ -96,8 +96,14 @@ sub zoneInfo($self, $uuid = undef) {
     return $self->allZones()->{$uuid};
 }
 
+sub processUpdate {
+    my $self = shift;
+    $self->processZoneGroupState(@_);
+    $self->SUPER::processUpdate(@_)
+}
+
 # called when zonegroups have changed
-sub processUpdate ( $self, $service, %properties ) {
+sub processZoneGroupState ( $self, $service, %properties ) {
     return unless $properties{"ZoneGroupState"};
 
     my $tree = XMLin(
@@ -118,10 +124,6 @@ sub processUpdate ( $self, $service, %properties ) {
         $self->{_mycoordinator} = $coordinator;
         $self->{_myzonemmembers} = $members;
     }
-
-    $self->doCallBacks();
-
-    $self->info();
 }
 
 # not currently called, should be called from processUpdate

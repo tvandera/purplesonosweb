@@ -40,6 +40,7 @@ sub isRadio($self) {
 sub info($self) {
     #DEBUG Dumper($self->{_state});
     my @fields = (
+        "lastUpdateReadable",
         "transportState",
         "currentPlayMode",
     );
@@ -55,6 +56,12 @@ sub info($self) {
         $self->$_()->log($self, " " x 4);
     }
 
+}
+
+sub processUpdate {
+    my $self = shift;
+    $self->processUpdateLastChange(@_);
+    $self->SUPER::processUpdate(@_)
 }
 
 sub isPlaying($self) {

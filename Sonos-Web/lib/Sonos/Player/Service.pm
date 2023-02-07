@@ -73,6 +73,10 @@ sub lastUpdate($self) {
     return $self->{_state}->{LASTUPDATE} || -1;
 }
 
+sub lastUpdateReadable($self) {
+    return localtime $self->{_state}->{LASTUPDATE} || "Unknown";
+}
+
 sub getPlayer($self) {
     return $self->{_player};
 }
@@ -171,7 +175,9 @@ sub derefHelper($elem) {
 
 # called when rendering properties (like volume) are changed
 # called when 'currently-playing' has changed
-sub processUpdate ( $self, $service, %properties ) {
+sub processUpdateLastChange( $self, $service, %properties ) {
+    return unless exists $properties{LastChange};
+
     my $tree = XMLin(
         decode_entities( $properties{LastChange} ),
         forcearray => ["ZoneGroup"],
@@ -186,6 +192,11 @@ sub processUpdate ( $self, $service, %properties ) {
 
     # merge new _state into existing
     %{$self->{_state}} = ( %{$self->{_state}}, %{$instancedata} );
+}
+
+sub processUpdate ( $self, $service, %properties ) {
+
+    $self->{_state}->{LASTUPDATE} = time;
 
     $self->doCallBacks();
 

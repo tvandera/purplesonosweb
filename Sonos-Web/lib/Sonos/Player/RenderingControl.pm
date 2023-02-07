@@ -21,6 +21,13 @@ sub info($self) {
     }
 }
 
+
+sub processUpdate {
+    my $self = shift;
+    $self->processUpdateLastChange(@_);
+    $self->SUPER::processUpdate(@_)
+}
+
 sub getVolume($self, $channel = "Master") {
     return $self->prop("Volume", $channel);
 }
