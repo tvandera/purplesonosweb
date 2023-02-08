@@ -126,7 +126,7 @@ sub handle_request($self, $handle, $c) {
 
     # File is a directory, redirect for the browser
     if ( -d $diskpath ) {
-        $c->send_redirect(catfile($baseurl, $path, "index.html"));
+        $c->send_redirect(catfile($path, "index.html"));
         $c->force_last_request;
         return;
     }
