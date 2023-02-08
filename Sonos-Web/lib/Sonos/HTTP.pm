@@ -113,6 +113,7 @@ sub handle_request($self, $handle, $c) {
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         $c->send_redirect($self->defaultURL);
         $c->force_last_request;
+        $c->close;
         return;
     }
 
@@ -121,6 +122,7 @@ sub handle_request($self, $handle, $c) {
     if ( ! -e $diskpath ) {
         $c->send_error(HTTP::Status::RC_NOT_FOUND);
         $c->force_last_request;
+        $c->close;
         return;
     }
 
@@ -128,6 +130,7 @@ sub handle_request($self, $handle, $c) {
     if ( -d $diskpath ) {
         $c->send_redirect(catfile($path, "index.html"));
         $c->force_last_request;
+        $c->close;
         return;
     }
 
