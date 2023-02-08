@@ -458,9 +458,9 @@ sub build_map {
         $all_arg .= "$_=$qf->{$_}&" for @keys;
         $globals->{"ALL_ARG"} = $all_arg;
 
-        $globals->{"MUSICDIR_AVAILABLE"} = !( $main::MUSICDIR eq "" );
-        $globals->{"ZONES_LASTUPDATE"}   = $main::ZONESUPDATE;
-        $globals->{"ZONES_UPDATED"}      = ( $main::ZONESUPDATE > $updatenum );
+        $globals->{"MUSICDIR_AVAILABLE"} = 0;
+        $globals->{"ZONES_LASTUPDATE"}   = $self->lastUpdate(); # FIXME
+        $globals->{"ZONES_UPDATED"}      = ( $self->lastUpdate() > $updatenum );
 
         $map{GLOBALS_JSON} = to_json( $globals, { pretty => 1 } );
         %map = ( %map, %$globals );
