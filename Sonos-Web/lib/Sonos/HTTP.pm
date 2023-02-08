@@ -47,7 +47,7 @@ sub new {
 
     $loop->add( $handle );
 
-    print STDERR "Listening on " . $self->{_daemon}->url . "\n";
+    print STDERR "Listening on " . $self->baseURL . "\n";
 
     return $self;
 }
@@ -62,6 +62,10 @@ sub getSystem($self) {
 
 sub getPlayers($self) {
     return $self->getSystem()->getPlayers();
+}
+
+sub lastUpdate($self) {
+    return $self->getSystem()->lastUpdate();
 }
 
 sub zonePlayer($self, $name) {
