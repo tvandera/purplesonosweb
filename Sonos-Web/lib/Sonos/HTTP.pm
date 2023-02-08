@@ -76,8 +76,8 @@ sub baseURL($self) {
     return $self->{_daemon}->url;
 }
 
-sub defaultURL($self) {
-    return URI::WithBase->new($self->{_default_page}, $self->baseURL);
+sub defaultPage($self) {
+    return $self->{_default_page};
 }
 
 sub mimeTypeOf($self, $p) {
@@ -100,7 +100,7 @@ sub handle_request($self, $handle, $c) {
 
     # No r, just return
     unless ( $r && $r->uri ) {
-        croak("Empty request");
+        croak("Empty request - reason: " . $c->reason());
         return;
     }
 
@@ -111,7 +111,7 @@ sub handle_request($self, $handle, $c) {
     my $path = $uri->path;
 
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
-        $c->send_redirect($self->defaultURL);
+        $c->send_redirect($self->defaultPage);
         $c->force_last_request;
         $c->close;
         return;
