@@ -30,6 +30,7 @@ sub new {
         _name => $name,
         _updateids => { },
         _items => { },
+        _tree => { },
         _album_art => {},
         _useragent => LWP::UserAgent->new(),
     }, $class;
@@ -88,9 +89,13 @@ sub getVersion($self, $id) {
     return @$value;
 }
 
+sub hasItems($self, $parentID) {
+    return exists $self->{_tree}->{$parentID};
+}
+
 sub getItems($self, $parentID) {
-    my @items = values %{$self->{_items}};
-    return grep { $_->parentID eq $parentID } @items;
+    my $ids = $self->{_tree}->{$parentID};
+    return $self->{_items}->{$_} for @$ids;
 }
 
 sub getItem($self, $id) {
@@ -128,8 +133,8 @@ sub albumArtHelper($self, $uri, $baseurl) {
 # only items, no cache id or version info
 sub addItemsOnly($self, @items) {
     for (@items) {
-        carp "No id: " . Dumper(\@items) unless defined $_->{id};
         $self->{_items}->{$_->{id}} = Sonos::MetaData->new($_, $self);
+        push @{$self->{_tree}->{$_->{parentID}}}, $_->{id};
     }
 }
 
