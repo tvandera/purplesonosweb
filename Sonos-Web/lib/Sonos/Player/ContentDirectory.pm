@@ -112,7 +112,7 @@ sub processUpdate {
 # fetches those
 sub fetchByUpdateID {
     my ($self, $updateid)  = @_;
-    my @matching = grep { $_->{update_id} eq $updateid } rootItems();
+    my @matching = grep { $_->{update_id} eq $updateid } Sonos::MetaData::rootItems();
     my @items = map { $self->fetchByObjectId($_->{id}) } @matching;
     return @items
 }
@@ -154,6 +154,8 @@ sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
     $self->getPlayer()->log(" .  Found " . scalar(@items) . " entries.");
     #DEBUG Dumper(@items[0..10]);
 
+    push @items, map { $self->fetchByObjectId($_->{id}) } @items;
+
     return @items;
 }
 
@@ -163,13 +165,6 @@ sub localCache($self) {
 
 sub globalCache($self) {
     return $self->{_player}->{_discovery}->{_contentcache};
-}
-
-sub getItem($self, $id) {
-    my $local_item = $self->{_items}->{$id};
-    return $local_item if defined $local_item;
-
-    return $self->contentCache()->getItem($id);
 }
 
 ###############################################################################
