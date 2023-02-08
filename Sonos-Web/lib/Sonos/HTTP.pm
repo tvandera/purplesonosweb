@@ -88,6 +88,10 @@ sub diskpath($self, $path) {
     return catfile("html", $path);
 }
 
+sub log($self, @args) {
+    INFO sprintf("[%12s]: ", "httpd"), @args;
+}
+
 ###############################################################################
 sub handle_request($self, $handle, $c) {
     my $r = $c->get_request;
