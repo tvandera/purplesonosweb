@@ -284,6 +284,7 @@ sub build_item_data($self, $prefix, $item) {
             $prefix . "_ISRADIO" => int( $item->isRadio() ),
             $prefix . "_ISALBUM" => int( $item->isAlbum() ),
             $prefix . "_ISFAV"   => int( $item->isFav() ),
+            $prefix . "_ARG"     => "mpath=" . uri_escape_utf8($item->id()),
         );
     } else {
         return (
@@ -298,6 +299,7 @@ sub build_item_data($self, $prefix, $item) {
             $prefix . "_ISRADIO" => 0,
             $prefix . "_ISALBUM" => 0,
             $prefix . "_ISFAV"   => 0,
+            $prefix . "_ARG"     => "mpath=",
         );
     }
 }
@@ -420,7 +422,6 @@ sub build_music_data {
     %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
     $musicdata{"MUSIC_UPDATED"}    = 1;
 
-    my $music_arg = $musicdata{MUSIC_ARG} = "mpath=" . uri_escape_utf8($mpath);
 
     my @music_loop_data = map { { $self->build_item_data("MUSIC", $_) } } @elements;
 
