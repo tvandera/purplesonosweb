@@ -4,7 +4,7 @@ use v5.36;
 use strict;
 use warnings;
 
-use List::Util "all";
+use List::Util qw(all max);
 
 require UPnP::ControlPoint;
 require Sonos::Player;
@@ -47,6 +47,11 @@ sub numPlayers($self) {
 
 sub getPlayers($self) {
     return values %{$self->{_players}};
+}
+
+sub lastUpdate($self) {
+    my @values = map { $_->lastUpdate() } $self->getPlayers();
+    return max @values;
 }
 
 sub populated($self) {
