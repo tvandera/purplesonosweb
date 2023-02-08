@@ -317,7 +317,7 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     $activedata{HAS_ACTIVE_ZONE}   = int( defined $active_player );
     $activedata{ACTIVE_ZONE}       = encode_entities( $zonename );
     $activedata{ACTIVE_ZONEID}     = uri_escape($player->UDN());
-    $activedata{ZONE_ACTIVE}       = int( $player == $active_player );
+    $activedata{ZONE_ACTIVE}       = int(defined $active_player && $player == $active_player );
     $activedata{ACTIVE_LASTUPDATE} = $player->lastUpdate();
     $activedata{ACTIVE_UPDATED}    = ( $player->lastUpdate() > $updatenum );
 
