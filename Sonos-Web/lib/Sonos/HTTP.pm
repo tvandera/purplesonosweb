@@ -94,6 +94,7 @@ sub log($self, @args) {
 
 ###############################################################################
 sub handle_request($self, $handle, $c) {
+    $c->blocking(1);
     my $r = $c->get_request;
     my $baseurl = $self->baseURL();
 
