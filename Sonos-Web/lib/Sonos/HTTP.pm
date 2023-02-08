@@ -99,9 +99,14 @@ sub handle_request($self, $handle, $c) {
     my $baseurl = $self->baseURL();
 
     # No r, just return
-    return unless ( $r && $r->uri );
+    unless ( $r && $r->uri ) {
+        croak("Empty request");
+        return;
+    }
 
     my $uri  = $r->uri;
+    $self->log("handling request: ", $uri);
+
     my %qf   = $uri->query_form;
     my $path = $uri->path;
 
