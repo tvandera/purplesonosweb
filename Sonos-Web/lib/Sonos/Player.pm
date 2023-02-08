@@ -119,3 +119,10 @@ sub renderingControl($self) {
 sub avTransport($self) {
     return $self->getService("AVTransport");
 }
+
+
+# -- ContentDirectory --
+
+sub contentDirectory($self) {
+    return $self->getService("ContentDirectory");
+}

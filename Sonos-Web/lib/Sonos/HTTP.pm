@@ -100,7 +100,7 @@ sub handle_request($self, $handle, $c) {
 
     # No r, just return
     unless ( $r && $r->uri ) {
-        croak("Empty request - reason: " . $c->reason());
+        $self->log("Empty request - reason: " . $c->reason());
         return;
     }
 
@@ -159,8 +159,7 @@ sub handle_zone_action {
     my ($self, $c, $r, $path ) = @_;
     my %qf = $r->uri->query_form;
     my $mpath = decode( "UTF-8", $qf{mpath} );
-    my $zone = $self->zonePlayer($qf{zone});
-
+    my $player = $self->zonePlayer($qf{zone});
 
 #     my %action_table (
 #         # ContentDirectory actions
@@ -261,12 +260,7 @@ sub handle_action {
         sonos_unlink_zone( $qf{link} );
     }
     elsif ( $qf{action} eq "Wait" && $qf{lastupdate} ) {
-        if ( $main::LASTUPDATE > $qf{lastupdate} ) {
-            return 1;
-        }
-        else {
-            return 5;
-        }
+        return ( $self->lastUpdate() > $qf{lastupdate} ) ? 1 : 5;
     }
     else {
         return 0;
@@ -285,6 +279,7 @@ sub build_item_data($self, $prefix, $item) {
             $prefix . "_CONTENT" => uri_escape_utf8( $item->content  ),
             $prefix . "_PARENT"  => uri_escape_utf8( $item->parentID ),
             $prefix . "_ARG"     => uri_escape_utf8( $item->id ),
+            $prefix . "_IMG"     => uri_escape_utf8( $item->albumArtURI ),
             $prefix . "_ISSONG"  => int( $item->isSong() ),
             $prefix . "_ISRADIO" => int( $item->isRadio() ),
             $prefix . "_ISALBUM" => int( $item->isAlbum() ),
@@ -387,15 +382,16 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
 ###############################################################################
 sub build_queue_data {
     my ($self, $player, $updatenum ) = @_;
+    my $contentdir = $player->contentDirectory();
 
     my %queuedata;
 
     $queuedata{QUEUE_ZONE}       = $player->zoneName;
     $queuedata{QUEUE_ZONEID}     = uri_escape_utf8($player->UDN);
-    $queuedata{QUEUE_LASTUPDATE} = $player->lastQueueUpdate();
-    $queuedata{QUEUE_UPDATED}    = ( $player->lastQueueUpdate() > $updatenum );
+    $queuedata{QUEUE_LASTUPDATE} = $contentdir->lastUpdate();
+    $queuedata{QUEUE_UPDATED}    = ( $contentdir->lastUpdate() > $updatenum );
 
-    my @loop_data = map { $self->build_item_data("QUEUE", $_) } $player->queue();
+    my @loop_data = map { { $self->build_item_data("QUEUE", $_) } } $contentdir->queue();
     $queuedata{QUEUE_LOOP} = \@loop_data;
     $queuedata{QUEUE_JSON} = to_json( \@loop_data, { pretty => 1 } );
 
@@ -487,11 +483,11 @@ sub build_map {
     #     $map{ALL_QUEUE_JSON} = to_json( \@queues, { pretty => 1 } );
     # }
 
-    # if ( exists $qf->{zone} ) {
-    #     my $queue = build_queue_data( $qf->{zone}, $updatenum );
-    #     $map{QUEUE_JSON} = to_json( $queue, { pretty => 1 } );
-    #     %map = ( %map, %$queue );
-    # }
+    if ( $player ) {
+        my $queue = $self->build_queue_data( $player, $updatenum );
+        $map{QUEUE_JSON} = to_json( $queue, { pretty => 1 } );
+        %map = ( %map, %$queue );
+    }
 
     # if ( grep /^MUSIC_/i, @$params ) {
     #     my $music = build_music_data( $qf, $updatenum );
