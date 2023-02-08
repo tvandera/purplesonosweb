@@ -18,22 +18,22 @@ sub rootItems($colnames = "cache") {
         [ "update_id",             "dc:title",          "parentID", "id",   "upnp:class", "upnp:albumArtURI"  ],
         [ "",                      "Music Library",      "NO_PARENT", "",   "container", "tiles/library.svg" ],
 
-        [ "FavoritesUpdateID",     "Favorites",          "", "FV:2",        "sonos-favorite", "tiles/favorites.svg" ],
+        [ "FavoritesUpdateID",     "Favorites",          "", "FV:2",        "container.sonos-favorite", "tiles/favorites.svg" ],
 
-        [ "ShareListUpdateID",     "Artists",            "", "A:ARTIST",    "musicArtist", "tiles/artists.svg" ],
-        [ "ShareListUpdateID",     "Albums",             "", "A:ALBUM",     "musicAlbum", "tiles/album.svg" ],
-        [ "ShareListUpdateID",     "Genres",             "", "A:GENRE",     "musicGenre", "tiles/genre.svg" ],
-        [ "ShareListUpdateID",     "Composers",          "", "A:COMPOSER",  "composer", "tiles/composers.svg" ],
-        [ "ShareListUpdateID",     "Tracks",             "", "A:TRACKS",    "musicTrack", "tiles/track.svg" ],
-        [ "ShareListUpdateID",     "Imported Playlists", "", "A:PLAYLISTS", "playlistContainer", "tiles/playlist.svg" ],
-        [ "ShareListUpdateID",     "Folders",            "", "S:",          "musicTrack", "tiles/folder.svg" ],
+        [ "ShareListUpdateID",     "Artists",            "", "A:ARTIST",    "container.musicArtist", "tiles/artists.svg" ],
+        [ "ShareListUpdateID",     "Albums",             "", "A:ALBUM",     "container.musicAlbum", "tiles/album.svg" ],
+        [ "ShareListUpdateID",     "Genres",             "", "A:GENRE",     "container.musicGenre", "tiles/genre.svg" ],
+        [ "ShareListUpdateID",     "Composers",          "", "A:COMPOSER",  "container.composer", "tiles/composers.svg" ],
+        [ "ShareListUpdateID",     "Tracks",             "", "A:TRACKS",    "container.musicTrack", "tiles/track.svg" ],
+        [ "ShareListUpdateID",     "Imported Playlists", "", "A:PLAYLISTS", "container.playlistContainer", "tiles/playlist.svg" ],
+        [ "ShareListUpdateID",     "Folders",            "", "S:",          "container.musicTrack", "tiles/folder.svg" ],
 
-        [ "RadioLocationUpdateID", "Radio",              "", "R:0/0",       "audioBroadcast", "tiles/radio_logo.svg" ],
+        [ "RadioLocationUpdateID", "Radio",              "", "R:0/0",       "container.audioBroadcast", "tiles/radio_logo.svg" ],
 
         [ "ContainerUpdateIDs",    "Line In",            "", "AI:",         "container", "tiles/linein.svg" ],
-        [ "ContainerUpdateIDs",    "Queue",              "", "Q:0",         "musicTrack", "tiles/queue.svg" ],
+        [ "ContainerUpdateIDs",    "Queue",              "", "Q:0",         "container.musicTrack", "tiles/queue.svg" ],
 
-        [ "SavedQueuesUpdateID",   "Playlists",          "", "SQ:",         "playlistContainer", "tiles/sonos_playlists.svg" ],
+        [ "SavedQueuesUpdateID",   "Playlists",          "", "SQ:",         "container.playlistContainer", "tiles/sonos_playlists.svg" ],
     );
 
     my @keys = @{shift @table};
@@ -195,6 +195,11 @@ sub isRadio($self) { return $self->class() eq "audioBroadcast"; }
 sub isSong($self)  { return $self->class() eq "musicTrack"; }
 sub isAlbum($self) { return $self->class() eq "musicAlbum"; }
 sub isFav($self)   { return $self->class() eq "favorite"; }
+sub isContainer($self) {
+    my $class = $self->prop("upnp:class");
+    return $class =~ m/container/g;
+}
+
 
 sub getAlbumArt($self, $baseurl) {
     return $self->cache()->albumArtHelper($self->albumArtURI, $baseurl);
