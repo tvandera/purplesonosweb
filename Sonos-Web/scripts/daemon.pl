@@ -18,7 +18,7 @@ use Data::Dumper;
 
 my $loop = IO::Async::Loop::Select->new;
 my $discover = Sonos::Discovery->new($loop);
-my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPort => 8080);
+my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => UPnP::Common::getLocalIPAddress(), LocalPort => 9999);
 
 print STDERR "\$SIG{INT} = " . $SIG{INT} . "\n";
 $SIG{INT} = sub {
