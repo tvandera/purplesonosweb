@@ -34,6 +34,7 @@ sub new {
         _useragent => LWP::UserAgent->new(),
     }, $class;
 
+    $self->addRootItems();
     $self->load();
 
     return $self;
@@ -136,6 +137,10 @@ sub addItems($self, $id, $udn, $version, @items) {
     $self->addItemsOnly(@items);
     $self->{_updateids}->{$id} = [ $udn, $version ];
     $self->save();
+}
+
+sub addRootItems($self) {
+    $self->addItemsOnly(Sonos::MetaData::rootItems());
 }
 
 1;

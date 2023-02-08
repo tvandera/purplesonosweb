@@ -404,34 +404,25 @@ sub build_music_data {
     my $updatenum = shift;
     my %musicdata;
 
-    my @music_loop_data = ();
-    my @page_loop_data  = ();
-
-    my $albumart = "";
-
     my $mpath = "";
     $mpath = $qf->{mpath} if ( defined $qf->{mpath} );
     $mpath = ""           if ( $mpath eq "/" );
     my $msearch = $qf->{msearch};
-    my $item    = $self->getSystem()->globalCache()->getItem($mpath);
 
     $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
     $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
 
-    %musicdata = (%musicdata, $self->build_item_data("MUSIC", $item));
+    my $cache    = $self->getSystem()->contentCache();
+    my $parent   = $cache->getItem($mpath);
+    my @elements = $cache->getItems($mpath);
 
-    $musicdata{"MUSIC_UPDATED"}    = ( $mpath ne ""
-          || ( !$qf->{NoWait} && ( $main::MUSICUPDATE > $updatenum ) ) );
+    %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
+    $musicdata{"MUSIC_UPDATED"}    = 1;
 
     my $music_arg = $musicdata{MUSIC_ARG} = "mpath=" . uri_escape_utf8($mpath);
 
-    my $elements = $self->getSystem()->globalCache()->getItems($mpath);
-    foreach my $music ( @{$elements} ) {
-        next if ( $msearch && $music->title() !~ m/$msearch/i );
-
-
-    }
+    my @music_loop_data = map { { $self->build_item_data("MUSIC", $_) } } @elements;
 
     $musicdata{"MUSIC_LOOP"} = \@music_loop_data;
 
@@ -489,11 +480,11 @@ sub build_map {
         %map = ( %map, %$queue );
     }
 
-    # if ( grep /^MUSIC_/i, @$params ) {
-    #     my $music = build_music_data( $qf, $updatenum );
-    #     $map{MUSIC_JSON} = to_json( $music, { pretty => 1 } );
-    #     %map = ( %map, %$music );
-    # }
+    if ( grep /^MUSIC_/i, @$params ) {
+        my $music = $self->build_music_data( $qf, $updatenum );
+        $map{MUSIC_JSON} = to_json( $music, { pretty => 1 } );
+        %map = ( %map, %$music );
+    }
 
     if ( $player ) {
         my $zone = $self->build_zone_data( $player, $updatenum, $player );

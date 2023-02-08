@@ -4,11 +4,41 @@ use v5.36;
 use strict;
 use warnings;
 
+use List::MoreUtils qw(zip);
+
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
 use Data::Dumper;
 use Carp;
+
+
+sub rootItems($colnames = "cache") {
+    my @table = (
+        [ "update_id",             "dc:title",          "parentID", "id",   "upnp:class", "upnp:albumArtURI"  ],
+        [ "",                      "Music Library",      "NO_PARENT", "",   "container", "tiles/library.svg" ],
+
+        [ "FavoritesUpdateID",     "Favorites",          "", "FV:2",        "sonos-favorite", "tiles/favorites.svg" ],
+
+        [ "ShareListUpdateID",     "Artists",            "", "A:ARTIST",    "musicArtist", "tiles/artists.svg" ],
+        [ "ShareListUpdateID",     "Albums",             "", "A:ALBUM",     "musicAlbum", "tiles/album.svg" ],
+        [ "ShareListUpdateID",     "Genres",             "", "A:GENRE",     "musicGenre", "tiles/genre.svg" ],
+        [ "ShareListUpdateID",     "Composers",          "", "A:COMPOSER",  "composer", "tiles/composers.svg" ],
+        [ "ShareListUpdateID",     "Tracks",             "", "A:TRACKS",    "musicTrack", "tiles/track.svg" ],
+        [ "ShareListUpdateID",     "Imported Playlists", "", "A:PLAYLISTS", "playlistContainer", "tiles/playlist.svg" ],
+        [ "ShareListUpdateID",     "Folders",            "", "S:",          "musicTrack", "tiles/folder.svg" ],
+
+        [ "RadioLocationUpdateID", "Radio",              "", "R:0/0",       "audioBroadcast", "tiles/radio_logo.svg" ],
+
+        [ "ContainerUpdateIDs",    "Line In",            "", "AI:",         "container", "tiles/linein.svg" ],
+        [ "ContainerUpdateIDs",    "Queue",              "", "Q:0",         "musicTrack", "tiles/queue.svg" ],
+
+        [ "SavedQueuesUpdateID",   "Playlists",          "", "SQ:",         "playlistContainer", "tiles/sonos_playlists.svg" ],
+    );
+
+    my @keys = @{shift @table};
+    return map { { zip(@keys, @$_) } } @table;
+}
 
 sub new {
     my($self, $data, $cache) = @_;
@@ -104,6 +134,42 @@ sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 #   }
 
 # class
+# - "object.item"/>
+# - "object.item.imageItem"/>
+# - "object.item.imageItem.photo"/>
+# - "object.item.audioItem"/>
+# - "object.item.audioItem.musicTrack"/>
+# - "object.item.audioItem.audioBroadcast"/>
+# - "object.item.audioItem.audioBook"/>
+# - "object.item.videoItem"/>
+# - "object.item.videoItem.movie"/>
+# - "object.item.videoItem.videoBroadcast"/>
+# - "object.item.videoItem.musicVideoClip"/>
+# - "object.item.playlistItem"/>
+# - "object.item.textItem"/>
+# - "object.item.bookmarkItem"/>
+# - "object.item.epgItem"/>
+# - "object.item.epgItem.audioProgram"/>
+# - "object.item.epgItem.videoProgram"/>
+# - "object.container.person"/>
+# - "object.container.person.musicArtist"/>
+# - "object.container.playlistContainer"/>
+# - "object.container.album"/>
+# - "object.container.album.musicAlbum"/>
+# - "object.container.album.photoAlbum"/>
+# - "object.container.genre"/>
+# - "object.container.genre.musicGenre"/>
+# - "object.container.genre.movieGenre"/>
+# - "object.container.channelGroup"/>
+# - "object.container.channelGroup.audioChannelGroup"/>
+# - "object.container.channelGroup.videoChannelGroup"/>
+# - "object.container.epgContainer"/>
+# - "object.container.storageSystem"/>
+# - "object.container.storageVolume"/>
+# - "object.container.storageFolder"/>
+# - "object.container.bookmarkFolder"/>
+#         </xsd:restriction>
+#     </xsd:simpleType>
 sub class($self) {
     my $full_classname = $self->prop("upnp:class");
     carp "No class in " . Dumper($self) unless $full_classname;

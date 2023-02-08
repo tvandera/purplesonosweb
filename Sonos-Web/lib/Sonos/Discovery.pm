@@ -69,6 +69,10 @@ sub controlPoint($self) {
     return $self->{_controlpoint};
 }
 
+sub contentCache($self) {
+    return $self->{_contentcache};
+}
+
 sub sockets($self) {
     return $self->controlPoint()->sockets()
 }

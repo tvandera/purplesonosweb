@@ -11,41 +11,12 @@ require Sonos::MetaData;
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
-use List::MoreUtils qw(zip);
 use Data::Dumper;
 use Carp;
 
 use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
 XML::Liberal->globally_override('LibXML');
-
-# Contains music library info
-# caches for ContentDir
-
-sub lookupTable() {
-    my @keys = ( "update_id", "name", "prefix", "icon");
-    my @table = (
-        [ "FavoritesUpdateID", "Favorites",          "FV:2",        "tiles/favorites.svg" ],
-
-        [ "ShareListUpdateID", "Artists",            "A:ARTIST",    "tiles/artists.svg" ],
-        [ "ShareListUpdateID", "Albums",             "A:ALBUM",     "tiles/album.svg" ],
-        [ "ShareListUpdateID", "Genres",             "A:GENRE",     "tiles/genre.svg" ],
-        [ "ShareListUpdateID", "Composers",          "A:COMPOSER",  "tiles/composers.svg" ],
-        [ "ShareListUpdateID", "Tracks",             "A:TRACKS",    "tiles/track.svg" ],
-        [ "ShareListUpdateID", "Imported Playlists", "A:PLAYLISTS", "tiles/playlist.svg" ],
-        [ "ShareListUpdateID", "Folders",            "S:",          "tiles/folder.svg" ],
-
-        [ "RadioLocationUpdateID", "Radio", "R:0/0", "tiles/radio_logo.svg" ],
-
-        [ "ContainerUpdateIDs", "Line In", "AI:", "tiles/linein.svg" ],
-        [ "ContainerUpdateIDs", "Queue", "Q:0", "tiles/queue.svg" ],
-
-        [ "SavedQueuesUpdateID", "Playlists", "SQ:", "tiles/sonos_playlists.svg" ],
-    );
-
-   return map { { zip(@keys, @$_) } } @table;
-}
-
 
 sub new {
    my ($class, @args) = @_;
@@ -137,12 +108,12 @@ sub processUpdate {
 }
 
 
-# finds items in lookupTable that have updateid equal to given $updateid and
+# finds items in rootItems that have updateid equal to given $updateid and
 # fetches those
 sub fetchByUpdateID {
     my ($self, $updateid)  = @_;
-    my @matching = grep { $_->{update_id} eq $updateid } lookupTable();
-    my @items = map { $self->fetchByObjectId($_->{prefix}) } @matching;
+    my @matching = grep { $_->{update_id} eq $updateid } rootItems();
+    my @items = map { $self->fetchByObjectId($_->{id}) } @matching;
     return @items
 }
 
