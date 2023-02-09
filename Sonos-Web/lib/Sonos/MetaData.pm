@@ -176,25 +176,30 @@ sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 # - "object.container.storageVolume"/>
 # - "object.container.storageFolder"/>
 # - "object.container.bookmarkFolder"/>
-#         </xsd:restriction>
-#     </xsd:simpleType>
-sub class($self) {
-    my $full_classname = $self->prop("upnp:class");
-    carp "No class in " . Dumper($self) unless $full_classname;
-    # only the last part
+# only the last part
+sub classFrom($self, @from) {
+    my $full_classname = $self->prop(@from);
     my @parts = split( /\./, $full_classname);
     return $parts[-1];
 }
 
-sub realclass($self) {
-    # FIXME
-    return $self->class;
+sub class($self) {
+    return $self->classFrom("upnp:class");
 }
 
+# if this is a FV:0 item
+# it will have a "upnp:class": "object.itemobject.item.sonos-favorite",
+# and the `real` class will be in
+#  "r:resMD": {
+#    "upnp:class": "object.item.audioItem.audioBroadcast",
+sub class($self) {
+    return $self->classFrom("r:resMD", "upnp:class");
+}
+
+# split using "/", take" the last part
 sub baseID($self) {
     my $full_id = $self->prop("id");
     return undef unless $full_id;
-    # only the last part
     my @parts = split( /\//, $full_id);
     return $parts[-1];
 }
