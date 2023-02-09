@@ -126,7 +126,7 @@ sub fetchByUpdateID {
 # actiontype is
 #  - "BrowseMetadata", or
 #  - "BrowseDirectChildren" (default)
-sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
+sub fetchByObjectId( $self, $objectid, $recurse = 0) {
     my $start = 0;
     my @items  = ();
     my $result;
@@ -134,7 +134,7 @@ sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
     $self->getPlayer()->log("Fetching " . $objectid . "...");
 
     do {
-        $result = $self->controlProxy()->Browse( $objectid, $actiontype, 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
+        $result = $self->controlProxy()->Browse( $objectid, 'BrowseDirectChildren', 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
 
         return () unless $result->isSuccessful;
 
@@ -151,12 +151,21 @@ sub fetchByObjectId( $self, $objectid, $actiontype = 'BrowseDirectChildren') {
         push( @items, @{ $tree->{container} } ) if ( defined $tree->{container} );
     } while ( $start < $result->getValue("TotalMatches") );
 
+    @items = map { Sonos::Player::Service::derefHelper($_) }  @items;
+
     $self->getPlayer()->log(" .  Found " . scalar(@items) . " entries.");
     #DEBUG Dumper(@items[0..10]);
 
-    push @items, map { $self->fetchByObjectId($_->{id}) } @items;
+    return @items unless $recurse;
 
-    return @items;
+    # recursively add sub-containers
+    my @subitems = ();
+    for (@items) {
+        next unless $_->{"upnp:class"} =~ /container/;
+        push @subitems, $self->fetchByObjectId($_->{id});
+    }
+
+    return @items, @subitems;
 }
 
 sub localCache($self) {
