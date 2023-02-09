@@ -164,9 +164,9 @@ sub derefHelper($elem) {
 
     return derefHelper($elem->{val})  if defined $elem->{val} and $num == 1;
     return derefHelper($elem->{item}) if defined $elem->{item};
+    return derefHelper($elem->{"DIDL-Lite"}) if defined $elem->{"DIDL-Lite"};
 
     while (my ($key, $val) = each %$elem) {
-
         $elem->{$key} = derefHelper($val);
     }
 
