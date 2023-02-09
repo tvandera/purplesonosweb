@@ -44,6 +44,14 @@ sub new {
     my($self, $data, $cache) = @_;
 	my $class = ref($self) || $self;
 
+    if ($data) {
+        for ('id', 'parentID') {
+            next unless exists $data->{$_};
+            next unless $data->{$_} eq "-1";
+            delete $data->{$_};
+        }
+    }
+
     $self = bless {
         _cache => $cache,
         _data => $data,
