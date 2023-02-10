@@ -148,4 +148,13 @@ sub addRootItems($self) {
     $self->addItemsOnly(Sonos::MetaData::rootItems());
 }
 
+sub removeItems($self, $parentID) {
+    if ($self->hasItems($parentID)) {
+        my $ids = $self->getItems($parentID);
+        $self->removeItems($_) for @$ids;
+    }
+    delete $self->{_tree}->{$parentID};
+    delete $self->{_items}->{$parentID};
+}
+
 1;
