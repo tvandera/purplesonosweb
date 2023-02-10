@@ -192,7 +192,7 @@ sub class($self) {
 # and the `real` class will be in
 #  "r:resMD": {
 #    "upnp:class": "object.item.audioItem.audioBroadcast",
-sub class($self) {
+sub realClass($self) {
     return $self->classFrom("r:resMD", "upnp:class");
 }
 
