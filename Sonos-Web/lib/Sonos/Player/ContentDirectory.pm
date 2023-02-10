@@ -35,8 +35,19 @@ sub queue($self) {
     return sort { $a->baseID() <=> $b->baseID() } @items;
 }
 
+sub getItems($self, $parentID) {
+    return $self->queue() if $parentID =~ "Q:0";
+
+    my $cache = $self->globalCache();
+    return $cache->getItems($parentID) if $cache->hasItems($parentID);
+
+    my @items = $self->fetchByObjectId($parentID);
+    $cache->addItemsOnly(@items);
+
+    return @items;
+}
+
 sub info($self) {
-    $self->logQueue();
 }
 
 sub logQueue($self) {
