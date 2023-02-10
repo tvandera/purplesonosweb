@@ -46,9 +46,12 @@ sub logQueue($self) {
         $_->getAlbumArt($self->baseURL());
     }
 
+    my $separator =  \' | ';
+
     if (scalar @queue) {
         use Text::Table;
-        my $table = Text::Table->new(Sonos::MetaData::displayFields());
+        my @headers = map { $separator, $_ } Sonos::MetaData::displayFields(), $separator;
+        my $table = Text::Table->new(@headers);
         $table->add($_->displayValues()) for @queue;
 
         $self->getPlayer()->log("Queue:\n" . $table->table());
