@@ -69,10 +69,10 @@ sub logQueue($self) {
 #  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
 sub processUpdateIDs ( $self, $service, %properties ) {
     # check if anything was updated
-    foreach my $key (keys %properties) {
-        next if ($key !~ /UpdateIDs?$/);
+    foreach my $update_id (keys %properties) {
+        next if ($update_id !~ /UpdateIDs?$/);
 
-        my $newvalue = $properties{$key};
+        my $newvalue = $properties{$update_id};
         my ($new_location, $new_version) = split /,/, $newvalue;
         next unless defined $new_location;
         next unless defined $new_version;
@@ -85,14 +85,15 @@ sub processUpdateIDs ( $self, $service, %properties ) {
         my $globalcache = $newvalue =~ m/^RINCON_/g;
         my $cache = $globalcache ? $self->globalCache() : $self->localCache();
 
-        my ($existing_location, $existing_version) = $cache->getVersion($key);
+        my ($existing_location, $existing_version) = $cache->getVersion($update_id);
 
-        # INFO "Update ID $key: old $existing_location,$existing_version ?= new $newvalue";
+        # INFO "Update ID $update_id: old $existing_location,$existing_version ?= new $newvalue";
 
         # call fetch if updated or not in cache
         if (not $existing_location or $existing_version < $new_version) {
-            my @items = $self->fetchByUpdateID($key);
-            $cache->addItems($key, $new_location, $new_version, @items);
+            my @items = $self->fetchByUpdateID($update_id);
+            $cache->removeItems($update_id);
+            $cache->addItems($update_id, $new_location, $new_version, @items);
         }
     }
 }
