@@ -95,7 +95,7 @@ sub hasItems($self, $parentID) {
 
 sub getItems($self, $parentID) {
     my $ids = $self->{_tree}->{$parentID};
-    return $self->{_items}->{$_} for @$ids;
+    return map { $self->{_items}->{$_} } @$ids;
 }
 
 sub getItem($self, $id) {
