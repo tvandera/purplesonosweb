@@ -84,7 +84,7 @@ sub save($self) {
     ]));
 }
 
-sub getVersion($self, $id) {
+sub version($self, $id) {
     my $value = $self->{_updateids}->{$id};
     return ("", -1) unless defined $value;
     return @$value;
@@ -107,13 +107,13 @@ sub fetchItems($self, $parentID) {
 
 sub getChildIDs($self, $parentID) {
     $self->fetchItems($parentID) unless $self->hasItems($parentID);
-    return $self->{_tree}->{$parentID};
+    return @{$self->{_tree}->{$parentID}};
 }
 
 
 sub getChildren($self, $parentID) {
-    my $ids = $self->getChildIDs;
-    return map { $self->{_items}->{$_} } @$ids;
+    my @ids = $self->getChildIDs($parentID);
+    return map { $self->{_items}->{$_} } @ids;
 }
 
 sub getItem($self, $id) {
@@ -173,8 +173,8 @@ sub addRootItems($self) {
 
 sub removeItems($self, $parentID) {
     if ($self->hasItems($parentID)) {
-        my $ids = $self->getChildIDs($parentID);
-        $self->removeItems($_) for @$ids;
+        my @ids = $self->getChildIDs($parentID);
+        $self->removeItems($_) for @ids;
     }
     delete $self->{_tree}->{$parentID};
     delete $self->{_items}->{$parentID};

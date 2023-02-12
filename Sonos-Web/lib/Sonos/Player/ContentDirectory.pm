@@ -7,6 +7,7 @@ use warnings;
 use base 'Sonos::Player::Service';
 
 require Sonos::MetaData;
+require Sonos::Player::Queue;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -24,54 +25,21 @@ sub new {
     # possibly call Parent->new(@args) first
     my $self = $class->SUPER::new(@args);
 
-    $self->{_queue} = [];
+    $self->{_queue} = Sonos::Player::Queue->new($self->musicLibrary());
 
     return $self;
 }
 
 sub queue($self) {
-    return sort { $a->baseID() <=> $b->baseID() } @{$self->{_queue}};
-}
-
-sub getItem($self, $parentID) {
-    return $self->queue() if $parentID =~ /^Q:0/;
-
-    my $music = $self->musicLibrary();
-    my @items;
-    if ($music->hasItems($parentID)) {
-        @items = $music->getChildren($parentID);
-    } else {
-        @items = $self->fetchByObjectId($parentID);
-        $music->addItemsOnly(@items);
-    }
-
-    DEBUG "ContentDirectory: $parentID has " . scalar @items . " items";
-
-    return @items;
-}
-
-sub getChildren($self, $parentID) {
-    return $self->queue() if $parentID =~ /^Q:0/;
-
-    my $music = $self->musicLibrary();
-    my @items;
-    if ($music->hasItems($parentID)) {
-        @items = $music->getChildren($parentID);
-    } else {
-        @items = $self->fetchByObjectId($parentID);
-        $music->addItemsOnly(@items);
-    }
-
-    DEBUG "ContentDirectory: $parentID has " . scalar @items . " items";
-
-    return @items;
+    return $self->{_queue};
 }
 
 sub info($self) {
+    $self->logQueue();
 }
 
 sub logQueue($self) {
-    my @queue = $self->queue();
+    my @queue = $self->queue()->items();
 
     for (@queue) {
         $_->getAlbumArt($self->baseURL());
@@ -103,6 +71,7 @@ sub logQueue($self) {
 #  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
 sub processUpdateIDs ( $self, $service, %properties ) {
     my $music = $self->musicLibrary();
+    my $queue = $self->queue();
 
     # check if anything was updated
     foreach my $update_id (keys %properties) {
@@ -113,15 +82,10 @@ sub processUpdateIDs ( $self, $service, %properties ) {
         next unless defined $new_location;
         next unless defined $new_version;
 
-        # if the UpdateID starts with RINCON_ data is global
-        #    e.g. 'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
-        # otherwise local to the player (player's queue)
-        #    e.g. 'ContainerUpdateIDs' => 'Q:0,503',
-
-        if ($new_location =~ m/^Q:/) {
-        my @items = $self->fetchByObjectID($new_location);
-            $self->{_queue} = [ map { Sonos::MetaData->new($_, $music) } @items ];
-            return;
+        DEBUG Dumper("processUpdate: $update_id => $new_location, $new_version");
+        if ($new_location =~ /^Q:/ and $queue->version() < $new_version) {
+            $queue->update($new_version, $self->fetchByObjectID("Q:0"));
+            next;
         }
 
         # INFO "Update ID $update_id: old $existing_location,$existing_version ?= new $newvalue";
@@ -132,13 +96,15 @@ sub processUpdateIDs ( $self, $service, %properties ) {
             next unless $_->{update_id} eq $update_id;
 
             my $id = $_->{id};
-            my ($existing_location, $existing_version) = $music->getVersion($id);
+
+            my ($existing_location, $existing_version) = $music->version($id);
 
             # call fetch if updated or not in music
             next if $existing_location and $existing_version >= $new_version;
 
             $music->removeItems($id);
             my @items = $self->fetchByObjectID($id);
+
             $music->addItems($id, $new_location, $new_version, @items);
         }
     }
@@ -149,8 +115,6 @@ sub processUpdate {
 
     $self->processUpdateIDs(@_);
     $self->SUPER::processUpdate(@_);
-
-    $self->logQueue();
 
 }
 
