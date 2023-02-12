@@ -167,7 +167,7 @@ sub fetchByUpdateID {
 # actiontype is
 #  - "BrowseMetadata", or
 #  - "BrowseDirectChildren" (default)
-sub fetchByObjectId( $self, $objectid, $recurse = 0) {
+sub fetchByObjectID( $self, $objectid, $recurse = 0) {
     my $start = 0;
     my @items  = ();
     my $result;
@@ -203,7 +203,7 @@ sub fetchByObjectId( $self, $objectid, $recurse = 0) {
     my @subitems = ();
     for (@items) {
         next unless $_->{"upnp:class"} =~ /container/;
-        push @subitems, $self->fetchByObjectId($_->{id});
+        push @subitems, $self->fetchByObjectID($_->{id});
     }
 
     return @items, @subitems;

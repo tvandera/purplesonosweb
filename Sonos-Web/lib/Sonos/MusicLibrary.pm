@@ -99,7 +99,7 @@ sub fetchItems($self, $parentID) {
     my ($uuid, $version) = $self->{_updateids}->${rootID};
     my $player = $self->{_discovery}->getPlayer($uuid);
 
-    my @items = $player->fetchByObjectId($parentID);
+    my @items = $player->fetchByObjectID($parentID);
     $self->addItemsOnly(@items);
 
     return @items;
