@@ -118,22 +118,28 @@ sub processUpdateIDs ( $self, $service, %properties ) {
         # otherwise local to the player (player's queue)
         #    e.g. 'ContainerUpdateIDs' => 'Q:0,503',
 
-        if ($new_location =~ m/^Q:0/) {
-        my @items = $self->fetchByUpdateID($update_id);
+        if ($new_location =~ m/^Q:/) {
+        my @items = $self->fetchByObjectID($new_location);
             $self->{_queue} = [ map { Sonos::MetaData->new($_, $music) } @items ];
             return;
         }
 
-        my ($existing_location, $existing_version) = $music->getVersion($update_id);
-
         # INFO "Update ID $update_id: old $existing_location,$existing_version ?= new $newvalue";
 
-        # call fetch if updated or not in music
-        if (not $existing_location or $existing_version < $new_version) {
-            my @items = $self->fetchByUpdateID($update_id);
+        for (Sonos::MetaData::rootItems()) {
+            # find items in rootItems that have updateid equal to given $updateid and
+            # fetch those
+            next unless $_->{update_id} eq $update_id;
 
-            $music->removeItems($update_id);
-            $music->addItems($update_id, $new_location, $new_version, @items);
+            my $id = $_->{id};
+            my ($existing_location, $existing_version) = $music->getVersion($id);
+
+            # call fetch if updated or not in music
+            next if $existing_location and $existing_version >= $new_version;
+
+            $music->removeItems($id);
+            my @items = $self->fetchByObjectID($id);
+            $music->addItems($id, $new_location, $new_version, @items);
         }
     }
 }
@@ -149,14 +155,6 @@ sub processUpdate {
 }
 
 
-# finds items in rootItems that have updateid equal to given $updateid and
-# fetches those
-sub fetchByUpdateID {
-    my ($self, $updateid)  = @_;
-    my @matching = grep { $_->{update_id} eq $updateid } Sonos::MetaData::rootItems();
-    my @items = map { $self->fetchByObjectId($_->{id}) } @matching;
-    return @items
-}
 
 
 ###############################################################################
