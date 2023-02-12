@@ -60,6 +60,10 @@ sub populated($self) {
          all { $_->populated() } $self->getPlayers() );
 }
 
+sub getPlayer($self, $uuid) {
+   return $self->{_players}->{$uuid};
+}
+
 sub zonePlayer($self, $zoneName) {
     my ($player) = grep { $_->zoneName() eq $zoneName } $self->getPlayers();
     return $player;
@@ -100,17 +104,17 @@ sub addToLoop($self, $loop) {
 # or removed
 sub _discoveryCallback {
     my ( $self, $search, $device, $action ) = @_;
-    my $location = $device->{LOCATION};
+    my $uuid = $device->{UDN};
 
     if ( $action eq 'deviceAdded' ) {
-        return if defined $self->{_players}->{$location};
-        $self->{_players}->{$location} = Sonos::Player->new($device, $self);
+        return if defined $self->{_players}->{$uuid};
+        $self->{_players}->{$uuid} = Sonos::Player->new($device, $self);
         INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
         # DEBUG Dumper($device);
     }
     elsif ( $action eq 'deviceRemoved' ) {
         INFO "Removed device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
-        delete $self->{_players}->{$location};
+        delete $self->{_players}->{$uuid};
     }
     else {
         WARNING( "Unknown action name:" . $action );
