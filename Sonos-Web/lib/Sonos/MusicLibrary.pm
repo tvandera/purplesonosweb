@@ -1,4 +1,4 @@
-package Sonos::ContentCache;
+package Sonos::MusicLibrary;
 
 use v5.36;
 use strict;
@@ -6,6 +6,7 @@ use warnings;
 
 require Sonos::MetaData;
 
+use List::Util qw(first);
 use JSON::XS;
 use File::Slurp;
 require URI::WithBase;
@@ -23,11 +24,11 @@ use constant AA_BASENAME => "album_art";
 
 # Contains music library cache
 sub new {
-    my($self, $name) = @_;
+    my($self, $discovery) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _name => $name,
+        _discovery => $discovery,
         _updateids => { },
         _items => { },
         _tree => { },
@@ -42,7 +43,7 @@ sub new {
 }
 
 sub cacheFileName($self) {
-    return $self->{_name} . "_" . JSON_BASENAME;
+    return JSON_BASENAME;
 }
 
 sub albumArtDir($self) {
@@ -93,7 +94,19 @@ sub hasItems($self, $parentID) {
     return exists $self->{_tree}->{$parentID};
 }
 
+sub fetchItems($self, $parentID) {
+    my $rootID = first { $_ =~ /^$parentID/ } keys %{$self->{_updateids}};
+    my ($uuid, $version) = $self->{_updateids}->${rootID};
+    my $player = $self->{_discovery}->getPlayer($uuid);
+
+    my @items = $player->fetchByObjectId($parentID);
+    $self->addItemsOnly(@items);
+
+    return @items;
+}
+
 sub getItems($self, $parentID) {
+    $self->fetchItems($parentID) unless $self->hasItems($parentID);
     my $ids = $self->{_tree}->{$parentID};
     return map { $self->{_items}->{$_} } @$ids;
 }
@@ -142,6 +155,11 @@ sub addItems($self, $id, $udn, $version, @items) {
     $self->addItemsOnly(@items);
     $self->{_updateids}->{$id} = [ $udn, $version ];
     $self->save();
+}
+
+sub getPlayer($self, $id) {
+    my ($udn, $version) = $self->{_updateids}->{$id};
+    $self->{_discovery}->getPlayer($udn);
 }
 
 sub addRootItems($self) {

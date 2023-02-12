@@ -269,7 +269,6 @@ sub handle_action {
 }
 
 sub build_item_data($self, $prefix, $item) {
-
     if ($item->populated()) {
         return (
             $prefix . "_NAME"    => encode_entities( $item->title() ),
@@ -415,9 +414,9 @@ sub build_music_data {
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
     $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
 
-    my $cache    = $self->getSystem()->contentCache();
-    my $parent   = $cache->getItem($mpath);
-    my @elements = $cache->getItems($mpath);
+    my $music = $self->getSystem()->musicLibrary();
+    my $parent     = $music->getItem($mpath);
+    my @elements   = $music->getItems($mpath);
 
     %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
     $musicdata{"MUSIC_UPDATED"}    = 1;

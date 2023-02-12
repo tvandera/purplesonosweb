@@ -24,25 +24,45 @@ sub new {
     # possibly call Parent->new(@args) first
     my $self = $class->SUPER::new(@args);
 
-    my $udn = $self->getPlayer()->UDN();
-    $self->{_contentcache} = Sonos::ContentCache->new($udn);
+    $self->{_queue} = [];
 
     return $self;
 }
 
 sub queue($self) {
-    my @items = $self->localCache()->getItems("Q:0");
-    return sort { $a->baseID() <=> $b->baseID() } @items;
+    return sort { $a->baseID() <=> $b->baseID() } @{$self->{_queue}};
+}
+
+sub getItem($self, $parentID) {
+    return $self->queue() if $parentID =~ /^Q:0/;
+
+    my $music = $self->musicLibrary();
+    my @items;
+    if ($music->hasItems($parentID)) {
+        @items = $music->getItems($parentID);
+    } else {
+        @items = $self->fetchByObjectId($parentID);
+        $music->addItemsOnly(@items);
+    }
+
+    DEBUG "ContentDirectory: $parentID has " . scalar @items . " items";
+
+    return @items;
 }
 
 sub getItems($self, $parentID) {
-    return $self->queue() if $parentID =~ "Q:0";
+    return $self->queue() if $parentID =~ /^Q:0/;
 
-    my $cache = $self->globalCache();
-    return $cache->getItems($parentID) if $cache->hasItems($parentID);
+    my $music = $self->musicLibrary();
+    my @items;
+    if ($music->hasItems($parentID)) {
+        @items = $music->getItems($parentID);
+    } else {
+        @items = $self->fetchByObjectId($parentID);
+        $music->addItemsOnly(@items);
+    }
 
-    my @items = $self->fetchByObjectId($parentID);
-    $cache->addItemsOnly(@items);
+    DEBUG "ContentDirectory: $parentID has " . scalar @items . " items";
 
     return @items;
 }
@@ -82,6 +102,8 @@ sub logQueue($self) {
 #  'RadioLocationUpdateID' => 'RINCON_000E585187D201400,347',
 #  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
 sub processUpdateIDs ( $self, $service, %properties ) {
+    my $music = $self->musicLibrary();
+
     # check if anything was updated
     foreach my $update_id (keys %properties) {
         next if ($update_id !~ /UpdateIDs?$/);
@@ -91,23 +113,27 @@ sub processUpdateIDs ( $self, $service, %properties ) {
         next unless defined $new_location;
         next unless defined $new_version;
 
-
         # if the UpdateID starts with RINCON_ data is global
         #    e.g. 'RadioFavoritesUpdateID' => 'RINCON_000E583472BC01400,97',
         # otherwise local to the player (player's queue)
         #    e.g. 'ContainerUpdateIDs' => 'Q:0,503',
-        my $globalcache = $newvalue =~ m/^RINCON_/g;
-        my $cache = $globalcache ? $self->globalCache() : $self->localCache();
 
-        my ($existing_location, $existing_version) = $cache->getVersion($update_id);
+        if ($new_location =~ m/^Q:0/) {
+        my @items = $self->fetchByUpdateID($update_id);
+            $self->{_queue} = [ map { Sonos::MetaData->new($_, $music) } @items ];
+            return;
+        }
+
+        my ($existing_location, $existing_version) = $music->getVersion($update_id);
 
         # INFO "Update ID $update_id: old $existing_location,$existing_version ?= new $newvalue";
 
-        # call fetch if updated or not in cache
+        # call fetch if updated or not in music
         if (not $existing_location or $existing_version < $new_version) {
             my @items = $self->fetchByUpdateID($update_id);
-            $cache->removeItems($update_id);
-            $cache->addItems($update_id, $new_location, $new_version, @items);
+
+            $music->removeItems($update_id);
+            $music->addItems($update_id, $new_location, $new_version, @items);
         }
     }
 }
@@ -183,12 +209,8 @@ sub fetchByObjectId( $self, $objectid, $recurse = 0) {
     return @items, @subitems;
 }
 
-sub localCache($self) {
-    return $self->{_contentcache};
-}
-
-sub globalCache($self) {
-    return $self->{_player}->{_discovery}->{_contentcache};
+sub musicLibrary($self) {
+    return $self->getPlayer()->{_discovery}->musicLibrary();
 }
 
 ###############################################################################

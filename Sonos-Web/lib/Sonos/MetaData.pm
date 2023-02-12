@@ -13,7 +13,7 @@ use Data::Dumper;
 use Carp;
 
 
-sub rootItems($colnames = "cache") {
+sub rootItems() {
     my @table = (
         [ "update_id",             "dc:title",          "parentID", "id",   "upnp:class", "upnp:albumArtURI"  ],
         [ "",                      "Music Library",      "NO_PARENT", "",   "container", "tiles/library.svg" ],
@@ -41,7 +41,7 @@ sub rootItems($colnames = "cache") {
 }
 
 sub new {
-    my($self, $data, $cache) = @_;
+    my($self, $data, $musiclib) = @_;
 	my $class = ref($self) || $self;
 
     if ($data) {
@@ -53,15 +53,15 @@ sub new {
     }
 
     $self = bless {
-        _cache => $cache,
+        _musiclib => $musiclib,
         _data => $data,
     }, $class;
 
     return $self;
 }
 
-sub cache($self) {
-    return $self->{_cache};
+sub musicLibrary($self) {
+    return $self->{_musiclib};
 }
 
 sub populated($self) {
@@ -215,7 +215,7 @@ sub isContainer($self) {
 
 
 sub getAlbumArt($self, $baseurl) {
-    return $self->cache()->albumArtHelper($self->albumArtURI, $baseurl);
+    return $self->musicLibrary()->albumArtHelper($self->albumArtURI, $baseurl);
 }
 
 sub displayFields() {

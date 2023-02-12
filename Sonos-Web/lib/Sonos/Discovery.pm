@@ -8,7 +8,7 @@ use List::Util qw(all max);
 
 require UPnP::ControlPoint;
 require Sonos::Player;
-require Sonos::ContentCache;
+require Sonos::MusicLibrary;
 
 require IO::Async::Handle;
 require IO::Async::Loop::Select;
@@ -30,7 +30,7 @@ sub new {
     $self = bless {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
-        _contentcache => Sonos::ContentCache->new("global"),
+        _musiclibrary => Sonos::MusicLibrary->new($self),
         _loop => undef, # IO::Async::Loop::Select -> added by addToLoop
     }, $class;
 
@@ -73,8 +73,8 @@ sub controlPoint($self) {
     return $self->{_controlpoint};
 }
 
-sub contentCache($self) {
-    return $self->{_contentcache};
+sub musicLibrary($self) {
+    return $self->{_musiclibrary};
 }
 
 sub sockets($self) {
