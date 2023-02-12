@@ -105,9 +105,14 @@ sub fetchItems($self, $parentID) {
     return @items;
 }
 
-sub getItems($self, $parentID) {
+sub getChildIDs($self, $parentID) {
     $self->fetchItems($parentID) unless $self->hasItems($parentID);
-    my $ids = $self->{_tree}->{$parentID};
+    return $self->{_tree}->{$parentID};
+}
+
+
+sub getChildren($self, $parentID) {
+    my $ids = $self->getChildIDs;
     return map { $self->{_items}->{$_} } @$ids;
 }
 
@@ -168,7 +173,7 @@ sub addRootItems($self) {
 
 sub removeItems($self, $parentID) {
     if ($self->hasItems($parentID)) {
-        my $ids = $self->getItems($parentID);
+        my $ids = $self->getChildIDs($parentID);
         $self->removeItems($_) for @$ids;
     }
     delete $self->{_tree}->{$parentID};

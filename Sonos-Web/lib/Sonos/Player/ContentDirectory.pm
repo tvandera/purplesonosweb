@@ -39,7 +39,7 @@ sub getItem($self, $parentID) {
     my $music = $self->musicLibrary();
     my @items;
     if ($music->hasItems($parentID)) {
-        @items = $music->getItems($parentID);
+        @items = $music->getChildren($parentID);
     } else {
         @items = $self->fetchByObjectId($parentID);
         $music->addItemsOnly(@items);
@@ -50,13 +50,13 @@ sub getItem($self, $parentID) {
     return @items;
 }
 
-sub getItems($self, $parentID) {
+sub getChildren($self, $parentID) {
     return $self->queue() if $parentID =~ /^Q:0/;
 
     my $music = $self->musicLibrary();
     my @items;
     if ($music->hasItems($parentID)) {
-        @items = $music->getItems($parentID);
+        @items = $music->getChildren($parentID);
     } else {
         @items = $self->fetchByObjectId($parentID);
         $music->addItemsOnly(@items);
