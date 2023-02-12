@@ -269,8 +269,10 @@ sub handle_action {
 }
 
 sub build_item_data($self, $prefix, $item) {
+    my %data;
     if ($item->populated()) {
-        return (
+        my $mpath_arg = defined $item->id() ? "mpath=" . uri_escape_utf8($item->id()) : "";
+        %data = (
             $prefix . "_NAME"    => encode_entities( $item->title() ),
             $prefix . "_ARTIST"  => encode_entities( $item->creator() ),
             $prefix . "_ALBUM"   => encode_entities( $item->album() ),
@@ -283,10 +285,10 @@ sub build_item_data($self, $prefix, $item) {
             $prefix . "_ISRADIO" => int( $item->isRadio() ),
             $prefix . "_ISALBUM" => int( $item->isAlbum() ),
             $prefix . "_ISFAV"   => int( $item->isFav() ),
-            $prefix . "_ARG"     => "mpath=" . uri_escape_utf8($item->id()),
+            $prefix . "_ARG"     => $mpath_arg,
         );
     } else {
-        return (
+        %data = (
             $prefix . "_NAME"    => "",
             $prefix . "_ARTIST"  => "",
             $prefix . "_ALBUM"   => "",
@@ -298,9 +300,12 @@ sub build_item_data($self, $prefix, $item) {
             $prefix . "_ISRADIO" => 0,
             $prefix . "_ISALBUM" => 0,
             $prefix . "_ISFAV"   => 0,
-            $prefix . "_ARG"     => "mpath=",
+            $prefix . "_ARG"     => "",
         );
     }
+
+
+    return %data;
 }
 
 ###############################################################################
