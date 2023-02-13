@@ -30,9 +30,11 @@ sub new {
     $self = bless {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
-        _musiclibrary => Sonos::MusicLibrary->new($self),
+        _musiclibrary => undef, # Sonos::MusicLibrary
         _loop => undef, # IO::Async::Loop::Select -> added by addToLoop
     }, $class;
+
+    $self->{_musiclibrary} = Sonos::MusicLibrary->new($self);
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
 
