@@ -25,7 +25,7 @@ sub new {
     # possibly call Parent->new(@args) first
     my $self = $class->SUPER::new(@args);
 
-    $self->{_queue} = Sonos::Player::Queue->new($self->musicLibrary());
+    $self->{_queue} = Sonos::Player::Queue->new($self);
 
     return $self;
 }
@@ -35,29 +35,9 @@ sub queue($self) {
 }
 
 sub info($self) {
-    $self->logQueue();
+    $self->queue()->info();
 }
 
-sub logQueue($self) {
-    my @queue = $self->queue()->items();
-
-    for (@queue) {
-        $_->getAlbumArt($self->baseURL());
-    }
-
-    my $separator =  \' | ';
-
-    if (scalar @queue) {
-        use Text::Table;
-        my @headers = map { $separator, $_ } Sonos::MetaData::displayFields(), $separator;
-        my $table = Text::Table->new(@headers);
-        $table->add($_->displayValues()) for @queue;
-
-        $self->getPlayer()->log("Queue:\n" . $table->table());
-    } else {
-        $self->getPlayer()->log("Queue empty.");
-    }
-}
 
 # called when anything in ContentDirectory has been updated
 # i.e.:
