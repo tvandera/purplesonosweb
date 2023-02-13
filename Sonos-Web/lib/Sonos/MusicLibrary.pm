@@ -95,11 +95,11 @@ sub hasItems($self, $parentID) {
 }
 
 sub fetchItems($self, $parentID) {
-    my $rootID = first { $_ =~ /^$parentID/ } keys %{$self->{_updateids}};
-    my ($uuid, $version) = $self->{_updateids}->${rootID};
-    my $player = $self->{_discovery}->getPlayer($uuid);
+    my ($rootID) = split '/', $parentID;
+    my ($uuid, $version) = @{$self->{_updateids}->{$rootID}};
+    my $player = $self->{_discovery}->player($uuid);
 
-    my @items = $player->fetchByObjectID($parentID);
+    my @items = $player->contentDirectory()->fetchByObjectID($parentID);
     $self->addItemsOnly(@items);
 
     return @items;
