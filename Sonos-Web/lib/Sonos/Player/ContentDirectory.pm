@@ -156,7 +156,7 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0) {
 
     @items = map { Sonos::Player::Service::derefHelper($_) }  @items;
 
-    $self->getPlayer()->log(" .  Found " . scalar(@items) . " entries.");
+    $self->player()->log(" .  Found " . scalar(@items) . " entries.");
     #DEBUG Dumper(@items[0..10]);
 
     return @items unless $recurse;
@@ -172,7 +172,7 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0) {
 }
 
 sub musicLibrary($self) {
-    return $self->getPlayer()->{_discovery}->musicLibrary();
+    return $self->player()->{_discovery}->musicLibrary();
 }
 
 ###############################################################################

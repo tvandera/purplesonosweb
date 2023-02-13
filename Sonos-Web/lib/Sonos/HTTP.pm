@@ -60,8 +60,8 @@ sub getSystem($self) {
     return $self->{_discovery};
 }
 
-sub getPlayers($self) {
-    return $self->getSystem()->getPlayers();
+sub players($self) {
+    return $self->getSystem()->players();
 }
 
 sub lastUpdate($self) {
@@ -468,13 +468,13 @@ sub build_map {
     }
 
     if ( grep /^ZONES_/i, @$params ) {
-        my @zones = map { $self->build_zone_data( $_, $updatenum, $player); } $self->getPlayers();
+        my @zones = map { $self->build_zone_data( $_, $updatenum, $player); } $self->players();
         $map{ZONES_LOOP} = \@zones;
         $map{ZONES_JSON} = to_json( \@zones, { pretty => 1 } );
     }
 
     # if ( grep /^ALL_QUEUE_/i, @$params ) {
-    #     my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->getPlayers();
+    #     my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->players();
     #     $map{ALL_QUEUE_LOOP} = \@queues;
     #     $map{ALL_QUEUE_JSON} = to_json( \@queues, { pretty => 1 } );
     # }

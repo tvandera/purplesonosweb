@@ -45,27 +45,27 @@ sub numPlayers($self) {
     return scalar keys %{$self->{_players}};
 }
 
-sub getPlayers($self) {
+sub players($self) {
     return values %{$self->{_players}};
 }
 
 sub lastUpdate($self) {
-    my @values = map { $_->lastUpdate() } $self->getPlayers();
+    my @values = map { $_->lastUpdate() } $self->players();
     return max @values;
 }
 
 sub populated($self) {
     return
         ( $self->numPlayers() > 0 and
-         all { $_->populated() } $self->getPlayers() );
+         all { $_->populated() } $self->players() );
 }
 
-sub getPlayer($self, $uuid) {
+sub player($self, $uuid) {
    return $self->{_players}->{$uuid};
 }
 
 sub zonePlayer($self, $zoneName) {
-    my ($player) = grep { $_->zoneName() eq $zoneName } $self->getPlayers();
+    my ($player) = grep { $_->zoneName() eq $zoneName } $self->players();
     return $player;
 }
 

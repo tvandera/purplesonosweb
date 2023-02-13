@@ -30,7 +30,7 @@ sub info($self) {
 }
 
 sub UDN($self) {
-    return $self->getPlayer()->UDN();
+    return $self->player()->UDN();
 }
 
 sub haveZoneInfo($self) {
@@ -80,7 +80,7 @@ sub isInZoneGroup($self, $coordinator, $uuid = undef) {
 # contains player with $uuid
 sub zoneGroupInfo($self, $uuid = undef) {
     return undef unless $self->haveZoneInfo();
-    $uuid = $self->getPlayer()->UDN() unless defined $uuid;
+    $uuid = $self->player()->UDN() unless defined $uuid;
 
     for my $coordinator (keys %{$self->{_zonegroups}}) {
         next unless $self->isInZoneGroup($coordinator, $uuid);
@@ -92,7 +92,7 @@ sub zoneGroupInfo($self, $uuid = undef) {
 
 sub zoneInfo($self, $uuid = undef) {
     return undef unless $self->haveZoneInfo();
-    $uuid = $self->getPlayer()->UDN() unless defined $uuid;
+    $uuid = $self->player()->UDN() unless defined $uuid;
     return $self->allZones()->{$uuid};
 }
 

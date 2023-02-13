@@ -40,7 +40,7 @@ sub getSubscription($self) {
 }
 
 sub friendlyName($self) {
-    return $self->shortName() . "@" . $self->getPlayer()->friendlyName()
+    return $self->shortName() . "@" . $self->player()->friendlyName()
 }
 
 sub renewSubscription($self) {
@@ -77,16 +77,16 @@ sub lastUpdateReadable($self) {
     return localtime $self->{_state}->{LASTUPDATE} || "Unknown";
 }
 
-sub getPlayer($self) {
+sub player($self) {
     return $self->{_player};
 }
 
 sub baseURL($self) {
-    return $self->getPlayer()->location();
+    return $self->player()->location();
 }
 
 sub log($self, @args) {
-    $self->getPlayer()->log(@args);
+    $self->player()->log(@args);
 }
 
 sub populated($self) {
@@ -108,7 +108,7 @@ sub prop($self, @path) {
 
 sub getUPnP($self) {
     my $fullname = $self->fullName();
-    my $device = $self->getPlayer()->getUPnP();
+    my $device = $self->player()->getUPnP();
 
     my $service = $device->getService($fullname);
     return $service if $service;

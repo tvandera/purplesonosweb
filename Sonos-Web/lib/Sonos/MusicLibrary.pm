@@ -162,9 +162,9 @@ sub addItems($self, $id, $udn, $version, @items) {
     $self->save();
 }
 
-sub getPlayer($self, $id) {
+sub player($self, $id) {
     my ($udn, $version) = $self->{_updateids}->{$id};
-    $self->{_discovery}->getPlayer($udn);
+    $self->{_discovery}->player($udn);
 }
 
 sub addRootItems($self) {
