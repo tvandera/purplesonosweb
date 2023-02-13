@@ -134,7 +134,7 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0) {
     my @items  = ();
     my $result;
 
-    $self->getPlayer()->log("Fetching " . $objectid . "...");
+    $self->player()->log("Fetching " . $objectid . "...");
 
     do {
         $result = $self->controlProxy()->Browse( $objectid, 'BrowseDirectChildren', 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
