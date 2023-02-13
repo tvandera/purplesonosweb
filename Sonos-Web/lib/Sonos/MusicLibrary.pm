@@ -111,8 +111,9 @@ sub getChildIDs($self, $parentID) {
 }
 
 
-sub getChildren($self, $parentID) {
-    my @ids = $self->getChildIDs($parentID);
+sub getChildren($self, $parent) {
+    return () unless $parent->isContainer();
+    my @ids = $self->getChildIDs($parent->id());
     return map { $self->{_items}->{$_} } @ids;
 }
 

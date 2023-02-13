@@ -421,7 +421,7 @@ sub build_music_data {
 
     my $music = $self->getSystem()->musicLibrary();
     my $parent     = $music->getItem($mpath);
-    my @elements   = $music->getChildren($mpath);
+    my @elements   = $music->getChildren($parent);
 
     %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
     $musicdata{"MUSIC_UPDATED"}    = 1;
