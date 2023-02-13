@@ -107,6 +107,7 @@ sub addToLoop($self, $loop) {
 sub _discoveryCallback {
     my ( $self, $search, $device, $action ) = @_;
     my $uuid = $device->{UDN};
+    $uuid =~ s/^uuid://g;
 
     if ( $action eq 'deviceAdded' ) {
         return if defined $self->{_players}->{$uuid};
