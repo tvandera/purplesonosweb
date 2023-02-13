@@ -34,6 +34,10 @@ sub queue($self) {
     return $self->{_queue};
 }
 
+sub queueItems($self) {
+    return $self->queue()->items();
+}
+
 sub info($self) {
     $self->queue()->info();
 }

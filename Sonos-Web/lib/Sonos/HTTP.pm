@@ -397,7 +397,7 @@ sub build_queue_data {
     $queuedata{QUEUE_LASTUPDATE} = $contentdir->lastUpdate();
     $queuedata{QUEUE_UPDATED}    = ( $contentdir->lastUpdate() > $updatenum );
 
-    my @loop_data = map { { $self->build_item_data("QUEUE", $_) } } $contentdir->queue();
+    my @loop_data = map { { $self->build_item_data("QUEUE", $_) } } $contentdir->queueItems();
     $queuedata{QUEUE_LOOP} = \@loop_data;
     $queuedata{QUEUE_JSON} = to_json( \@loop_data, { pretty => 1 } );
 
