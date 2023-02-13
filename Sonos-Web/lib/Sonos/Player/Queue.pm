@@ -24,16 +24,41 @@ use constant AA_BASENAME => "album_art";
 
 # Contains music library cache
 sub new {
-    my($self, $musiclib) = @_;
+    my($self, $contentdir) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _musiclib => $musiclib,
+        _contentdir => $contentdir,
         _version => -1,
         _items => []
     }, $class;
 
     return $self;
+}
+
+sub contentDir($self) {
+    return $self->{_contentdir};
+}
+
+sub player($self) {
+    return $self->contentDir()->player();
+}
+
+sub info($self) {
+    my @queue = $self->items();
+
+    my $separator =  \' | ';
+
+    if (scalar @queue) {
+        use Text::Table;
+        my @headers = map { $separator, $_ } Sonos::MetaData::displayFields(), $separator;
+        my $table = Text::Table->new(@headers);
+        $table->add($_->displayValues()) for @queue;
+
+        $self->player()->log("Queue:\n" . $table->table());
+    } else {
+        $self->player()->log("Queue empty.");
+    }
 }
 
 
