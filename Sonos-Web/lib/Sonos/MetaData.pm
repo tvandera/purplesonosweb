@@ -41,10 +41,11 @@ sub rootItems() {
 }
 
 sub new {
-    my($self, $data, $musiclib) = @_;
+    my($self, $data, $owner) = @_;
 	my $class = ref($self) || $self;
 
     if ($data) {
+        # delete id or parentID if == -1
         for ('id', 'parentID') {
             next unless exists $data->{$_};
             next unless $data->{$_} eq "-1";
@@ -53,15 +54,19 @@ sub new {
     }
 
     $self = bless {
-        _musiclib => $musiclib,
+        _owner => $owner,
         _data => $data,
     }, $class;
 
     return $self;
 }
 
-sub musicLibrary($self) {
-    return $self->{_musiclib};
+sub owner($self) {
+    return $self->{_owner};
+}
+
+sub player($self) {
+    return $self->owner()->playerForID($self->id());
 }
 
 sub populated($self) {
@@ -213,10 +218,11 @@ sub isContainer($self) {
     return $class =~ m/container/g;
 }
 
-
-sub getAlbumArt($self, $baseurl) {
-    return $self->musicLibrary()->albumArtHelper($self->albumArtURI, $baseurl);
+sub getAlbumArt($self) {
+    # ask owner for caching
+    return $self->owner()->albumArtHelper($self);
 }
+
 
 sub displayFields() {
     return  (
