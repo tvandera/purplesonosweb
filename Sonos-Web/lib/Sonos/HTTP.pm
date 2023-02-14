@@ -34,12 +34,18 @@ sub new {
     $self = bless {
         _discovery => $discover,
         _daemon => HTTP::Daemon->new(ReuseAddr => 1, ReusePort => 1, %args),
+        _handlers => {},
         _loop => $loop,
         _default_page => ($args{DefaultPage} || "status.xml"),
         _mime_types =>  MIME::Types->new,
     }, $class;
 
 
+    # HTTP Handlers
+    $self->register_handler("/getaa", sub { $self->albumart_request(@_) });
+    $self->register_handler("/getAA", sub { $self->albumart_request(@_) });
+
+    # IO::Async
     my $handle = IO::Async::Listener->new(
          handle => $self->{_daemon},
          on_accept => sub { $self->handle_request(@_); }
@@ -92,6 +98,11 @@ sub log($self, @args) {
     INFO sprintf("[%12s]: ", "httpd"), @args;
 }
 
+
+sub register_handler($self, $path, $callback) {
+    $self->{_handlers}->{$path} = $callback;
+}
+
 ###############################################################################
 sub handle_request($self, $handle, $c) {
     $c->blocking(1);
@@ -110,8 +121,18 @@ sub handle_request($self, $handle, $c) {
     my %qf   = $uri->query_form;
     my $path = $uri->path;
 
+
+    if (my $callback = $self->{_handlers}->{$path}) {
+        $self->log("  handler: ", $path);
+        &$callback($c, $r);
+        return;
+    }
+
+
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
-        $c->send_redirect($self->defaultPage);
+        my $redirect = $self->defaultPage;
+        $c->send_redirect($redirect);
+        $self->log("  redirect: ", $redirect);
         $c->force_last_request;
         $c->close;
         return;
@@ -121,6 +142,7 @@ sub handle_request($self, $handle, $c) {
     my $diskpath = $self->diskpath($path);
     if ( ! -e $diskpath ) {
         $c->send_error(HTTP::Status::RC_NOT_FOUND);
+        $self->log("  not found");
         $c->force_last_request;
         $c->close;
         return;
@@ -128,7 +150,9 @@ sub handle_request($self, $handle, $c) {
 
     # File is a directory, redirect for the browser
     if ( -d $diskpath ) {
-        $c->send_redirect(catfile($path, "index.html"));
+        my $redirect = catfile($path, "index.html");
+        $c->send_redirect($redirect);
+        $self->log("  redirect: ", $redirect);
         $c->force_last_request;
         $c->close;
         return;
@@ -138,6 +162,7 @@ sub handle_request($self, $handle, $c) {
     if (  $path !~ /\.(html|xml|js|json)$/ )
     {
         $c->send_file_response($diskpath);
+        $self->log("  raw");
         $c->force_last_request;
         return;
     }
@@ -152,6 +177,7 @@ sub handle_request($self, $handle, $c) {
     my $tmplhook;
     my @common_args = ( "*", \& send_tmpl_response, $c, $r, $diskpath, $tmplhook );
     $self->send_tmpl_response(@common_args);
+    $self->log("  template");
 }
 
 ###############################################################################
@@ -271,7 +297,14 @@ sub handle_action {
 sub build_item_data($self, $prefix, $item) {
     my %data;
     if ($item->populated()) {
-        my $mpath_arg = defined $item->id() ? "mpath=" . uri_escape_utf8($item->id()) : "";
+        my $mpath_arg = "";
+        my $aa_uri = "";
+        if (defined $item->id()) {
+            $mpath_arg = "mpath=" . uri_escape_utf8($item->id());
+            my $zone = $item->player() ? $item->player()->zoneName() : "";
+            $aa_uri = "/getaa?" . $mpath_arg . "&zone=" . $zone;
+        }
+
         %data = (
             $prefix . "_NAME"        => encode_entities( $item->title() ),
             $prefix . "_ARTIST"      => encode_entities( $item->creator() ),
@@ -280,7 +313,7 @@ sub build_item_data($self, $prefix, $item) {
             $prefix . "_CONTENT"     => uri_escape_utf8( $item->content  ),
             $prefix . "_PARENT"      => uri_escape_utf8( $item->parentID ),
             $prefix . "_ARG"         => uri_escape_utf8( $item->id ),
-            $prefix . "_IMG"         => uri_escape_utf8( $item->albumArtURI ),
+            $prefix . "_IMG"         => $aa_uri,
             $prefix . "_ISSONG"      => int( $item->isSong() ),
             $prefix . "_ISRADIO"     => int( $item->isRadio() ),
             $prefix . "_ISALBUM"     => int( $item->isAlbum() ),
@@ -536,4 +569,22 @@ sub send_tmpl_response {
     $c->send_response($handled);
     $c->force_last_request;
     $c->close;
+}
+
+sub albumart_request($self, $c, $r) {
+    my $uri = $r->uri;
+    my %qf = $uri->query_form;
+    my $mpath = $qf{mpath};
+    my $item;
+    if ($mpath =~ m/^Q:/) {
+
+        my $player = $self->zonePlayer($qf{zone});
+        $item = $player->contentDirectory()->queue()->get($mpath);
+    } else {
+        $item = $self->getSystem()->musicLibrary()->getItem($mpath);
+    }
+    my ($mime_type, $blob) = $item->getAlbumArt();
+    my $response = HTTP::Response->new(200, undef, ["Content-Type" => $mime_type], $blob);
+    $c->send_response($response);
+    $c->force_last_request;
 }
