@@ -6,7 +6,7 @@ use warnings;
 
 require Sonos::MetaData;
 
-use List::Util qw(first);
+use List::Util qw(first reduce);
 use JSON::XS;
 use File::Slurp;
 require URI::WithBase;
@@ -99,10 +99,13 @@ sub hasItems($self, $parentID) {
 }
 
 sub playerForID($self, $id) {
+    # find the longest root id thats starts with $id
+    # e.g. A:ALBUM for $id = A:ALBUM/SomeAlbumName
     my @rootids = map { $_->{id} } Sonos::MetaData::rootItems();
-    my ($rootid) = grep { $id =~ m/^$_/ } @rootids;  # take A:ALBUM from A:ALBUM/SomeAlbumName
+       @rootids = grep { rindex($id, $_, 0) == 0 } @rootids;
+    my $rootid = reduce { length($a) > length($b) ? $a : $b } @rootids;
+
     return undef unless $rootid;
-    DEBUG "Looking for $rootid in " . Dumper($self->{_updateids});
 
     my ($uuid, $version) = @{$self->{_updateids}->{$rootid}};
     my $player = $self->discovery()->player($uuid);
