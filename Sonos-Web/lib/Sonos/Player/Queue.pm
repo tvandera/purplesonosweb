@@ -30,7 +30,7 @@ sub new {
     $self = bless {
         _contentdir => $contentdir,
         _version => -1,
-        _items => []
+        _items => {}
     }, $class;
 
     return $self;
@@ -38,6 +38,10 @@ sub new {
 
 sub contentDir($self) {
     return $self->{_contentdir};
+}
+
+sub musicLibrary($self) {
+    return $self->contentDir()->musicLibrary();
 }
 
 sub player($self) {
@@ -67,26 +71,29 @@ sub version($self) {
 }
 
 sub get($self, $id) {
-    return $self->{_items}->[$id];
+    return $self->{_items}->{$id};
 }
 
 sub items($self) {
-    return @{$self->{_items}};
+    my @items = values %{$self->{_items}};
+    @items = sort { $a->baseID() <=> $b->baseID() } @items;
+    return @items;
 }
 
 sub update($self, $version, @items) {
     $self->{_version} = $version;
-
-    @items = map { Sonos::MetaData->new($_, $self) } @items;
-    @items = sort { $a->baseID() <=> $b->baseID() } @items;
-    $self->{_items} = [ @items ];
+    my %items = map { $_->{id} => Sonos::MetaData->new($_, $self) } @items;
+    $self->{_items} = { %items };
 }
 
 # forward albumArtHelper to music library
 # to allow global caching
-sub albumArtHelper {
-    my $self = shift;
-    return $self->{_musiclib}->albumArtHelper(@_);
+sub albumArtHelper($self, $item) {
+    return $self->musicLibrary()->albumArtHelper($item, $self->player());
+}
+
+sub playerForID($self, $id) {
+    return $self->player();
 }
 
 1;

@@ -90,14 +90,27 @@ sub version($self, $id) {
     return @$value;
 }
 
+sub discovery($self) {
+    return $self->{_discovery};
+}
+
 sub hasItems($self, $parentID) {
     return exists $self->{_tree}->{$parentID};
 }
 
+sub playerForID($self, $id) {
+    my @rootids = map { $_->{id} } Sonos::MetaData::rootItems();
+    my ($rootid) = grep { $id =~ m/^$_/ } @rootids;  # take A:ALBUM from A:ALBUM/SomeAlbumName
+    return undef unless $rootid;
+    DEBUG "Looking for $rootid in " . Dumper($self->{_updateids});
+
+    my ($uuid, $version) = @{$self->{_updateids}->{$rootid}};
+    my $player = $self->discovery()->player($uuid);
+    return $player
+}
+
 sub fetchItems($self, $parentID) {
-    my ($rootID) = split '/', $parentID;
-    my ($uuid, $version) = @{$self->{_updateids}->{$rootID}};
-    my $player = $self->{_discovery}->player($uuid);
+    my $player = $self->playerForID($parentID);
 
     my @items = $player->contentDirectory()->fetchByObjectID($parentID);
     $self->addItemsOnly(@items);
@@ -124,7 +137,12 @@ sub getItem($self, $id) {
 # returns a JPEG/PNG/.. blob
 # - cache key: albumArtURI
 # - cache values: [ sha of blob, mime-type, blob ]
-sub albumArtHelper($self, $uri, $baseurl) {
+sub albumArtHelper($self, $item, $player) {
+    $player = $self->playerForID($item->id()) unless $player;
+
+    my $uri = $item->albumArtURI();
+    my $baseurl = $player->location();
+
     # in cache?
     my $cache_ref = $self->{_album_art}->{$uri};
     if (defined $cache_ref) {
