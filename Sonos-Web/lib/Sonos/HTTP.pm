@@ -80,8 +80,8 @@ sub getSystem($self) {
     return $self->{_discovery};
 }
 
-sub zonePlayer($self, $name) {
-    return $self->getSystem()->zonePlayer($name);
+sub player($self, $name_or_uuid) {
+    return $self->getSystem()->player($name_or_uuid);
 }
 
 sub defaultPage($self) {
@@ -167,7 +167,7 @@ sub handle_zone_action {
     my ($self, $r, $path ) = @_;
     my %qf = $r->query_form;
     my $mpath = decode( "UTF-8", $qf{mpath} );
-    my $player = $self->zonePlayer($qf{zone});
+    my $player = $self->player($qf{zone});
     my $action = $qf{action};
 
 
@@ -308,7 +308,7 @@ sub send_albumart_response($self, $r) {
     my $item;
     if ($mpath =~ m/^Q:/) {
 
-        my $player = $self->zonePlayer($qf{zone});
+        my $player = $self->player($qf{zone});
         $item = $player->contentDirectory()->queue()->get($mpath);
     } else {
         $item = $self->getSystem()->musicLibrary()->getItem($mpath);
@@ -335,13 +335,13 @@ sub send_file_response($self, $r, $diskpath) {
 }
 
 sub send_redirect($self, $r, $to) {
-    my $response = HTTP::Response->new(301, undef, ["Location" => $to]);
+    my $response = HTTP::Response->new(301, undef, ["Location" => $to,"Content-Length" => 0]);
     $r->respond( $response );
     $self->log("  redirect to $to");
 }
 
 sub send_error($self, $r, $code) {
-    my $response = HTTP::Response->new($code);
+    my $response = HTTP::Response->new($code, undef, ["Content-Length" => 0]);
     $r->respond( $response );
     $self->log("  error: $code");
 }

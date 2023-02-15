@@ -62,12 +62,10 @@ sub populated($self) {
          all { $_->populated() } $self->players() );
 }
 
-sub player($self, $uuid) {
-   return $self->{_players}->{$uuid};
-}
-
-sub zonePlayer($self, $zoneName) {
-    my ($player) = grep { $_->zoneName() eq $zoneName } $self->players();
+sub player($self, $name_or_uuid) {
+   my $player = $self->{_players}->{$name_or_uuid};
+   return $player if $player;
+   ($player) = grep { $_->zoneName() eq $name_or_uuid } $self->players();
     return $player;
 }
 

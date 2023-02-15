@@ -77,8 +77,8 @@ sub lastUpdate($self) {
     return $self->getSystem()->lastUpdate();
 }
 
-sub zonePlayer($self, $name) {
-    return $self->getSystem()->zonePlayer($name);
+sub player($self, $name_or_uuid) {
+    return $self->getSystem()->player($name_or_uuid);
 }
 
 sub baseURL($self) {
@@ -282,7 +282,7 @@ sub build_map {
     my ( $self, $qf, $params ) = @_;
 
     my $player = undef;
-    $player = $self->zonePlayer($qf->{zone}) if $qf->{zone};
+    $player = $self->player($qf->{zone}) if $qf->{zone};
 
     my $updatenum = 0;
     $updatenum = $qf->{lastupdate} if ( $qf->{lastupdate} );
