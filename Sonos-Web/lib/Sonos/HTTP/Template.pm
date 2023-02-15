@@ -101,12 +101,14 @@ sub log($self, @args) {
     INFO sprintf("[%12s]: ", "template"), @args;
 }
 
-sub build_item_data($self, $prefix, $item) {
+sub build_item_data($self, $prefix, $item, $player = undef) {
     my %data;
     if ($item->populated()) {
         my $zone_arg = "";
         my $mpath_arg = "";
         my $aa_arg = "";
+
+        $player = $item->player() unless $player;
 
         $zone_arg = "&zone=" . $item->player()->zoneName() if ($item->player());
         $mpath_arg = "mpath=" . uri_escape_utf8($item->id()) . $zone_arg if $item->id();
@@ -175,7 +177,7 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     $activedata{ACTIVE_VOLUME}   = $render->getVolume();
     $activedata{ACTIVE_MUTED}    = $render->getMute();
 
-    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $item) );
+    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $item, $player) );
 
     $activedata{ACTIVE_LENGTH}   = $av->lengthInSeconds();
     $activedata{ACTIVE_TRACK_NUM} = encode_entities($av->currentTrack());
@@ -191,7 +193,7 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     $activedata{ACTIVE_REPEAT} = $av->isRepeat();
     $activedata{ACTIVE_SHUFFLE} = $av->isShuffle();
 
-    %activedata = ( %activedata, $self->build_item_data("NEXT", $nexttrack) );
+    %activedata = ( %activedata, $self->build_item_data("NEXT", $nexttrack, $player) );
 
     $activedata{ZONE_MODE}   = $activedata{ACTIVE_MODE};
     $activedata{ZONE_MUTED}  = $activedata{ACTIVE_MUTED};
@@ -238,7 +240,7 @@ sub build_queue_data {
     $queuedata{QUEUE_LASTUPDATE} = $contentdir->lastUpdate();
     $queuedata{QUEUE_UPDATED}    = ( $contentdir->lastUpdate() > $updatenum );
 
-    my @loop_data = map { { $self->build_item_data("QUEUE", $_) } } $contentdir->queueItems();
+    my @loop_data = map { { $self->build_item_data("QUEUE", $_, $player) } } $contentdir->queueItems();
     $queuedata{QUEUE_LOOP} = \@loop_data;
     $queuedata{QUEUE_JSON} = to_json( \@loop_data, { pretty => 1 } );
 
