@@ -28,16 +28,37 @@ require HTML::Template;
 ###############################################################################
 
 sub new {
-    my($self, $discover, $daemon, %args) = @_;
+    my($self, $discover, $diskpath, $qf, %args) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
         _discovery => $discover,
-        _daemon => $daemon,
-        _mime_types =>  MIME::Types->new,
+        _qf => $qf,
     }, $class;
 
+    # One of our templates, now fill in the parts we know
+    my $template = HTML::Template->new(
+        filename          => $diskpath,
+        die_on_bad_params => 0,
+        global_vars       => 1,
+        use_query         => 1,
+        loop_context_vars => 1
+    );
+
+    my @params = $template->param();
+    my $map    = $self->build_map( $qf, \@params );
+    $template->param(%$map);
+    $self->{_template} = $template;
+
     return $self;
+}
+
+sub template($self) {
+    return $self->{_template};
+}
+
+sub output($self) {
+    return $self->template()->output();
 }
 
 sub version($self) {
@@ -61,7 +82,7 @@ sub zonePlayer($self, $name) {
 }
 
 sub baseURL($self) {
-    return $self->{_daemon}->url;
+    return "/";
 }
 
 sub defaultPage($self) {
