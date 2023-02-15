@@ -66,6 +66,7 @@ sub owner($self) {
 }
 
 sub player($self) {
+    return undef unless $self->id();
     return $self->owner()->playerForID($self->id());
 }
 
