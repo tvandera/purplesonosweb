@@ -36,7 +36,7 @@ sub new {
         _daemon => HTTP::Daemon->new(ReuseAddr => 1, ReusePort => 1, %args),
         _handlers => {},
         _loop => $loop,
-        _default_page => ($args{DefaultPage} || "status.xml"),
+        _default_page => ($args{DefaultPage} || "index.html"),
         _mime_types =>  MIME::Types->new,
     }, $class;
 
