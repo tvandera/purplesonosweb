@@ -269,7 +269,7 @@ sub handle_action {
         sonos_unlink_zone( $qf{link} );
     }
     elsif ( $qf{action} eq "Wait" && $qf{lastupdate} ) {
-        return ( $self->lastUpdate() > $qf{lastupdate} ) ? 1 : 5;
+        return ( $self->getSystem()->lastUpdate() > $qf{lastupdate} ) ? 1 : 5;
     }
     else {
         return 0;
