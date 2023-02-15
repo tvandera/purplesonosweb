@@ -63,6 +63,10 @@ sub getSystem($self) {
     return $self->{_discovery};
 }
 
+sub zonePlayer($self, $name) {
+    return $self->getSystem()->zonePlayer($name);
+}
+
 sub defaultPage($self) {
     return $self->{_default_page};
 }
