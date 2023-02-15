@@ -21,7 +21,7 @@ use JSON;
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use MIME::Types;
 
-require HTML::Template::Compiled;
+require HTML::Template;
 
 ###############################################################################
 # HTTP
@@ -297,13 +297,13 @@ sub handle_action {
 sub build_item_data($self, $prefix, $item) {
     my %data;
     if ($item->populated()) {
+        my $zone_arg = "";
         my $mpath_arg = "";
-        my $aa_uri = "";
-        if (defined $item->id()) {
-            $mpath_arg = "mpath=" . uri_escape_utf8($item->id());
-            my $zone = $item->player() ? $item->player()->zoneName() : "";
-            $aa_uri = "/getaa?" . $mpath_arg . "&zone=" . $zone;
-        }
+        my $aa_arg = "";
+
+        $zone_arg = "&zone=" . $item->player()->zoneName() if ($item->player());
+        $mpath_arg = "mpath=" . uri_escape_utf8($item->id()) . $zone_arg if $item->id();
+        $aa_arg = "/getaa?" . $mpath_arg . $zone_arg if $mpath_arg;
 
         %data = (
             $prefix . "_NAME"        => encode_entities( $item->title() ),
@@ -312,8 +312,7 @@ sub build_item_data($self, $prefix, $item) {
             $prefix . "_CLASS"       => encode_entities( $item->class  ),
             $prefix . "_CONTENT"     => uri_escape_utf8( $item->content  ),
             $prefix . "_PARENT"      => uri_escape_utf8( $item->parentID ),
-            $prefix . "_ARG"         => uri_escape_utf8( $item->id ),
-            $prefix . "_IMG"         => $aa_uri,
+            $prefix . "_IMG"         => $aa_arg,
             $prefix . "_ISSONG"      => int( $item->isSong() ),
             $prefix . "_ISRADIO"     => int( $item->isRadio() ),
             $prefix . "_ISALBUM"     => int( $item->isAlbum() ),
@@ -454,7 +453,7 @@ sub build_music_data {
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
     $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
 
-    my $music = $self->getSystem()->musicLibrary();
+    my $music      = $self->getSystem()->musicLibrary();
     my $parent     = $music->getItem($mpath);
     my @elements   = $music->getChildren($parent);
 
@@ -490,9 +489,7 @@ sub build_map {
         $globals->{"LAST_UPDATE_READABLE"} = localtime $self->lastUpdate();
 
         my @keys    = grep !/action|rand|mpath|msearch|link/, ( keys %$qf );
-        my $all_arg = "";
-        $all_arg .= "$_=$qf->{$_}&" for @keys;
-        $globals->{"ALL_ARG"} = $all_arg;
+        $globals->{"ALL_ARG"} = join "&", map { "$_=$qf->{$_}" } @keys;
 
         $globals->{"MUSICDIR_AVAILABLE"} = 0;
         $globals->{"ZONES_LASTUPDATE"}   = $self->lastUpdate(); # FIXME
@@ -508,11 +505,11 @@ sub build_map {
         $map{ZONES_JSON} = to_json( \@zones, { pretty => 1 } );
     }
 
-    # if ( grep /^ALL_QUEUE_/i, @$params ) {
-    #     my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->players();
-    #     $map{ALL_QUEUE_LOOP} = \@queues;
-    #     $map{ALL_QUEUE_JSON} = to_json( \@queues, { pretty => 1 } );
-    # }
+     if ( grep /^ALL_QUEUE_/i, @$params ) {
+         my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->players();
+         $map{ALL_QUEUE_LOOP} = \@queues;
+         $map{ALL_QUEUE_JSON} = to_json( \@queues, { pretty => 1 } );
+     }
 
     if ( $player ) {
         my $queue = $self->build_queue_data( $player, $updatenum );
@@ -531,6 +528,10 @@ sub build_map {
         %map = ( %map, %$zone );
     }
 
+    # for (@$params) {
+    #     croak "param \"" . uc($_) . "\" is unset in map but used in template\n map = " . Dumper(\%map) unless exists($map{uc($_)});
+    # }
+
     return \%map;
 
 }
@@ -542,7 +543,7 @@ sub send_tmpl_response {
     my %qf = $r->uri->query_form;
 
     # One of our templates, now fill in the parts we know
-    my $template = HTML::Template::Compiled->new(
+    my $template = HTML::Template->new(
         filename          => $diskpath,
         die_on_bad_params => 0,
         global_vars       => 1,
