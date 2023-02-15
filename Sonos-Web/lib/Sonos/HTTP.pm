@@ -9,8 +9,10 @@ Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 use Carp;
 
+use File::Slurp qw(read_file);
+
 require IO::Async::Listener;
-require HTTP::Daemon;
+use Net::Async::HTTP::Server;
 use HTTP::Status ":constants";
 use HTML::Entities;
 use URI::Escape;
@@ -30,7 +32,7 @@ sub new {
 
     $self = bless {
         _discovery => $discover,
-        _daemon => HTTP::Daemon->new(ReuseAddr => 1, ReusePort => 1, %args),
+        _daemon => undef,
         _handlers => {},
         _loop => $loop,
         _default_page => ($args{DefaultPage} || "index.html"),
@@ -39,18 +41,33 @@ sub new {
 
 
     # HTTP Handlers
-    $self->register_handler("/getaa", sub { $self->albumart_request(@_) });
-    $self->register_handler("/getAA", sub { $self->albumart_request(@_) });
+    $self->register_handler("/getaa", sub { $self->send_albumart_response(@_) });
+    $self->register_handler("/getAA", sub { $self->send_albumart_response(@_) });
+    $self->register_handler("/hello", sub { $self->send_hello(@_) });
 
-    # IO::Async
-    my $handle = IO::Async::Listener->new(
-         handle => $self->{_daemon},
-         on_accept => sub { $self->handle_request(@_); }
+    my $httpserver = Net::Async::HTTP::Server->new(
+        on_request => sub {
+            $self->handle_request(@_);
+        }
     );
 
-    $loop->add( $handle );
+    $loop->add( $httpserver );
 
-    print STDERR "Listening on " . $self->{_daemon}->url . "\n";
+    $httpserver->listen(
+        addr => {
+            family   => "inet",
+            socktype => "stream",
+            port     => 9999,
+        },
+        on_listen_error => sub { die "Cannot listen - $_[-1]\n" }
+    );
+
+    my $sockhost =
+    printf STDERR  "Listening on http://%s:%d\n",
+        $httpserver->read_handle->sockhost,
+        $httpserver->read_handle->sockport;
+
+    $self->{_daemon} = $httpserver;
 
     return $self;
 }
@@ -89,103 +106,85 @@ sub register_handler($self, $path, $callback) {
 }
 
 ###############################################################################
-sub handle_request($self, $handle, $c) {
-    $c->blocking(1);
-    my $r = $c->get_request;
+sub handle_request($self, $server, $r) {
 
     # No r, just return
-    unless ( $r && $r->uri ) {
-        $self->log("Empty request - reason: " . $c->reason());
+    unless ( $r && $r->path ) {
+        $self->log("Empty request");
         return;
     }
 
-    my $uri  = $r->uri;
-    $self->log("handling request: ", $uri);
+    my $path  = $r->path;
+    my %qf   = $r->query_form;
 
-    my %qf   = $uri->query_form;
-    my $path = $uri->path;
-
+    $self->log("handling request: ", $path);
 
     if (my $callback = $self->{_handlers}->{$path}) {
         $self->log("  handler: ", $path);
-        &$callback($c, $r);
+        &$callback($r);
         return;
     }
 
 
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         my $redirect = $self->defaultPage;
-        $c->send_redirect($redirect);
-        $self->log("  redirect: ", $redirect);
-        $c->force_last_request;
-        $c->close;
+        $self->send_redirect($r, $redirect);
         return;
     }
 
     # Find where on disk
     my $diskpath = $self->diskpath($path);
     if ( ! -e $diskpath ) {
-        $c->send_error(HTTP::Status::RC_NOT_FOUND);
-        $self->log("  not found");
-        $c->force_last_request;
-        $c->close;
+        $self->send_error($r, HTTP::Status::RC_NOT_FOUND);
         return;
     }
 
     # File is a directory, redirect for the browser
     if ( -d $diskpath ) {
         my $redirect = catfile($path, "index.html");
-        $c->send_redirect($redirect);
-        $self->log("  redirect: ", $redirect);
-        $c->force_last_request;
-        $c->close;
+        $self->send_redirect($r, $redirect);
         return;
     }
 
     # File isn't HTML/XML/JSON/JS, just send it back raw
     if (  $path !~ /\.(html|xml|js|json)$/ )
     {
-        $c->send_file_response($diskpath);
-        $self->log("  raw");
-        $c->force_last_request;
+        $self->send_file_response($r, $diskpath);
         return;
     }
 
-    my $handled = 1;
     if ( exists $qf{action} ) {
-        $handled = $self->handle_zone_action( $c, $r, $path ) if ( exists $qf{zone} );
-        $handled ||= $self->handle_action( $c, $r, $path );
+        $self->handle_zone_action( $r, $path ) if ( exists $qf{zone} );
+        $self->handle_action( $r, $path );
     }
-    $handled = 1 if ( $qf{NoWait} );
 
     my $tmplhook;
-    my @common_args = ( "*", \& send_tmpl_response, $c, $r, $diskpath, $tmplhook );
-    $self->send_tmpl_response(@common_args);
-    $self->log("  template");
+    $self->send_tmpl_response($r, $diskpath);
 }
 
 ###############################################################################
 sub handle_zone_action {
-    my ($self, $c, $r, $path ) = @_;
-    my %qf = $r->uri->query_form;
+    my ($self, $r, $path ) = @_;
+    my %qf = $r->query_form;
     my $mpath = decode( "UTF-8", $qf{mpath} );
     my $player = $self->zonePlayer($qf{zone});
+    my $action = $qf{action};
+
+
+    # AVtransport Actions
+    my $av = $player->avTransport();
+    my @av_actions = ( "Play", "Pause", "Stop", "ShuffleOn", "ShuffleOff", "RepeatOn", "RepeatOff");
+    $av->$action() if grep /^$action$/, @av_actions;
+
+
+#         "Seek" ) {
+#         "Remove" => sub { $player->removeTrack( $qf{queue} ); return 4; },
+#         "RemoveAll" => sub { $player->removeAll() return 4; },
 
 #     my %action_table (
 #         # ContentDirectory actions
 #
-#         # AVtransport Actions
-#         "Play" => sub {$player->avTran}
-#    "Pause" ) {
-#     "Stop" ) {
-# "ShuffleOn" ) {
-# q "ShuffleOff" ) {
-#  "RepeatOn" ) {
-# "RepeatOff" ) {
-#
-#         "Seek" ) {
-#         "Remove" => sub { $player->removeTrack( $qf{queue} ); return 4; },
-#         "RemoveAll" => sub { $player->removeAll() return 4; },
+
 #
 #         # Render actions
 #  "MuteOn" ) {
@@ -259,8 +258,8 @@ sub handle_zone_action {
 
 ###############################################################################
 sub handle_action {
-    my ($self,  $c, $r, $path ) = @_;
-    my %qf = $r->uri->query_form;
+    my ($self,  $r, $path ) = @_;
+    my %qf = $r->query_form;
 
 
     if ( $qf{action} eq "ReIndex" ) {
@@ -280,33 +279,31 @@ sub handle_action {
 
 
 ###############################################################################
-sub send_tmpl_response {
-    my ($self,  $what, $zone, $c, $r, $diskpath, $tmplhook ) = @_;
-
-    my %qf = $r->uri->query_form;
+sub send_tmpl_response($self, $r, $diskpath) {
+    my %qf = $r->query_form;
 
     # One of our templates, now fill in the parts we know
     my $template = Sonos::HTTP::Template->new($self->getSystem(), $diskpath, \%qf);
     my $content_type = $self->mimeTypeOf($diskpath);
     my $output = encode( 'utf8', $template->output );
-    my $handled = HTTP::Response->new(
+    my $content_length = length $output;
+    my $response = HTTP::Response->new(
         200, undef,
         [
             Connection         => "close",
             "Content-Type"     => $content_type,
+            "Content-Length"   => $content_length,
             "Pragma"           => "no-cache",
             "Cache-Control"    => "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"
         ],
         $output
     );
-    $c->send_response($handled);
-    $c->force_last_request;
-    $c->close;
+    $r->respond($response);
 }
 
-sub albumart_request($self, $c, $r) {
-    my $uri = $r->uri;
-    my %qf = $uri->query_form;
+sub send_albumart_response($self, $r) {
+    my $uri = $r->path;
+    my %qf = $r->query_form;
     my $mpath = $qf{mpath};
     my $item;
     if ($mpath =~ m/^Q:/) {
@@ -317,7 +314,42 @@ sub albumart_request($self, $c, $r) {
         $item = $self->getSystem()->musicLibrary()->getItem($mpath);
     }
     my ($mime_type, $blob) = $item->getAlbumArt();
-    my $response = HTTP::Response->new(200, undef, ["Content-Type" => $mime_type], $blob);
-    $c->send_response($response);
-    $c->force_last_request;
+    my $content_length = length $blob;
+    my $response = HTTP::Response->new(200, undef, [
+        "Content-Type" => $mime_type,
+        "Content-Length" => $content_length,
+        ], $blob);
+    $r->respond($response);
+}
+
+sub send_file_response($self, $r, $diskpath) {
+    my $blob = read_file($diskpath);
+    my $content_length = length $blob;
+    my $mime_type = $self->mimeTypeOf($diskpath);
+    my $response = HTTP::Response->new(200, undef, [
+        "Content-Type" => $mime_type,
+        "Content-Length" => $content_length,
+    ], $blob);
+    $r->respond( $response );
+    $self->log("  raw - done");
+}
+
+sub send_redirect($self, $r, $to) {
+    my $response = HTTP::Response->new(301, undef, ["Location" => $to]);
+    $r->respond( $response );
+    $self->log("  redirect to $to");
+}
+
+sub send_error($self, $r, $code) {
+    my $response = HTTP::Response->new($code);
+    $r->respond( $response );
+    $self->log("  error: $code");
+}
+
+sub send_hello($self, $req) {
+    my $response = HTTP::Response->new( 200 );
+    $response->add_content( "Hello, world!\n" );
+    $response->content_type( "text/plain" );
+    $response->content_length( length $response->content );
+    $req->respond( $response );
 }
