@@ -17,7 +17,7 @@ use URI::Escape;
 use Encode qw(encode decode);
 use URI::WithBase;
 use File::Spec::Functions 'catfile';
-use JSON;
+require JSON;
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use MIME::Types;
 
@@ -34,7 +34,10 @@ sub new {
     $self = bless {
         _discovery => $discover,
         _qf => $qf,
+        _json => JSON->new(),
     }, $class;
+
+    $self->{_json}->pretty(1)->canonical(1);
 
     # One of our templates, now fill in the parts we know
     my $template = HTML::Template->new(
@@ -99,6 +102,11 @@ sub diskpath($self, $path) {
 
 sub log($self, @args) {
     INFO sprintf("[%12s]: ", "template"), @args;
+}
+
+sub to_json {
+    my $self = shift;
+    $self->{_json}->encode(@_);
 }
 
 sub build_item_data($self, $prefix, $item, $player = undef) {
@@ -223,7 +231,7 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     $activedata{ZONE_LINK}      = $zonetopology->coordinator()->{UUID};
     $activedata{ZONE_LINK_NAME} = $zonetopology->coordinator()->{ZoneName};
 
-    $activedata{ACTIVE_JSON} = to_json( \%activedata, { pretty => 1 } );
+    $activedata{ACTIVE_JSON} = $self->to_json( \%activedata );
 
     return \%activedata;
 }
@@ -242,7 +250,7 @@ sub build_queue_data {
 
     my @loop_data = map { { $self->build_item_data("QUEUE", $_, $player) } } $contentdir->queueItems();
     $queuedata{QUEUE_LOOP} = \@loop_data;
-    $queuedata{QUEUE_JSON} = to_json( \@loop_data, { pretty => 1 } );
+    $queuedata{QUEUE_JSON} = $self->to_json( \@loop_data );
 
     return \%queuedata;
 }
@@ -304,31 +312,31 @@ sub build_map {
         $globals->{"ZONES_LASTUPDATE"}   = $self->lastUpdate(); # FIXME
         $globals->{"ZONES_UPDATED"}      = ( $self->lastUpdate() > $updatenum );
 
-        $map{GLOBALS_JSON} = to_json( $globals, { pretty => 1 } );
+        $map{GLOBALS_JSON} = $self->to_json( $globals );
         %map = ( %map, %$globals );
     }
 
     if ( grep /^ZONES_/i, @$params ) {
         my @zones = map { $self->build_zone_data( $_, $updatenum, $player); } $self->players();
         $map{ZONES_LOOP} = \@zones;
-        $map{ZONES_JSON} = to_json( \@zones, { pretty => 1 } );
+        $map{ZONES_JSON} = $self->to_json( \@zones );
     }
 
      if ( grep /^ALL_QUEUE_/i, @$params ) {
          my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->players();
          $map{ALL_QUEUE_LOOP} = \@queues;
-         $map{ALL_QUEUE_JSON} = to_json( \@queues, { pretty => 1 } );
+         $map{ALL_QUEUE_JSON} = $self->to_json( \@queues );
      }
 
     if ( $player ) {
         my $queue = $self->build_queue_data( $player, $updatenum );
-        $map{QUEUE_JSON} = to_json( $queue, { pretty => 1 } );
+        $map{QUEUE_JSON} = $self->to_json( $queue );
         %map = ( %map, %$queue );
     }
 
     if ( grep /^MUSIC_/i, @$params ) {
         my $music = $self->build_music_data( $qf, $updatenum );
-        $map{MUSIC_JSON} = to_json( $music, { pretty => 1 } );
+        $map{MUSIC_JSON} = $self->to_json( $music );
         %map = ( %map, %$music );
     }
 
