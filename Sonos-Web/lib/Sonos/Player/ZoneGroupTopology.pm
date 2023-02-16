@@ -47,22 +47,40 @@ sub coordinator($self) {
     return $self->zoneInfo($self->{_mycoordinator});
 }
 
-sub isCoordinator($self) {
-    return $self->UDN() eq $self->{_mycoordinator};
-}
-
-sub numMembers($self) {
-    return scalar @{$self->{_myzonemmembers}};
-}
-
-sub zoneName($self) {
+sub isCoordinator($self, $uuid = undef) {
     return undef unless $self->haveZoneInfo();
-    return $self->zoneInfo()->{ZoneName};
+    $uuid = $self->UDN() unless defined $uuid;
+
+    return $uuid eq $self->{_mycoordinator};
 }
 
-sub icon($self) {
+sub members($self, $uuid = undef) {
     return undef unless $self->haveZoneInfo();
-    my $icon = $self->zoneInfo()->{Icon};
+    $uuid = $self->UDN() unless defined $uuid;
+
+    my ($coordinator, $members) = $self->zoneGroupInfo($uuid);
+    return $members;
+}
+
+sub numMembers($self, $uuid = undef ) {
+    return undef unless $self->haveZoneInfo();
+    $uuid = $self->UDN() unless defined $uuid;
+
+    return scalar $self->members($uuid);
+}
+
+sub zoneName($self, $uuid = undef) {
+    return undef unless $self->haveZoneInfo();
+    $uuid = $self->UDN() unless defined $uuid;
+
+    return $self->zoneInfo($uuid)->{ZoneName};
+}
+
+sub icon($self, $uuid = undef) {
+    return undef unless $self->haveZoneInfo();
+    $uuid = $self->UDN() unless defined $uuid;
+
+    my $icon = $self->zoneInfo($uuid)->{Icon};
     $icon =~ s/^x-rincon-roomicon://;
     return $icon;
 }
@@ -122,7 +140,6 @@ sub processZoneGroupState ( $self, $service, %properties ) {
         # it's my zonegroup
         $self->{_myzoneinfo} = $myzoneinfo;
         $self->{_mycoordinator} = $coordinator;
-        $self->{_myzonemmembers} = $members;
     }
 }
 
