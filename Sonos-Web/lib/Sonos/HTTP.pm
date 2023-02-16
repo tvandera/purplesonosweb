@@ -106,6 +106,7 @@ sub register_handler($self, $path, $callback) {
 
 ###############################################################################
 sub handle_request($self, $server, $r) {
+    $self->send_error($r, 501) unless $self->getSystem() and $self->getSystem()->populated();
 
     # No r, just return
     unless ( $r && $r->path ) {
