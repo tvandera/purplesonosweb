@@ -130,7 +130,9 @@ sub getChildIDs($self, $parentID) {
 sub getChildren($self, $parent) {
     return () unless $parent->isContainer();
     my @ids = $self->getChildIDs($parent->id());
-    return map { $self->{_items}->{$_} } @ids;
+    my @items = map { $self->{_items}->{$_} } @ids;
+    @items = sort { $a->title() cmp $b->title() } @items;
+    return @items;
 }
 
 sub getItem($self, $id) {
