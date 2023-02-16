@@ -161,3 +161,5 @@ sub processThirdPartyMediaServers ( $self, $properties ) {
         }
     }
 }
+
+1;
