@@ -196,8 +196,7 @@ sub class($self) {
 # if this is a FV:0 item
 # it will have a "upnp:class": "object.itemobject.item.sonos-favorite",
 # and the `real` class will be in
-#  "r:resMD": {
-#    "upnp:class": "object.item.audioItem.audioBroadcast",
+#  $item{"r:resMD"}->{"upnp:class"} "object.item.audioItem.audioBroadcast",
 sub realClass($self) {
     return $self->classFrom("r:resMD", "upnp:class");
 }
@@ -217,6 +216,13 @@ sub isFav($self)   { return $self->class() eq "favorite"; }
 sub isContainer($self) {
     my $class = $self->prop("upnp:class");
     return $class =~ m/container/g;
+}
+
+# true is owner is Sonos::Player
+# true for Queue and LineIn
+# false for musicLibrary
+sub isPlayerLocal($self) {
+    return $self->id() =~ /^[Q|AI]:/;
 }
 
 sub getAlbumArt($self) {
