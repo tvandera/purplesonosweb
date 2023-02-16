@@ -36,8 +36,8 @@ sub new {
         _useragent => LWP::UserAgent->new(),
     }, $class;
 
-    $self->addRootItems();
     $self->load();
+    $self->addRootItems();
 
     return $self;
 }
@@ -172,9 +172,25 @@ sub albumArtHelper($self, $item, $player) {
 
 # only items, no cache id or version info
 sub addItemsOnly($self, @items) {
+    # sort by $id, such that parent is added before children
+    @items = sort { $a->{id} cmp $b->{id} } @items;
     for (@items) {
-        $self->{_items}->{$_->{id}} = Sonos::MetaData->new($_, $self);
-        push @{$self->{_tree}->{$_->{parentID}}}, $_->{id};
+        my $id = $_->{id};
+        my $parentid = $_->{parentID};
+
+        carp "Item with id $id already exists" if exists $self->{_items}->{$id};
+        $self->{_items}->{$id} = Sonos::MetaData->new($_, $self);
+        $self->{_tree}->{$id} = [];
+
+        next if $parentid eq 'NO_PARENT';
+
+        carp "Parent item with id $parentid does not exist"
+            unless exists $self->{_tree}->{$parentid};
+
+        my $parent = $self->{_tree}->{$parentid};
+        carp "Item with id $id already exists" if grep{$_ eq $id} @$parent;
+
+        push @$parent, $id;
     }
 }
 
@@ -190,6 +206,7 @@ sub player($self, $id) {
 }
 
 sub addRootItems($self) {
+    return if $self->hasItems("");
     $self->addItemsOnly(Sonos::MetaData::rootItems());
 }
 
