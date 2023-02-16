@@ -11,7 +11,6 @@ use Carp;
 
 use File::Slurp qw(read_file);
 
-require IO::Async::Listener;
 use Net::Async::HTTP::Server;
 use HTTP::Status ":constants";
 use HTML::Entities;
@@ -290,11 +289,8 @@ sub send_tmpl_response($self, $r, $diskpath) {
     my $response = HTTP::Response->new(
         200, undef,
         [
-            Connection         => "close",
             "Content-Type"     => $content_type,
             "Content-Length"   => $content_length,
-            "Pragma"           => "no-cache",
-            "Cache-Control"    => "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"
         ],
         $output
     );
