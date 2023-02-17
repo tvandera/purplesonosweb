@@ -103,6 +103,7 @@ sub playerForID($self, $id) {
 
     return undef unless $rootid;
 
+    # now find what player to contact based on _updateids
     my ($uuid, $version) = @{$self->{_updateids}->{$rootid}};
     my $player = $self->discovery()->player($uuid);
     return $player
