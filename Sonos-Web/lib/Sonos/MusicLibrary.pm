@@ -184,11 +184,15 @@ sub addItemsOnly($self, @items) {
         my $id = $_->{id};
         my $parentid = $_->{parentID};
 
-        carp "Item with id $id already exists" if exists $self->{_items}->{$id};
-        my $item = $self->{_items}->{$id} = Sonos::MetaData->new($_, $self);
+        my $item;
+        if (exists $self->{_items}->{$id}) {
+            $item = $self->{_items}->{$id};
+        } else {
+            $item = $self->{_items}->{$id} = Sonos::MetaData->new($_, $self);
 
-        carp "Item with id $id already exists as a parent" if exists $self->{_tree}->{$id};
-        $self->{_tree}->{$id} = undef;
+            # mark this item as a container with unknown content
+            $self->{_tree}->{$id} = undef if item->isContainer();
+        }
 
         next if $item->isRootItem();
 
