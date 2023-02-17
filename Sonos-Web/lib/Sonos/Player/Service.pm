@@ -81,6 +81,10 @@ sub player($self) {
     return $self->{_player};
 }
 
+sub system($self) {
+    return $self->player()->{_discovery};
+}
+
 sub baseURL($self) {
     return $self->player()->location();
 }

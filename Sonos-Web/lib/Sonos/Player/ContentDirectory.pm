@@ -156,7 +156,7 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0) {
 }
 
 sub musicLibrary($self) {
-    return $self->player()->{_discovery}->musicLibrary();
+    return $self->system()->musicLibrary();
 }
 
 ###############################################################################

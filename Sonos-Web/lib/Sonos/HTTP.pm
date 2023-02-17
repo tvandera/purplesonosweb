@@ -75,12 +75,12 @@ sub version($self) {
     return "0.99";
 }
 
-sub getSystem($self) {
+sub system($self) {
     return $self->{_discovery};
 }
 
 sub player($self, $name_or_uuid) {
-    return $self->getSystem()->player($name_or_uuid);
+    return $self->system()->player($name_or_uuid);
 }
 
 sub defaultPage($self) {
@@ -106,7 +106,7 @@ sub register_handler($self, $path, $callback) {
 
 ###############################################################################
 sub handle_request($self, $server, $r) {
-    $self->send_error($r, 501) unless $self->getSystem() and $self->getSystem()->populated();
+    $self->send_error($r, 501) unless $self->system() and $self->system()->populated();
 
     # No r, just return
     unless ( $r && $r->path ) {
@@ -269,7 +269,7 @@ sub handle_action {
         sonos_unlink_zone( $qf{link} );
     }
     elsif ( $qf{action} eq "Wait" && $qf{lastupdate} ) {
-        return ( $self->getSystem()->lastUpdate() > $qf{lastupdate} ) ? 1 : 5;
+        return ( $self->system()->lastUpdate() > $qf{lastupdate} ) ? 1 : 5;
     }
     else {
         return 0;
@@ -283,7 +283,7 @@ sub send_tmpl_response($self, $r, $diskpath) {
     my %qf = $r->query_form;
 
     # One of our templates, now fill in the parts we know
-    my $template = Sonos::HTTP::Template->new($self->getSystem(), $diskpath, \%qf);
+    my $template = Sonos::HTTP::Template->new($self->system(), $diskpath, \%qf);
     my $content_type = $self->mimeTypeOf($diskpath);
     my $output = encode( 'utf8', $template->output );
     my $content_length = length $output;
@@ -308,7 +308,7 @@ sub send_albumart_response($self, $r) {
         my $player = $self->player($qf{zone});
         $item = $player->contentDirectory()->queue()->get($mpath);
     } else {
-        $item = $self->getSystem()->musicLibrary()->getItem($mpath);
+        $item = $self->system()->musicLibrary()->item($mpath);
     }
     my ($mime_type, $blob) = $item->getAlbumArt();
     my $content_length = length $blob;

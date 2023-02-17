@@ -68,20 +68,20 @@ sub version($self) {
     return "0.99";
 }
 
-sub getSystem($self) {
+sub system($self) {
     return $self->{_discovery};
 }
 
 sub players($self) {
-    return $self->getSystem()->players();
+    return $self->system()->players();
 }
 
 sub lastUpdate($self) {
-    return $self->getSystem()->lastUpdate();
+    return $self->system()->lastUpdate();
 }
 
 sub player($self, $name_or_uuid) {
-    return $self->getSystem()->player($name_or_uuid);
+    return $self->system()->player($name_or_uuid);
 }
 
 sub baseURL($self) {
@@ -271,9 +271,9 @@ sub build_music_data {
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
     $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
 
-    my $music      = $self->getSystem()->musicLibrary();
-    my $parent     = $music->getItem($mpath);
-    my @elements   = $music->getChildren($parent);
+    my $music      = $self->system()->musicLibrary();
+    my $parent     = $music->item($mpath);
+    my @elements   = $music->children($parent);
 
     %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
     $musicdata{"MUSIC_UPDATED"}    = 1;
@@ -324,7 +324,7 @@ sub build_map {
     }
 
      if ( grep /^ALL_QUEUE_/i, @$params ) {
-         my @queues = map { build_queue_data( $_, $updatenum ); } $self->getSystem()->players();
+         my @queues = map { build_queue_data( $_, $updatenum ); } $self->system()->players();
          $map{ALL_QUEUE_LOOP} = \@queues;
          $map{ALL_QUEUE_JSON} = $self->to_json( \@queues );
      }
