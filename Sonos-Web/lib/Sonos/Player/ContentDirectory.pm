@@ -66,7 +66,6 @@ sub processUpdateIDs ( $self, $service, %properties ) {
         next unless defined $new_location;
         next unless defined $new_version;
 
-        DEBUG Dumper("processUpdate: $update_id => $new_location, $new_version");
         if ($new_location =~ /^Q:/ and $queue->version() < $new_version) {
             $queue->update($new_version, $self->fetchByObjectID("Q:0"));
             next;
@@ -74,8 +73,8 @@ sub processUpdateIDs ( $self, $service, %properties ) {
 
         # INFO "Update ID $update_id: old $existing_location,$existing_version ?= new $newvalue";
 
-        for (Sonos::MetaData::rootItems()) {
-            # find items in rootItems that have updateid equal to given $updateid and
+        for (Sonos::MetaData::topItems()) {
+            # find items in topItems that have updateid equal to given $updateid and
             # fetch those
             next unless $_->{update_id} eq $update_id;
 
@@ -86,7 +85,7 @@ sub processUpdateIDs ( $self, $service, %properties ) {
             # call fetch if updated or not in music
             next if $existing_location and $existing_version >= $new_version;
 
-            $music->removeItems($id);
+            $music->removeChildren($id);
             my @items = $self->fetchByObjectID($id);
 
             $music->addItems($id, $new_location, $new_version, @items);

@@ -12,11 +12,13 @@ Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 use Carp;
 
+use constant NO_PARENT_ID => "NO_PARENT";
+use constant ROOT_ID => "";
 
-sub rootItems() {
+sub topItems() {
     my @table = (
         [ "update_id",             "dc:title",          "parentID", "id",   "upnp:class", "upnp:albumArtURI"  ],
-        [ "",                      "Music Library",      "NO_PARENT", "",   "container", "tiles/library.svg" ],
+        [ "",                      "Music Library",      NO_PARENT_ID, "",        "container", "tiles/library.svg" ],
 
         [ "FavoritesUpdateID",     "Favorites",          "", "FV:2",        "container.sonos-favorite", "tiles/favorites.svg" ],
 
@@ -61,6 +63,8 @@ sub new {
     return $self;
 }
 
+# Sonos::Queue for Q: items
+# Sonos::MusicLibrary for other
 sub owner($self) {
     return $self->{_owner};
 }
@@ -70,6 +74,7 @@ sub player($self) {
     return $self->owner()->playerForID($self->id());
 }
 
+# true unless data is empty
 sub populated($self) {
     return $self->{_data};
 }
@@ -202,11 +207,21 @@ sub realClass($self) {
 }
 
 # split using "/", take" the last part
+# used for sorting Queue items
 sub baseID($self) {
     my $full_id = $self->prop("id");
     return undef unless $full_id;
     my @parts = split( /\//, $full_id);
     return $parts[-1];
+}
+
+
+sub isRootItem($self) {
+    return $self->parentID() eq NO_PARENT_ID;
+}
+
+sub isTopItem($self) {
+    return $self->parentID() eq ROOT_ID;
 }
 
 sub isRadio($self) { return $self->class() eq "audioBroadcast"; }

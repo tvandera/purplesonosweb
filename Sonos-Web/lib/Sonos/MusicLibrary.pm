@@ -37,7 +37,7 @@ sub new {
     }, $class;
 
     $self->load();
-    $self->addRootItems();
+    $self->addTopItems();
 
     return $self;
 }
@@ -94,14 +94,10 @@ sub discovery($self) {
     return $self->{_discovery};
 }
 
-sub hasItems($self, $parentID) {
-    return exists $self->{_tree}->{$parentID};
-}
-
 sub playerForID($self, $id) {
     # find the longest root id thats starts with $id
     # e.g. A:ALBUM for $id = A:ALBUM/SomeAlbumName
-    my @rootids = map { $_->{id} } Sonos::MetaData::rootItems();
+    my @rootids = map { $_->{id} } Sonos::MetaData::topItems();
        @rootids = grep { rindex($id, $_, 0) == 0 } @rootids;
     my $rootid = reduce { length($a) > length($b) ? $a : $b } @rootids;
 
@@ -112,7 +108,10 @@ sub playerForID($self, $id) {
     return $player
 }
 
-sub fetchItems($self, $parentID) {
+sub fetchChildren($self, $parentID) {
+    # already fetched
+    return if defined $self->{_tree}->{$parentID};
+
     my $player = $self->playerForID($parentID);
 
     my @items = $player->contentDirectory()->fetchByObjectID($parentID);
@@ -121,21 +120,26 @@ sub fetchItems($self, $parentID) {
     return @items;
 }
 
-sub getChildIDs($self, $parentID) {
-    $self->fetchItems($parentID) unless $self->hasItems($parentID);
-    return @{$self->{_tree}->{$parentID}};
+sub hasChildren($self, $parentid) {
+    my $childref = $self->{_tree}->{$parentid};
+    return (defined $childref and @$childref);
 }
 
-
-sub getChildren($self, $parent) {
+sub children($self, $parent) {
     return () unless $parent->isContainer();
-    my @ids = $self->getChildIDs($parent->id());
+    my $parentid = $parent->id();
+
+    $self->fetchChildren($parentid);
+
+    my @ids = @{$self->{_tree}->{$parentid}};
     my @items = map { $self->{_items}->{$_} } @ids;
     @items = sort { $a->title() cmp $b->title() } @items;
     return @items;
 }
 
-sub getItem($self, $id) {
+sub item($self, $id) {
+    # root item can be "/" or ""
+    $id = "" if $id eq "/";
     return $self->{_items}->{$id};
 }
 
@@ -181,18 +185,24 @@ sub addItemsOnly($self, @items) {
         my $parentid = $_->{parentID};
 
         carp "Item with id $id already exists" if exists $self->{_items}->{$id};
-        $self->{_items}->{$id} = Sonos::MetaData->new($_, $self);
-        $self->{_tree}->{$id} = [];
+        my $item = $self->{_items}->{$id} = Sonos::MetaData->new($_, $self);
 
-        next if $parentid eq 'NO_PARENT';
+        carp "Item with id $id already exists as a parent" if exists $self->{_tree}->{$id};
+        $self->{_tree}->{$id} = undef;
+
+        next if $item->isRootItem();
 
         carp "Parent item with id $parentid does not exist"
-            unless exists $self->{_tree}->{$parentid};
+            unless exists $self->{_items}->{$parentid};
 
-        my $parent = $self->{_tree}->{$parentid};
-        carp "Item with id $id already exists" if grep{$_ eq $id} @$parent;
+        carp "Parent id $parentid not lexographically before child $id"
+            unless $parentid lt $id;
 
-        push @$parent, $id;
+        $self->{_tree}->{$parentid} = [] unless defined $self->{_tree}->{$parentid};
+        my $itemlist = $self->{_tree}->{$parentid};
+        carp "Item with id $id already exists in parent list" if grep{$_ eq $id} @$itemlist;
+
+        push @$itemlist, $id;
     }
 }
 
@@ -207,18 +217,21 @@ sub player($self, $id) {
     $self->{_discovery}->player($udn);
 }
 
-sub addRootItems($self) {
-    return if $self->hasItems("");
-    $self->addItemsOnly(Sonos::MetaData::rootItems());
+sub addTopItems($self) {
+    return if $self->hasChildren("");
+    $self->addItemsOnly(Sonos::MetaData::topItems());
 }
 
-sub removeItems($self, $parentID) {
-    if ($self->hasItems($parentID)) {
-        my @ids = $self->getChildIDs($parentID);
-        $self->removeItems($_) for @ids;
-    }
-    delete $self->{_tree}->{$parentID};
-    delete $self->{_items}->{$parentID};
+sub removeChildren($self, $id) {
+    return unless ($self->hasChildren($id));
+    my @childids = @{$self->{_tree}->{$id}};
+    $self->remove($_) for @childids;
+}
+
+sub remove($self, $id) {
+    $self->removeChildren($id);
+    delete $self->{_tree}->{$id};
+    delete $self->{_items}->{$id};
 }
 
 1;
