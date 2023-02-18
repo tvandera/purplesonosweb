@@ -72,15 +72,15 @@ sub isStopped($self) {
     return $self->transportState() eq "STOPPED";
 }
 
-sub Play($self) {
+sub play($self) {
     return $self->action("Play", "1");
 }
 
-sub Pause($self) {
+sub pause($self) {
     return $self->action("Pause");
 }
 
-sub Stop($self) {
+sub stop($self) {
     return $self->action("Stop");
 }
 
