@@ -192,7 +192,8 @@ sub addItemsOnly($self, @items) {
             $item = $self->{_items}->{$id} = Sonos::MetaData->new($_, $self);
 
             # mark this item as a container with unknown content
-            $self->{_tree}->{$id} = undef if item->isContainer();
+            # by putting it into _tree, with value undef
+            $self->{_tree}->{$id} = undef if $item->isContainer();
         }
 
         next if $item->isRootItem();
