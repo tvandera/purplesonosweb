@@ -123,6 +123,8 @@ sub setRepeat($self, $on_or_off) {
     $self->switchPlayMode(%switch_repeat);
 }
 
+sub repeatOn($self) { $self->setRepeat(1); }
+sub repeartOff($self) { $self->setRepeat(0); }
 
 # if called with $on_or_off, sets shuffle mode to this value
 # if called with $on_of_off == undef, switches shuffle mode
@@ -136,6 +138,9 @@ sub setShuffle($self, $on_or_off) {
     );
     $self->switchPlayMode(%switch_shuffle);
 }
+
+sub shuffleOn ($self, %args ) { $self->setShuffle(1); }
+sub shuffleOff($self, %args) { $self->setShuffle(0); }
 
 
 # ---- queue ----
