@@ -165,95 +165,34 @@ sub handle_request($self, $server, $r) {
 ###############################################################################
 sub handle_zone_action {
     my ($self, $r, $path ) = @_;
+
     my %qf = $r->query_form;
     my $mpath = decode( "UTF-8", $qf{mpath} );
-    my $player = $self->player($qf{zone});
     my $action = $qf{action};
 
-
-    # AVtransport Actions
+    my $player = $self->player($qf{zone});
+    my $rendering = $player->renderingControl();
     my $av = $player->avTransport();
-    my @av_actions = ( "Play", "Pause", "Stop", "ShuffleOn", "ShuffleOff", "RepeatOn", "RepeatOff");
-    $av->$action() if grep /^$action$/, @av_actions;
+    my $zones = $player->zoneGroupTopology();
 
+    my %action_dispatch = (
+        "Play"       => sub { $av->play() },
+        "Pause"      => sub { $av->pause() },
+        "Stop"       => sub { $av->stop() },
 
-#         "Seek" ) {
-#         "Remove" => sub { $player->removeTrack( $qf{queue} ); return 4; },
-#         "RemoveAll" => sub { $player->removeAll() return 4; },
+        "MuteOn"     => sub { $rendering->setMute(1); },
+        "MuteOff"    => sub { $rendering->setMute(0); },
 
-#     my %action_table (
-#         # ContentDirectory actions
-#
+        "MuchSofter" => sub { $rendering->changeVolume(-5); },
+        "Softer"     => sub { $rendering->changeVolume(-1); },
+        "Louder"     => sub { $rendering->changeVolume(+1); },
+        "MuchLouder" => sub { $rendering->changeVolume(+5); },
+    );
 
-#
-#         # Render actions
-#  "MuteOn" ) {
-# "MuteOff" ) {
-#  "MuchSofter" ) {
-#    "Softer" ) {
-#  "Louder" ) {
-#    "MuchLouder" ) {
-#    "SetVolume" ) {
-#     elsif ( $qf{action} eq "Save" ) {
-#         upnp_avtransport_save( $zone, $qf{savename} );
-#         return 0;
-#     }
-#     elsif ( $qf{action} eq "AddMusic" ) {
-#         my $class = sonos_music_class($mpath);
-#         if ( sonos_is_radio($mpath) ) {
-#             sonos_avtransport_set_radio( $zone, $mpath );
-#             return 2;
-#         }
-#         elsif ( $class eq "object.item.audioItem" ) {
-#             sonos_avtransport_set_linein( $zone, $mpath );
-#             return 2;
-#         }
-#         else {
-#             sonos_avtransport_add( $zone, $mpath );
-#             return 4;
-#         }
-#     }
-#     elsif ( $qf{action} eq "DeleteMusic" ) {
-#         if ( sonos_music_class($mpath) eq "object.container.playlist" ) {
-#             my $entry = sonos_music_entry($mpath);
-#             upnp_content_dir_delete( $zone, $entry->{id} );
-#         }
-#         return 0;
-#     }
-#     elsif ( $qf{action} eq "PlayMusic" ) {
-#         my $class = sonos_music_class($mpath);
-#         if ( sonos_is_radio($mpath) ) {
-#             sonos_avtransport_set_radio( $zone, $mpath );
-#         }
-#         elsif ( $class eq "object.item.audioItem" ) {
-#             sonos_avtransport_set_linein( $zone, $mpath );
-#         }
-#         else {
-#             if ( !( $main::ZONES{$zone}->{AV}->{AVTransportURI} =~ /queue/ ) ) {
-#                 sonos_avtransport_set_queue($zone);
-#             }
-#             upnp_avtransport_action( $zone, "RemoveAllTracksFromQueue" );
-#             sonos_avtransport_add( $zone, $mpath );
-#             upnp_avtransport_play($zone);
-#         }
-#
-#         return 4;
-#     }
-#     elsif ( $qf{action} eq "LinkAll" ) {
-#         sonos_link_all_zones($zone);
-#         return 2;
-#     }
-#     elsif ( $qf{action} eq "Unlink" ) {
-#         sonos_unlink_zone( $qf{link} );
-#         return 2;
-#     }
-#     elsif ( $qf{action} eq "Link" ) {
-#         sonos_link_zone( $zone, $qf{link} );
-#     }
-#     else {
-#         return 0;
-#     }
-    return 1;
+    carp "Unknown action \"$action\"" unless exists $action_dispatch{$action};
+
+    $action_dispatch{$action}->();
+
 }
 
 ###############################################################################
@@ -304,7 +243,7 @@ sub send_albumart_response($self, $r) {
     my $mpath = $qf{mpath};
     my $item;
     if ($mpath =~ m/^Q:/) {
-
+        # FIXME
         my $player = $self->player($qf{zone});
         $item = $player->contentDirectory()->queue()->get($mpath);
     } else {
