@@ -82,6 +82,9 @@ sub friendlyName($self) {
     return $self->getUPnP()->{FRIENDLYNAME};
 }
 
+sub services($self) {
+    return values %{$self->{_services}};
+}
 
 # Sonos::Service object for given name
 sub getService($self, $name) {
