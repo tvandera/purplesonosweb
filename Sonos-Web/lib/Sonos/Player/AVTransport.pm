@@ -73,14 +73,17 @@ sub isStopped($self) {
 }
 
 sub play($self) {
+    return 0 if $self->isPlaying();
     return $self->action("Play", "1");
 }
 
 sub pause($self) {
+    return 0 if $self->isPaused();
     return $self->action("Pause");
 }
 
 sub stop($self) {
+    return 0 if $self->isStopped();
     return $self->action("Stop");
 }
 
