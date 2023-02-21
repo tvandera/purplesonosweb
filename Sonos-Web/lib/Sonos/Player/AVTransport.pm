@@ -68,6 +68,10 @@ sub isPlaying($self) {
     return $self->transportState() eq "PLAYING";
 }
 
+sub isPaused($self) {
+    return $self->transportState() eq "PAUSED_PLAYBACK";
+}
+
 sub isStopped($self) {
     return $self->transportState() eq "STOPPED";
 }
