@@ -117,29 +117,30 @@ sub switchPlayMode($self, %switch_map) {
 # if called with $on_of_off == undef, switches repeat mode
 sub setRepeat($self, $on_or_off) {
     # nothing to do if equal
-    return if $self->getRepeat() == $on_or_off;
+    return 0 if $self->getRepeat() == $on_or_off;
 
     my %switch_repeat = (
         "NORMAL"  => "REPEAT_ALL",
         "SHUFFLE" => "SHUFFLE_NOREPEAT",
     );
     $self->switchPlayMode(%switch_repeat);
-}
 
-sub repeatOn($self) { $self->setRepeat(1); }
-sub repeartOff($self) { $self->setRepeat(0); }
+    return 1;
+}
 
 # if called with $on_or_off, sets shuffle mode to this value
 # if called with $on_of_off == undef, switches shuffle mode
 sub setShuffle($self, $on_or_off) {
     # nothing to do
-    return if $self->getShuffle() == $on_or_off;
+    return 0 if $self->getShuffle() == $on_or_off;
 
     my %switch_shuffle = (
         "NORMAL"     => "SHUFFLE_NOREPEAT",
         "REPEAT_ALL" => "SHUFFLE",
     );
     $self->switchPlayMode(%switch_shuffle);
+
+    return 1;
 }
 
 sub shuffleOn ($self, %args ) { $self->setShuffle(1); }
