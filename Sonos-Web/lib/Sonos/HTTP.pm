@@ -117,7 +117,7 @@ sub handle_request($self, $server, $r) {
     my $path  = $r->path;
     my %qf   = $r->query_form;
 
-    $self->log("handling request: ", $path);
+    $self->log("handling request: ", $r->as_http_request()->uri);
 
     if (my $callback = $self->{_handlers}->{$path}) {
         $self->log("  handler: ", $path);
@@ -154,50 +154,57 @@ sub handle_request($self, $server, $r) {
     }
 
     if ( exists $qf{action} ) {
-        $self->handle_zone_action( $r, $path ) if ( exists $qf{zone} );
-        $self->handle_action( $r, $path );
+        my $when_updated = sub { $self->send_tmpl_response($r, $diskpath) };
+        $self->action($r, $when_updated);
+    } else {
+        $self->send_tmpl_response($r, $diskpath);
     }
 
-    my $tmplhook;
-    $self->send_tmpl_response($r, $diskpath);
 }
 
 ###############################################################################
-sub handle_zone_action {
-    my ($self, $r, $path ) = @_;
+sub action {
+    my ($self, $r, $when_updated) = @_;
 
     my %qf = $r->query_form;
     my $mpath = decode( "UTF-8", $qf{mpath} );
     my $action = $qf{action};
+    my $lastupdate = $qf{lastupdate};
 
     my $player = $self->player($qf{zone});
-    my $rendering = $player->renderingControl();
     my $av = $player->avTransport();
-    my $zones = $player->zoneGroupTopology();
+    my $render = $player->renderingControl();
 
-    my %action_dispatch = (
-        "Play"       => sub { $av->play() },
-        "Pause"      => sub { $av->pause() },
-        "Stop"       => sub { $av->stop() },
+    my %dispatch = (
+        "Play"       => [ $av, sub { $av->play() } ],
+        "Pause"      => [ $av, sub { $av->pause() } ],
+        "Stop"       => [ $av, sub { $av->stop() } ],
 
-        "MuteOn"     => sub { $rendering->setMute(1); },
-        "MuteOff"    => sub { $rendering->setMute(0); },
+        "MuteOn"     => [ $render, sub { $render->setMute(1) } ],
+        "MuteOff"    => [ $render, sub { $render->setMute(0) }  ],
 
-        "MuchSofter" => sub { $rendering->changeVolume(-5); },
-        "Softer"     => sub { $rendering->changeVolume(-1); },
-        "Louder"     => sub { $rendering->changeVolume(+1); },
-        "MuchLouder" => sub { $rendering->changeVolume(+5); },
+        "MuchSofter" => [ $render, sub { $render->changeVolume(-5); },],
+        "Softer"     => [ $render, sub { $render->changeVolume(-1); },],
+        "Louder"     => [ $render, sub { $render->changeVolume(+1); },],
+        "MuchLouder" => [ $render, sub { $render->changeVolume(+5); },],
+
+        # wait for update, unless already happened
+        "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; } ]
     );
 
-    carp "Unknown action \"$action\"" unless exists $action_dispatch{$action};
+    carp "Unknown action \"$action\"" unless exists $dispatch{$action};
 
-    $action_dispatch{$action}->();
+    my ($service, $code) = @{$dispatch{$action}};
 
+    my $add_callback = $code->();
+    $service->addCallBack($when_updated) if $add_callback;
+
+    return $add_callback;
 }
 
 ###############################################################################
 sub handle_action {
-    my ($self,  $r, $path ) = @_;
+    my ($self,  $r ) = @_;
     my %qf = $r->query_form;
 
 
