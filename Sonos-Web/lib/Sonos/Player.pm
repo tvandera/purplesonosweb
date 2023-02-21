@@ -42,6 +42,7 @@ sub new {
         _upnp => $upnp,
         _discovery => $discover,
         _services => { },
+        _callbacks => [ ],
     }, $class;
 
     for my $name (SERVICE_NAMES) {
@@ -128,4 +129,14 @@ sub avTransport($self) {
 
 sub contentDirectory($self) {
     return $self->getService("ContentDirectory");
+}
+
+sub addCallBack($self, $callback) {
+    push @{$self->{_callbacks}}, $callback;
+}
+
+sub doCallBacks($self) {
+    while (shift @{$self->{_callbacks}}) {
+        $_->($self);
+    }
 }
