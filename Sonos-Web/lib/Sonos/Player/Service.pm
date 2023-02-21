@@ -141,6 +141,10 @@ sub addCallBack($self, $callback) {
 sub doCallBacks($self) {
     $_->($self) for @{$self->{_callbacks}};
     $self->{_callbacks} = [];
+
+    # we also have callbacks at player level
+    # whenever something in any of the services has changed
+    $self->player()->doCallBacks();
 }
 
 sub DESTROY($self)
