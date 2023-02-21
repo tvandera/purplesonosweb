@@ -147,10 +147,6 @@ sub setShuffle($self, $on_or_off) {
     return 1;
 }
 
-sub shuffleOn ($self, %args ) { $self->setShuffle(1); }
-sub shuffleOff($self, %args) { $self->setShuffle(0); }
-
-
 # ---- queue ----
 
 sub seek($self, $queue) {
