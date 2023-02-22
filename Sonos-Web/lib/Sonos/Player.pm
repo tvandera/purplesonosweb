@@ -131,12 +131,11 @@ sub contentDirectory($self) {
     return $self->getService("ContentDirectory");
 }
 
-sub addCallBack($self, $callback) {
+sub onUpdate($self, $callback) {
     push @{$self->{_callbacks}}, $callback;
 }
 
 sub doCallBacks($self) {
-    while (shift @{$self->{_callbacks}}) {
-        $_->($self);
-    }
+    $_->($self) for @{$self->{_callbacks}};
+    $self->{_callbacks} = [];
 }

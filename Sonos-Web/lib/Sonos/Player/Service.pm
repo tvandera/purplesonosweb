@@ -134,7 +134,7 @@ sub action( $self, $action, @args ) {
     return $self->controlProxy()->$action("0", @args);
 }
 
-sub addCallBack($self, $callback) {
+sub onUpdate($self, $callback) {
     push @{$self->{_callbacks}}, $callback;
 }
 

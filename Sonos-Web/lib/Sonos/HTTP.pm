@@ -104,18 +104,38 @@ sub register_handler($self, $path, $callback) {
     $self->{_handlers}->{$path} = $callback;
 }
 
-###############################################################################
-sub handle_request($self, $server, $r) {
-    $self->send_error($r, 501) unless $self->system() and $self->system()->populated();
-
-    # No r, just return
-    unless ( $r && $r->path ) {
-        $self->log("Empty request");
-        return;
+sub sanitizeRequest($self, $r) {
+    unless ($self->system() and $self->system()->populated()) {
+        return $self->send_error($r, 501, "Waiting for discovery");
     }
 
+    my %qf     = $r->query_form;
+    my $player = undef;
+    my $zone   = undef;
+    my $music  = undef;
+
+    if (exists $qf{zone}) {
+        $zone   = $qf{zone};
+        $player = $self->player($zone);
+        return $self->send_error($r, 404, "No such player: $zone") unless $player;
+    }
+
+
+    if (exists $qf{mpath}) {
+        my $mpath = decode( "UTF-8", $qf{mpath} );
+           $music = $self->system()->musicLibrary()->item($mpath);
+        return $self->send_error($r, 404, "No such music item: $mpath") unless $music;
+    }
+
+
+    return 0;
+}
+
+sub handle_request($self, $server, $r) {
     my $path  = $r->path;
     my %qf   = $r->query_form;
+
+    $self->sanitizeRequest($r) && return;
 
     $self->log("handling request: ", $r->as_http_request()->uri);
 
@@ -134,23 +154,18 @@ sub handle_request($self, $server, $r) {
 
     # Find where on disk
     my $diskpath = $self->diskpath($path);
-    if ( ! -e $diskpath ) {
-        $self->send_error($r, HTTP::Status::RC_NOT_FOUND);
-        return;
-    }
+    return $self->send_error($r, HTTP::Status::RC_NOT_FOUND, "Could not find $diskpath") unless -e $diskpath;
 
     # File is a directory, redirect for the browser
     if ( -d $diskpath ) {
         my $redirect = catfile($path, "index.html");
-        $self->send_redirect($r, $redirect);
-        return;
+        return $self->send_redirect($r, $redirect);
     }
 
     # File isn't HTML/XML/JSON/JS, just send it back raw
     if (  $path !~ /\.(html|xml|js|json)$/ )
     {
-        $self->send_file_response($r, $diskpath);
-        return;
+        return $self->send_file_response($r, $diskpath);
     }
 
     if ( exists $qf{action} ) {
@@ -164,7 +179,7 @@ sub handle_request($self, $server, $r) {
 
 ###############################################################################
 sub action {
-    my ($self, $r, $when_updated) = @_;
+    my ($self, $r, $send_update) = @_;
 
     my %qf = $r->query_form;
     my $mpath = decode( "UTF-8", $qf{mpath} );
@@ -189,17 +204,26 @@ sub action {
         "MuchLouder" => [ $render, sub { $render->changeVolume(+5); },],
 
         # wait for update, unless already happened
-        "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; } ]
+        "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; } ],
+
+        # Browse music data
+        "Browse"     => [ undef, sub { return 0; } ],
     );
 
     carp "Unknown action \"$action\"" unless exists $dispatch{$action};
 
     my ($service, $code) = @{$dispatch{$action}};
 
-    my $add_callback = $code->();
-    $service->addCallBack($when_updated) if $add_callback;
+    my $nowait = !$code->() || $qf{NoWait};
 
-    return $add_callback;
+    # delay send_tmpl, or do immediately
+    if ($nowait) {
+        $send_update->();
+    } else {
+        $service->onUpdate($send_update);
+    }
+
+    return $nowait;
 }
 
 ###############################################################################
@@ -275,18 +299,24 @@ sub send_file_response($self, $r, $diskpath) {
     ], $blob);
     $r->respond( $response );
     $self->log("  raw - done");
+
+    return 1;
 }
 
 sub send_redirect($self, $r, $to) {
     my $response = HTTP::Response->new(301, undef, ["Location" => $to,"Content-Length" => 0]);
     $r->respond( $response );
     $self->log("  redirect to $to");
+
+    return 1;
 }
 
-sub send_error($self, $r, $code) {
-    my $response = HTTP::Response->new($code, undef, ["Content-Length" => 0]);
+sub send_error($self, $r, $code, $message = undef) {
+    my $response = HTTP::Response->new($code, $message, ["Content-Length" => 0]);
     $r->respond( $response );
-    $self->log("  error: $code");
+    $self->log("  error: $code ($message)");
+
+    return 1;
 }
 
 sub send_hello($self, $req) {
@@ -295,4 +325,6 @@ sub send_hello($self, $req) {
     $response->content_type( "text/plain" );
     $response->content_length( length $response->content );
     $req->respond( $response );
+
+    return 1;
 }
