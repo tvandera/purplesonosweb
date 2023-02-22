@@ -216,11 +216,11 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     $activedata{ZONE_FANCYNAME} = $activedata{ZONE_NAME};
     $activedata{ZONE_FANCYNAME} .= " + " . $num_linked if $num_linked;
 
-    my @members = @{$zonetopology->members()};
+    my @members = $zonetopology->members();
     $activedata{ZONE_MEMBERS} = [
         map {
             my $uuid = $_->{UUID};
-            return {
+            {
                 "ZONE_NAME"   => $zonetopology->zoneName($uuid),
                 "ZONE_ID"     => $uuid,
                 "ZONE_LINKED" => int( ! $zonetopology->isCoordinator($uuid) ),

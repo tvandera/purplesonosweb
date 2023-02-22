@@ -59,7 +59,7 @@ sub members($self, $uuid = undef) {
     $uuid = $self->UDN() unless defined $uuid;
 
     my ($coordinator, $members) = $self->zoneGroupInfo($uuid);
-    return $members;
+    return @$members;
 }
 
 sub numMembers($self, $uuid = undef ) {
