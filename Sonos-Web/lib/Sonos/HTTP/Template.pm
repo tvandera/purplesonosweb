@@ -166,7 +166,6 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     my $render = $player->renderingControl();
     my $av = $player->avTransport();
     my $zonename = $player->zoneName();
-    my $item = $av->curMetaData();
     my $number_of_tracks = $av->numberOfTracks();
     my $transportstate = $av->transportState();
     my %transport_states = ( "TRANSITIONING" => 3, "PAUSED_PLAYBACK" => 2, "PLAYING" => 1, "STOPPED" => 0);
@@ -185,7 +184,7 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
     $activedata{ACTIVE_VOLUME}   = $render->getVolume();
     $activedata{ACTIVE_MUTED}    = $render->getMute();
 
-    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $item, $player) );
+    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $av, $player) );
 
     $activedata{ACTIVE_LENGTH}   = $av->lengthInSeconds();
     $activedata{ACTIVE_TRACK_NUM} = encode_entities($av->currentTrack());
