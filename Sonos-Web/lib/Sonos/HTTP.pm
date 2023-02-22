@@ -269,22 +269,14 @@ sub send_tmpl_response($self, $r, $diskpath) {
 }
 
 sub send_albumart_response($self, $r) {
-    my $uri = $r->path;
-    my %qf = $r->query_form;
-    my $mpath = $qf{mpath};
-    my $item;
-    if ($mpath =~ m/^Q:/) {
-        # FIXME
-        my $player = $self->player($qf{zone});
-        $item = $player->contentDirectory()->queue()->get($mpath);
-    } else {
-        $item = $self->system()->musicLibrary()->item($mpath);
-    }
-    my ($mime_type, $blob) = $item->getAlbumArt();
+    my $uri =  $r->as_http_request()->uri();
+    my ($sha, $mime_type, $blob, $filename) = $self->system()->albumArtCache()->get($uri);
+    DEBUG Dumper( [ $sha, $mime_type, $blob ] );
     my $content_length = length $blob;
     my $response = HTTP::Response->new(200, undef, [
         "Content-Type" => $mime_type,
         "Content-Length" => $content_length,
+        "Content-Disposition" => "attachment; filename=\".$filename\"",
         ], $blob);
     $r->respond($response);
 }
