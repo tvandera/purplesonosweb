@@ -23,7 +23,7 @@ $Data::Dumper::Maxdepth = 4;
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
 sub new {
-    my($self, $loop) = @_;
+    my($self, $loop, @locations) = @_;
 	my $class = ref($self) || $self;
 
     my $cp = UPnP::ControlPoint->new();
@@ -36,9 +36,15 @@ sub new {
 
     $self->{_musiclibrary} = Sonos::MusicLibrary->new($self);
 
+    $self->addToLoop($loop) if defined $loop;
+
+    for (@locations) {
+        my $device = $cp->addByLocation($_);
+        $self->addPlayer($device);
+    }
+
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
 
-    $self->addToLoop($loop) if defined $loop;
 
     return $self;
 }
@@ -63,6 +69,7 @@ sub populated($self) {
 }
 
 sub player($self, $name_or_uuid) {
+   carp "Need \$name_or_uuid" unless $name_or_uuid;
    my $player = $self->{_players}->{$name_or_uuid};
    return $player if $player;
    ($player) = grep { $_->zoneName() eq $name_or_uuid } $self->players();
@@ -100,22 +107,33 @@ sub addToLoop($self, $loop) {
     }
 }
 
+sub addPlayer($self, $device) {
+    my $uuid = $device->{UDN};
+    $uuid =~ s/^uuid://g;
+
+    return if defined $self->{_players}->{$uuid};
+    $self->{_players}->{$uuid} = Sonos::Player->new($device, $self);
+    INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
+}
+
+sub removePlayer($self, $device) {
+    my $uuid = $device->{UDN};
+    $uuid =~ s/^uuid://g;
+
+    INFO "Removed device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
+    delete $self->{_players}->{$uuid};
+}
+
 # callback routine that gets called by UPnP::Controlpoint when a device is added
 # or removed
 sub _discoveryCallback {
     my ( $self, $search, $device, $action ) = @_;
-    my $uuid = $device->{UDN};
-    $uuid =~ s/^uuid://g;
 
     if ( $action eq 'deviceAdded' ) {
-        return if defined $self->{_players}->{$uuid};
-        $self->{_players}->{$uuid} = Sonos::Player->new($device, $self);
-        INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
-        # DEBUG Dumper($device);
+        $self->addPlayer($device);
     }
     elsif ( $action eq 'deviceRemoved' ) {
-        INFO "Removed device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
-        delete $self->{_players}->{$uuid};
+        $self->removePlayer($device);
     }
     else {
         WARNING( "Unknown action name:" . $action );
