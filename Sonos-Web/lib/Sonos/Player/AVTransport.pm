@@ -30,12 +30,33 @@ sub lengthInSeconds($self) {
 sub nextTrack($self)     { return Sonos::MetaData->new($self->prop("r:NextTrackMetaData")); }
 sub curTrack($self)      { return Sonos::MetaData->new($self->prop("CurrentTrackMetaData")); }
 sub curTransport($self)  { return Sonos::MetaData->new($self->prop("AVTransportURIMetaData")); }
+
 sub curMetaData($self)   { return $self->isRadio() ? $self->curTransport() : $self->curTrack(); }
+
+sub id($self)                  { return $self->currentTrack(); }
+sub parentID($self)            { return ""; }
+
+sub class($self)               { return $self->curMetaData()->class(); }
+sub title($self)               { return $self->curMetaData()->title(); }
+
+sub track($self)               { return $self->curTrack()->streamContentTitle() || $self->curTrack()->title(); }
+sub creator($self)             { return $self->curTrack()->creator() || $self->curTrack()->streamContentArtist(); }
+sub album($self)               { return $self->curTrack()->album() ||  $self->curTrack()->streamContentAlbum(); }
+
+sub albumArtURI($self)         { return $self->curTrack()->albumArtURI(); }
+sub originalTrackNumber($self) { return $self->curTrack()->originalTrackNumber(); }
+sub content($self)             { return $self->curTrack()->content(); }
+sub description($self)         { return $self->curTrack()->description(); }
 
 sub isRadio($self) {
     return $self->curTransport()->populated()
         && $self->curTransport()->isRadio();
 }
+
+sub isSong($self)      { return $self->curMetaData()->isSong(); }
+sub isAlbum($self)     { return 0; }
+sub isFav($self)       { return 0; }
+sub isContainer($self) { return 0; }
 
 sub info($self) {
     #DEBUG Dumper($self->{_state});
@@ -53,6 +74,7 @@ sub info($self) {
     for ( "curTrack", "curTransport", "nextTrack" ) {
         next unless $self->$_()->populated();
         $self->log("  $_:");
+        # $self->log(Dumper($self->$_()));
         $self->$_()->log($self, " " x 4);
     }
 
