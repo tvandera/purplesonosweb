@@ -271,7 +271,6 @@ sub send_tmpl_response($self, $r, $diskpath) {
 sub send_albumart_response($self, $r) {
     my $uri =  $r->as_http_request()->uri();
     my ($sha, $mime_type, $blob, $filename) = $self->system()->albumArtCache()->get($uri);
-    DEBUG Dumper( [ $sha, $mime_type, $blob ] );
     my $content_length = length $blob;
     my $response = HTTP::Response->new(200, undef, [
         "Content-Type" => $mime_type,
