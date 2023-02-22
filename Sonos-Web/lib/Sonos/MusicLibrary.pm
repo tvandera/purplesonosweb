@@ -31,7 +31,6 @@ sub new {
         _updateids => { },
         _items => { },
         _tree => { },
-        _useragent => LWP::UserAgent->new(),
     }, $class;
 
     $self->load();
