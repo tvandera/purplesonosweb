@@ -9,9 +9,6 @@ require Sonos::MetaData;
 use List::Util qw(first reduce);
 use JSON::XS;
 use File::Slurp;
-require URI::WithBase;
-use Digest::SHA qw(sha256_hex);
-use LWP::UserAgent;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
