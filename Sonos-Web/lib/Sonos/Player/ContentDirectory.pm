@@ -19,29 +19,17 @@ use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
 XML::Liberal->globally_override('LibXML');
 
-sub new {
-   my ($class, @args) = @_;
-
-    # possibly call Parent->new(@args) first
-    my $self = $class->SUPER::new(@args);
-
-    $self->{_queue} = Sonos::Player::Queue->new($self);
-
-    return $self;
-}
-
-sub queue($self) {
-    return $self->{_queue};
-}
-
-sub queueItems($self) {
-    return $self->queue()->items();
-}
 
 sub info($self) {
-    $self->queue()->info();
+    $self->log($self->shortName, ":");
+    my $top = $self->musicLibrary()->topItem();
+    my @containers = $self->musicLibrary()->children($top);
+    for (@containers) {
+      my $num = scalar $self->musicLibrary->children($_);
+      my $name = $_->title();
+      $self->log("  $name: $num items");
+    }
 }
-
 
 # called when anything in ContentDirectory has been updated
 # i.e.:
@@ -55,7 +43,6 @@ sub info($self) {
 #  'ShareListUpdateID' => 'RINCON_000E585187D201400,206'
 sub processUpdateIDs ( $self, $service, %properties ) {
     my $music = $self->musicLibrary();
-    my $queue = $self->queue();
 
     # check if anything was updated
     foreach my $update_id (keys %properties) {
@@ -65,13 +52,7 @@ sub processUpdateIDs ( $self, $service, %properties ) {
         my ($new_location, $new_version) = split /,/, $newvalue;
         next unless defined $new_location;
         next unless defined $new_version;
-
-        if ($new_location =~ /^Q:/ and $queue->version() < $new_version) {
-            $queue->update($new_version, $self->fetchByObjectID("Q:0"));
-            next;
-        }
-
-        # INFO "Update ID $update_id: old $existing_location,$existing_version ?= new $newvalue";
+        next unless $new_location =~ /RINCON_/;
 
         for (Sonos::MetaData::topItems()) {
             # find items in topItems that have updateid equal to given $updateid and

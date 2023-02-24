@@ -31,7 +31,8 @@ use constant SERVICE_NAMES => (
     "ZoneGroupTopology", # zones
     "ContentDirectory",  # music library
     "AVTransport",       # currently playing track
-    "RenderingControl"   # volume etc
+    "RenderingControl",  # volume etc
+    "Queue",             # queue
 );
 
 sub new {

@@ -1,5 +1,7 @@
 package Sonos::Player::Queue;
 
+use base 'Sonos::Player::Service';
+
 use v5.36;
 use strict;
 use warnings;
@@ -9,9 +11,6 @@ require Sonos::MetaData;
 use List::Util qw(first);
 use JSON::XS;
 use File::Slurp;
-require URI::WithBase;
-use Digest::SHA qw(sha256_hex);
-use LWP::UserAgent;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -19,33 +18,18 @@ Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 use Carp;
 
-use constant JSON_BASENAME => "content_cache.json";
-use constant AA_BASENAME => "album_art";
-
-# Contains music library cache
-sub new {
-    my($self, $contentdir) = @_;
-	my $class = ref($self) || $self;
-
-    $self = bless {
-        _contentdir => $contentdir,
-        _version => -1,
-        _items => {}
-    }, $class;
-
-    return $self;
-}
-
-sub contentDir($self) {
-    return $self->{_contentdir};
+sub contentDirectory($self) {
+    return $self->player()->contentDirectory();
 }
 
 sub musicLibrary($self) {
     return $self->contentDir()->musicLibrary();
 }
 
-sub player($self) {
-    return $self->contentDir()->player();
+
+# Queue service has a different prefix
+sub fullName($self) {
+    return 'urn:schemas-sonos-com:service:Queue:1';
 }
 
 sub info($self) {
@@ -66,8 +50,14 @@ sub info($self) {
 }
 
 
-sub version($self) {
-    return $self->{_version};
+sub processUpdate {
+    my $self = shift;
+
+    my @items = $self->contentDirectory()->fetchByObjectID("Q:0");
+    my %items = map { $_->{id} => Sonos::MetaData->new($_, $self) } @items;
+    $self->{_items} = { %items };
+
+    $self->SUPER::processUpdate(@_);
 }
 
 sub get($self, $id) {
@@ -80,20 +70,6 @@ sub items($self) {
     return @items;
 }
 
-sub update($self, $version, @items) {
-    $self->{_version} = $version;
-    my %items = map { $_->{id} => Sonos::MetaData->new($_, $self) } @items;
-    $self->{_items} = { %items };
-}
 
-# forward albumArtHelper to music library
-# to allow global caching
-sub albumArtHelper($self, $item) {
-    return $self->musicLibrary()->albumArtHelper($item, $self->player());
-}
-
-sub playerForID($self, $id) {
-    return $self->player();
-}
 
 1;
