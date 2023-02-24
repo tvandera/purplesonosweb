@@ -191,6 +191,30 @@ sub action {
     my $render = $player->renderingControl() if $player;
 
 
+# These actions require a zone= argument
+# ======================================
+
+# zones: Link(zone=..&link=..) LinkAll Unlink(zone=..&link=..)
+
+# renderingcontrol volume: Louder MuchLouder MuchSofter SetVolume Softer
+# renderingcontrol mute/unmute: MuteOff MuteOn
+
+# avtransport nav: Next Previous
+# avtransport state: Pause Play
+# avtransport repeat: RepeatOff RepeatOn
+# avtransport shuffle: ShuffleOff ShuffleOn
+
+# queue remove: Remove (queue=Q:0/xx) RemoveAll
+# queue nav: Seek (queue=Q:0/xx)
+# queue add: AddMusic PlayMusic (mpath=...)
+# queue save: Save (savename="My Saved Queue")
+
+# These actions DO NOT require a zone= argument
+# =============================================
+
+# music library: DeleteMusic(mpath=playlist) Browse(mpath=...) ReIndex
+# other: Wait
+
     my %dispatch = (
         "Play"       => [ $av, sub { $av->play() } ],
         "Pause"      => [ $av, sub { $av->pause() } ],
