@@ -186,9 +186,10 @@ sub action {
     my $action = $qf{action};
     my $lastupdate = $qf{lastupdate};
 
-    my $player = $self->player($qf{zone});
-    my $av = $player->avTransport();
-    my $render = $player->renderingControl();
+    my $player = $self->player($qf{zone}) if $qf{zone};
+    my $av = $player->avTransport() if $player;
+    my $render = $player->renderingControl() if $player;
+
 
     my %dispatch = (
         "Play"       => [ $av, sub { $av->play() } ],
