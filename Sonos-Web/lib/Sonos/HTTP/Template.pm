@@ -113,7 +113,9 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
     my %data;
     if ($item->populated()) {
         my $mpath_arg = "";
-        $mpath_arg = "mpath=" . uri_escape_utf8($item->id()) if $item->id();
+        $mpath_arg .= $item->isQueueItem() ?  "queue=" : "mpath=";
+        $mpath_arg .= uri_escape_utf8($item->id());
+        $mpath_arg .= "&zone=" . $player->friendlyName() . "&" if $player;
 
         %data = (
             $prefix . "_NAME"        => encode_entities( $item->title() ),

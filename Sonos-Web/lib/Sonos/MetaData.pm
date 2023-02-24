@@ -238,12 +238,7 @@ sub isContainer($self) {
     return $class =~ m/container/g;
 }
 
-# true is owner is Sonos::Player
-# true for Queue and LineIn
-# false for musicLibrary
-sub isPlayerLocal($self) {
-    return $self->id() =~ /^[Q|AI]:/;
-}
+sub isQueue($self) { return $self->id() =~ /^Q:/; }
 
 sub getAlbumArt($self) {
     # ask owner for caching
