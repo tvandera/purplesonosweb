@@ -84,6 +84,10 @@ sub friendlyName($self) {
     return $self->getUPnP()->{FRIENDLYNAME};
 }
 
+sub zoneName($self) {
+    return $self->zoneGroupTopology()->zoneName();
+}
+
 sub services($self) {
     return values %{$self->{_services}};
 }
@@ -98,39 +102,20 @@ sub getUPnP($self) {
     return $self->{_upnp};
 }
 
+
+
 sub log($self, @args) {
     INFO sprintf("[%12s]: ", $self->friendlyName), @args;
 }
 
-# -- ZoneGroupTopology --
+# -- methods for the different services --
 
-sub zoneGroupTopology($self) {
-    return $self->getService("ZoneGroupTopology");
-}
+sub zoneGroupTopology($self) { return $self->getService("ZoneGroupTopology"); }
+sub renderingControl($self)  { return $self->getService("RenderingControl"); }
+sub avTransport($self)       { return $self->getService("AVTransport"); }
+sub contentDirectory($self)  { return $self->getService("ContentDirectory"); }
+sub queue($self)             { return $self->getService("Queue"); }
 
-sub zoneName($self) {
-    return $self->zoneGroupTopology()->zoneName();
-}
-
-# -- RenderingControl --
-
-sub renderingControl($self) {
-    return $self->getService("RenderingControl");
-}
-
-
-# -- AVTransport --
-
-sub avTransport($self) {
-    return $self->getService("AVTransport");
-}
-
-
-# -- ContentDirectory --
-
-sub contentDirectory($self) {
-    return $self->getService("ContentDirectory");
-}
 
 sub onUpdate($self, $callback) {
     push @{$self->{_callbacks}}, $callback;
