@@ -275,7 +275,7 @@ sub send_albumart_response($self, $r) {
     my $response = HTTP::Response->new(200, undef, [
         "Content-Type" => $mime_type,
         "Content-Length" => $content_length,
-        "Content-Disposition" => "attachment; filename=\".$filename\"",
+        # "Content-Disposition" => "attachment; filename=\".$filename\"",
         ], $blob);
     $r->respond($response);
 }
