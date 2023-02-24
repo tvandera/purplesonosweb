@@ -65,8 +65,8 @@ sub new {
 sub owner($self) {
     my $owner = $self->{_owner};
 
-    if ($self->id() =~ /^(Q|AI):/) {
-        die "Incorrect owner $owner for Q: or AI:" unless $owner->isa("Sonos::Player");
+    if ($self->id() =~ /^Q:/) {
+        die "Incorrect owner $owner for Q:" unless $owner->isa("Sonos::Player::Queue");
     } else {
         die "Incorrect owner, expected MusicLibrary" unless $owner->isa("Sonos::MusicLibrary");
     }
