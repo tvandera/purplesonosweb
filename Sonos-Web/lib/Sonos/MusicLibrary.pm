@@ -53,6 +53,11 @@ sub save($self) {
     my $filename = $self->cacheFileName();
     #unbless items
     my $allitems = [ map { $_->{_data} } values %{$self->{_items}} ];
+
+    write_file($filename, encode_json([
+        $self->{_updateids},
+        $allitems,
+    ]));
 }
 
 sub version($self, $id) {
