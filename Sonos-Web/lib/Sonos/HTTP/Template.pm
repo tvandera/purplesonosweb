@@ -112,15 +112,8 @@ sub to_json {
 sub build_item_data($self, $prefix, $item, $player = undef) {
     my %data;
     if ($item->populated()) {
-        my $zone_arg = "";
         my $mpath_arg = "";
-        my $aa_arg = "";
-
-        $player = $item->player() unless $player;
-
-        $zone_arg = "&zone=" . $item->player()->zoneName() if ($item->player());
-        $mpath_arg = "mpath=" . uri_escape_utf8($item->id()) . $zone_arg if $item->id();
-        $aa_arg = "/getaa?" . $mpath_arg . $zone_arg if $mpath_arg;
+        $mpath_arg = "mpath=" . uri_escape_utf8($item->id()) if $item->id();
 
         %data = (
             $prefix . "_NAME"        => encode_entities( $item->title() ),
@@ -240,16 +233,16 @@ sub build_zone_data($self, $player, $updatenum, $active_player ) {
 ###############################################################################
 sub build_queue_data {
     my ($self, $player, $updatenum ) = @_;
-    my $contentdir = $player->contentDirectory();
+    my $queue = $player->queue();
 
     my %queuedata;
 
     $queuedata{QUEUE_ZONE}       = $player->zoneName;
     $queuedata{QUEUE_ZONEID}     = uri_escape_utf8($player->UDN);
-    $queuedata{QUEUE_LASTUPDATE} = $contentdir->lastUpdate();
-    $queuedata{QUEUE_UPDATED}    = ( $contentdir->lastUpdate() > $updatenum );
+    $queuedata{QUEUE_LASTUPDATE} = $queue->lastUpdate();
+    $queuedata{QUEUE_UPDATED}    = ( $queue->lastUpdate() > $updatenum );
 
-    my @loop_data = map { { $self->build_item_data("QUEUE", $_, $player) } } $contentdir->queueItems();
+    my @loop_data = map { { $self->build_item_data("QUEUE", $_, $player) } } $queue->items();
     $queuedata{QUEUE_LOOP} = \@loop_data;
     $queuedata{QUEUE_JSON} = $self->to_json( \@loop_data );
 
