@@ -271,6 +271,10 @@ sub send_tmpl_response($self, $r, $diskpath) {
 sub send_albumart_response($self, $r) {
     my $uri =  $r->as_http_request()->uri();
     my ($sha, $mime_type, $blob, $filename) = $self->system()->albumArtCache()->get($uri);
+
+    return $self->send_error($r, 404, "Album art not found")
+        unless defined($blob);
+
     my $content_length = length $blob;
     my $response = HTTP::Response->new(200, undef, [
         "Content-Type" => $mime_type,

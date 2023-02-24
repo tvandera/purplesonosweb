@@ -108,22 +108,24 @@ sub get($self, $uri) {
     my @players = $self->system()->players();
     my $player = $players[rand @players];
     my $baseurl = $player->location();
-
     my $full_uri  = URI::WithBase->new($uri, $baseurl);
     my $response = $self->{_useragent}->get($full_uri->abs());
-    return $sha, undef, undef, undef unless $response->is_success();
 
-    my $blob = $response->content;
-    # Sonos returns the wrong or no mime type, determine from blob
-    my $mime_type = $self->mimeTypeOf($blob);
-    my $filename = sha256_hex($blob) . "." . $self->extensionOf($blob);
+    my ($mime_type, $blob, $filename) = (undef, undef, undef);
+
+    if ($response->is_success()) {
+        $blob = $response->content;
+        # Sonos returns the wrong or no mime type, determine from blob
+        $mime_type = $self->mimeTypeOf($blob);
+        $filename = sha256_hex($blob) . "." . $self->extensionOf($blob);
+
+        # also write blob to file cache
+        my $full_filename = $self->cacheDir() . "/" . $filename;
+        write_file($full_filename, $blob) unless -e $full_filename;
+    }
+
+    # save + write json
     $self->{_album_art}->{$sha} = [ $mime_type, $blob, $filename ];
-
-    # also write blob to file cache
-    my $full_filename = $self->cacheDir() . "/" . $filename;
-    write_file($full_filename, $blob) unless -e $full_filename;
-
-    # write json
     $self->save();
 
     return $sha, $mime_type, $blob, $filename;
