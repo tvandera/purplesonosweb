@@ -12,6 +12,10 @@ require URI::WithBase;
 use Digest::SHA qw(sha256_hex);
 use LWP::UserAgent;
 
+use IO::Scalar;
+require File::MimeInfo::Magic;
+require File::MimeInfo;
+
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
@@ -44,14 +48,14 @@ sub system($self) {
     return $self->{_discovery};
 }
 
-sub mimeTypeOf($self, $filename) {
-    return $self->{_mime_types}->mimeTypeOf($filename);
+sub mimeTypeOf($self, $blob) {
+    my $SH = IO::Scalar->new(\$blob);
+    return File::MimeInfo::Magic::magic($SH);
 }
 
-sub extensionOf($self, $str) {
-
-    my $mimetype = $self->{_mime_types}->type($str);
-    my @extensions = $mimetype->extensions();
+sub extensionOf($self, $blob) {
+    my $mime_type = $self->mimeTypeOf($blob);
+    my @extensions = File::MimeInfo::extensions($mime_type);
     return shift @extensions;
 }
 
@@ -88,13 +92,10 @@ sub get($self, $uri) {
         my $response = $self->{_useragent}->get($full_uri->abs());
         carp "$uri not found" unless $response->is_success();
 
-        $mime_type = $response->content_type();
-
-        # HACK -- Sonos returns the wrong mime type
-        $mime_type =~ s@image/jpg@image/jpeg@;
-
         $blob = $response->content;
-        $filename = $sha . "." . $self->extensionOf($mime_type);
+        # Sonos returns the wrong or no mime type, determine from blob
+        $mime_type = $self->mimeTypeOf($blob);
+        $filename = $sha . "." . $self->extensionOf($blob);
         $self->{_album_art}->{$sha} = [ $mime_type, $blob, $filename ];
 
         # also write blob to file cache
