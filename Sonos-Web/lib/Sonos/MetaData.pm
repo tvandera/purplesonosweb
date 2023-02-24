@@ -32,9 +32,6 @@ sub topItems() {
 
         [ "RadioLocationUpdateID", "Radio",              "", "R:0/0",       "container.audioBroadcast", "tiles/radio_logo.svg" ],
 
-        [ "ContainerUpdateIDs",    "Line In",            "", "AI:",         "container", "tiles/linein.svg" ],
-        [ "ContainerUpdateIDs",    "Queue",              "", "Q:0",         "container.musicTrack", "tiles/queue.svg" ],
-
         [ "SavedQueuesUpdateID",   "Playlists",          "", "SQ:",         "container.playlistContainer", "tiles/sonos_playlists.svg" ],
     );
 
@@ -66,7 +63,15 @@ sub new {
 # Sonos::Queue for Q: items
 # Sonos::MusicLibrary for other
 sub owner($self) {
-    return $self->{_owner};
+    my $owner = $self->{_owner};
+
+    if ($self->id() =~ /^(Q|AI):/) {
+        die "Incorrect owner $owner for Q: or AI:" unless $owner->isa("Sonos::Player");
+    } else {
+        die "Incorrect owner, expected MusicLibrary" unless $owner->isa("Sonos::MusicLibrary");
+    }
+
+    return $owner;
 }
 
 sub player($self) {
