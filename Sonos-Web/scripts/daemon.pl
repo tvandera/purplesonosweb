@@ -29,6 +29,6 @@ my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPor
 $SIG{INT} = sub {
     print STDERR "Ctrl-C - stopping\n";
     $loop->stop();
-} unless ref $SIG{INT};
+} unless ref $SIG{INT}; # do not overwrite SIG{INT}
 
 $loop->run;
