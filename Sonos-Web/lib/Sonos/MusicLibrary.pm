@@ -120,6 +120,10 @@ sub item($self, $id) {
     return $self->{_items}->{$id};
 }
 
+sub topItem($self) {
+    return $self->item("");
+}
+
 
 # only items, no cache id or version info
 sub addItemsOnly($self, @items) {
