@@ -23,8 +23,8 @@ Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 use Carp;
 
-use constant AA_BASENAME => "album_art";
-use constant JSON_BASENAME => "album_art.json";
+use constant AA_BASENAME => "albumrt_cache";
+use constant JSON_BASENAME => "albumart_cache.json";
 
 # Contains music library cache
 sub new {
