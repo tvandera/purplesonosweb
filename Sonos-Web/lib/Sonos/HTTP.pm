@@ -127,6 +127,65 @@ sub sanitizeRequest($self, $r) {
         return $self->send_error($r, 404, "No such music item: $mpath") unless $music;
     }
 
+    if (exists $qf{action}) {
+        my $action = $qf{action};
+
+        # requires zone= argument, but nothing else
+        my @noarg_actions = qw(
+            LinkAll
+
+            Louder MuchLouder MuchSofter SetVolume Softer
+            MuteOff MuteOn
+
+            Next Previous
+            Pause Play
+            RepeatOff RepeatOn
+            ShuffleOff ShuffleOn
+
+            RemoveAll
+        );
+
+        if (grep($action, @noarg_actions) && not $player) {
+            return $self->send_error($r, 404, "Action \"$action\" requires a zone= argument");
+        }
+
+
+        # require a zone= argument + something else
+        my %zone_actions = (
+            "Link"      => [ "link", ],
+            "Unlink"    => [ "link", ],
+            "Remove"    => [ "queue", ],
+            "Seek"      => [ "queue", ],
+            "AddMusic"  => [ "mpath", ],
+            "PlayMusic" => [ "mpath", ],
+            "Save"      => [ "savename", ],
+        );
+
+        if (exists $zone_actions{$action}) {
+            return $self->send_error($r, 404, "Action \"$action\" requires a zone= argument") unless $player;
+
+            my @needs = @{$zone_actions{$action}};
+            for (@needs) {
+                return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
+            }
+        }
+
+        # These actions DO NOT require a zone= argument
+        my %nozone_actions = (
+            "DeleteMusic" => [ "mpath", ],
+            "Browse" => [ "mpath", ],
+            "ReIndex" => [],
+            "Wait" => [],
+        );
+
+        if (exists $nozone_actions{$action}) {
+            my @needs = @{$nozone_actions{$action}};
+            for (@needs) {
+                return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
+            }
+        }
+    }
+
 
     return 0;
 }
@@ -141,15 +200,13 @@ sub handle_request($self, $server, $r) {
 
     if (my $callback = $self->{_handlers}->{$path}) {
         $self->log("  handler: ", $path);
-        &$callback($r);
-        return;
+        return $callback->($r);
     }
 
 
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         my $redirect = $self->defaultPage;
-        $self->send_redirect($r, $redirect);
-        return;
+        return $self->send_redirect($r, $redirect);
     }
 
     # Find where on disk
@@ -174,6 +231,16 @@ sub handle_request($self, $server, $r) {
     } else {
         $self->send_tmpl_response($r, $diskpath);
     }
+
+}
+
+###############################################################################
+sub actions($self, $player = undef) {
+    my $av = $player->avTransport()          if $player;
+    my $render = $player->renderingControl() if $player;
+
+
+
 
 }
 
