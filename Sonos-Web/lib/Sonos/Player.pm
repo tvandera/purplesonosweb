@@ -9,7 +9,7 @@ use List::Util qw(all max);
 require UPnP::ControlPoint;
 
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
+Log::Log4perl->easy_init( { level => $DEBUG, utf8     => 1, });
 
 use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
@@ -101,8 +101,6 @@ sub getService($self, $name) {
 sub getUPnP($self) {
     return $self->{_upnp};
 }
-
-
 
 sub log($self, @args) {
     INFO sprintf("[%12s]: ", $self->friendlyName), @args;
