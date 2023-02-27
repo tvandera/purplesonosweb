@@ -249,11 +249,9 @@ sub getAlbumArt($self) {
 sub displayFields() {
     return  (
         "id",
-        "class",
         "title",
         "creator",
         "album",
-        "streamContent",
     );
 }
 
