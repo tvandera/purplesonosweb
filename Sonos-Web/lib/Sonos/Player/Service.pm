@@ -104,7 +104,7 @@ sub prop($self, @path) {
         if (ref $value eq 'HASH' and defined $value->{$_}) {
             $value = $value->{$_};
         } else {
-            return undef;
+            return;
         }
     }
     return $value;

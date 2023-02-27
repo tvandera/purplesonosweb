@@ -75,7 +75,7 @@ sub owner($self) {
 }
 
 sub player($self) {
-    return undef unless $self->id();
+    return unless $self->id();
     return $self->owner()->playerForID($self->id());
 }
 
@@ -215,7 +215,7 @@ sub realClass($self) {
 # used for sorting Queue items
 sub baseID($self) {
     my $full_id = $self->prop("id");
-    return undef unless $full_id;
+    return unless $full_id;
     my @parts = split( /\//, $full_id);
     return $parts[-1];
 }

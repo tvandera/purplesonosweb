@@ -77,7 +77,7 @@ sub playerForID($self, $id) {
        @rootids = grep { rindex($id, $_, 0) == 0 } @rootids;
     my $rootid = reduce { length($a) > length($b) ? $a : $b } @rootids;
 
-    return undef unless $rootid;
+    return unless $rootid;
 
     # now find what player to contact based on _updateids
     my ($uuid, $version) = @{$self->{_updateids}->{$rootid}};
