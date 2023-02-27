@@ -57,6 +57,7 @@ sub isSong($self)      { return $self->curMetaData()->isSong(); }
 sub isAlbum($self)     { return 0; }
 sub isFav($self)       { return 0; }
 sub isContainer($self) { return 0; }
+sub isQueueItem($self) { return 0; }
 
 sub info($self) {
     #DEBUG Dumper($self->{_state});

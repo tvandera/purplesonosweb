@@ -238,7 +238,7 @@ sub isContainer($self) {
     return $class =~ m/container/g;
 }
 
-sub isQueue($self) { return $self->id() =~ /^Q:/; }
+sub isQueueItem($self) { return $self->id() =~ /^Q:/; }
 
 sub getAlbumArt($self) {
     # ask owner for caching
