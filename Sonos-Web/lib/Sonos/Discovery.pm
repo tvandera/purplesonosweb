@@ -43,7 +43,7 @@ sub new {
 
     for (@locations) {
         my $device = $cp->addByLocation($_);
-        $self->addPlayer($device);
+        $self->addPlayer($device) if $device;
     }
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
