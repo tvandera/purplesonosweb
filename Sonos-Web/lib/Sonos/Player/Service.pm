@@ -17,7 +17,6 @@ XML::Liberal->globally_override('LibXML');
 use HTML::Entities;
 
 use Data::Dumper;
-use Carp;
 
 sub new {
     my($self, $player) = @_;
@@ -122,8 +121,8 @@ sub getUPnP($self) {
         return $service if ($service);
     }
 
-    carp("Could not find service: " . $self->fullName());
-    return undef;
+    die("Could not find service: " . $self->fullName());
+    return;
 }
 
 sub controlProxy($self) {
