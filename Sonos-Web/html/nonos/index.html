@@ -147,7 +147,7 @@
         <td width="8"><img src="shim.gif" height="8" width="8"></td>
         <td colspan="2" align="left" valign="top">
         <TMPL_LOOP NAME=QUEUE_LOOP> 
-          <A HREF="index.html?<TMPL_VAR NAME=QUEUE_ARG>&action=Remove"><IMG BORDER=0 SRC=/x.gif></A>
+          <A HREF="index.html?<TMPL_VAR NAME=QUEUE_ARG>&action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
           <A HREF="index.html?<TMPL_VAR NAME=QUEUE_ARG>&action=Seek"><TMPL_VAR NAME=QUEUE_NAME></A>
           <BR>
         </TMPL_LOOP>
@@ -194,8 +194,8 @@
         <B><TMPL_VAR NAME=MUSIC_ERROR></B>
         <TMPL_LOOP NAME=MUSIC_LOOP> 
           <TMPL_UNLESS NAME=MUSIC_ROOT>
-            <A HREF="index.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic"><IMG BORDER=0 SRC=/add.gif></A>
-            <A HREF="index.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic"><IMG BORDER=0 SRC=/playing.gif></A>
+            <A HREF="index.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+            <A HREF="index.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
           </TMPL_UNLESS>
           <TMPL_IF NAME=MUSIC_ISSONG>
             <TMPL_VAR NAME=MUSIC_NAME>

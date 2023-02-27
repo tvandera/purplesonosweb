@@ -24,8 +24,8 @@ Perl Expression:
 <TMPL_LOOP NAME=MUSIC_LOOP>
     <IMG BORDER=0 SRC=<TMPL_VAR NAME=MUSIC_ALBUMART>>
     <TMPL_UNLESS NAME=MUSIC_ROOT>
-        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=ALL_ARG>&<TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic"><IMG BORDER=0 SRC=/add.gif></A>
-        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=ALL_ARG>&<TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic"><IMG BORDER=0 SRC=/playing.gif></A>
+        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=ALL_ARG>&<TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=ALL_ARG>&<TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
     </TMPL_UNLESS>
     <TMPL_UNLESS NAME=MUSIC_ISCONTAINER>
         <TMPL_VAR NAME=MUSIC_NAME>
