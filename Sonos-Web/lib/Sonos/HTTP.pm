@@ -20,6 +20,7 @@ use File::Spec::Functions 'catfile';
 use MIME::Types;
 
 require Sonos::HTTP::Template;
+require Sonos::HTTP::MapBuilder;
 
 ###############################################################################
 # HTTP
@@ -44,6 +45,11 @@ sub new {
     $self->register_handler("/getAA", sub { $self->send_albumart_response(@_) });
     $self->register_handler("/hello", sub { $self->send_hello(@_) });
 
+
+    for (qw(globals action zone music active)) {
+        $self->register_handler("/api/$_", sub { $self->rest_api(@_) });
+    }
+
     my $httpserver = Net::Async::HTTP::Server->new(
         on_request => sub {
             $self->handle_request(@_);
@@ -61,7 +67,6 @@ sub new {
         on_listen_error => sub { die "Cannot listen - $_[-1]\n" }
     );
 
-    my $sockhost =
     printf STDERR  "Listening on http://%s:%d\n",
         $httpserver->read_handle->sockhost,
         $httpserver->read_handle->sockport;
@@ -235,16 +240,6 @@ sub handle_request($self, $server, $r) {
 }
 
 ###############################################################################
-sub actions($self, $player = undef) {
-    my $av = $player->avTransport()          if $player;
-    my $render = $player->renderingControl() if $player;
-
-
-
-
-}
-
-###############################################################################
 sub action {
     my ($self, $r, $send_update) = @_;
 
@@ -407,6 +402,27 @@ sub send_error($self, $r, $code, $message = undef) {
 }
 
 sub send_hello($self, $req) {
+    my $response = HTTP::Response->new( 200 );
+    $response->add_content( "Hello, world!\n" );
+    $response->content_type( "text/plain" );
+    $response->content_length( length $response->content );
+    $req->respond( $response );
+
+    return 1;
+}
+
+sub rest_api($self, $req) {
+    my $qf = \$req->query_form;
+    my $endpoint = $req->path =~ m@/\w+$@;
+    my $builder = Sonos::HTTP::MapBuilder->new($self->system(), $qf);
+
+    my %dispatch = (
+        "globals"=> sub { $builder->build_globals_data( $qf ) },
+        "zones"  => sub { $builder->build_queue_data( $player ) },
+        "music"  => sub { $builder->build_music_data( $qf ) },
+        "active" => sub { $builder->build_zone_data( $player ) },
+    );
+
     my $response = HTTP::Response->new( 200 );
     $response->add_content( "Hello, world!\n" );
     $response->content_type( "text/plain" );
