@@ -412,20 +412,24 @@ sub send_hello($self, $req) {
 }
 
 sub rest_api($self, $req) {
-    my $qf = \$req->query_form;
+    my %qf = $req->query_form;
     my $endpoint = $req->path =~ m@/\w+$@;
-    my $builder = Sonos::HTTP::MapBuilder->new($self->system(), $qf);
+    my $builder = Sonos::HTTP::MapBuilder->new($self->system(), \%qf);
 
     my %dispatch = (
-        "globals"=> sub { $builder->build_globals_data( $qf ) },
-        "zones"  => sub { $builder->build_queue_data( $player ) },
-        "music"  => sub { $builder->build_music_data( $qf ) },
-        "active" => sub { $builder->build_zone_data( $player ) },
+        "globals"=> sub { $builder->build_globals_data() },
+        "queue"  => sub { $builder->build_queue_data() },
+        "zones"  => sub { $builder->build_zones_data() },
+        "music"  => sub { $builder->build_music_data() },
+        "active" => sub { $builder->build_zone_data() },
     );
 
+    my $data = $dispatch{$endpoint}->();
+    my $json = $builder->to_json($data);
+
     my $response = HTTP::Response->new( 200 );
-    $response->add_content( "Hello, world!\n" );
-    $response->content_type( "text/plain" );
+    $response->add_content( $json );
+    $response->content_type( "application/json" );
     $response->content_length( length $response->content );
     $req->respond( $response );
 

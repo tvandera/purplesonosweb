@@ -1,10 +1,11 @@
 package Sonos::HTTP::Template;
 
+use base 'Sonos::HTTP::MapBuilder';
+
 use v5.36;
 use strict;
 use warnings;
 
-base 'Sonos::HTTP::MapBuilder';
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
@@ -33,7 +34,7 @@ sub new {
     $self = $class->SUPER::new($discover, $qf, %args);
 
     # One of our templates, now fill in the parts we know
-    my $template = HTML::Template->new(
+    my $template = $self->{_template} = HTML::Template->new(
         filename          => $diskpath,
         die_on_bad_params => 0,
         global_vars       => 1,
@@ -41,10 +42,8 @@ sub new {
         loop_context_vars => 1
     );
 
-    my @params = $template->param();
-    my $map    = $self->build_map( $qf, \@params );
+    my $map    = $self->build_map();
     $template->param(%$map);
-    $self->{_template} = $template;
 
     return $self;
 }

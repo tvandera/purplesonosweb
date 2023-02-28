@@ -68,9 +68,10 @@ sub diskpath($self, $path) {
     return catfile("html", $path);
 }
 
-sub qf($self, $field = undef) {
-    return $self->{_qf}->{$field} if $field;
-    return $self->{_qf};
+sub qf($self, $field = undef, $default = undef) {
+    return $self->{_qf} unless $field;
+    my $value = $self->{_qf}->{$field};
+    return $value ? $value : $default;
 }
 
 sub log($self, @args) {
@@ -136,11 +137,12 @@ sub build_zones_data($self) {
 
 
 ###############################################################################
-sub build_zone_data($self, $player) {
+sub build_zone_data($self, $player = undef) {
+    $player = $self->qf("player") unless $player;
     return {} unless $player;
 
     my %activedata;
-    my $updatenum = $self->qf("updatenum");
+    my $updatenum = $self->qf("updatenum", -1);
     my $active_player = $self->qf("zone");
 
     my $render = $player->renderingControl();
@@ -229,7 +231,7 @@ sub build_queue_data($self) {
     $queuedata{QUEUE_ZONE}       = $player->zoneName;
     $queuedata{QUEUE_ZONEID}     = uri_escape_utf8($player->UDN);
 
-    my $updatenum = $self->qf("updatenum");
+    my $updatenum = $self->qf("updatenum", -1);
     $queuedata{QUEUE_LASTUPDATE} = $queue->lastUpdate();
     $queuedata{QUEUE_UPDATED}    = ( $queue->lastUpdate() > $updatenum );
 
@@ -243,9 +245,8 @@ sub build_queue_data($self) {
 sub build_music_data($self) {
     my %musicdata;
 
-    my $mpath = $self->qf("mpath");
+    my $mpath = $self->qf("mpath", "");
     $mpath    = "" if ( $mpath eq "/" );
-    my $msearch = $self->qf("msearch");
 
     $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
     $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
@@ -267,7 +268,7 @@ sub build_music_data($self) {
 }
 
 sub build_globals_data($self) {
-    my $updatenum = $self->qf("lastupdate");
+    my $updatenum = $self->qf("updatenum", -1);
 
     my $globals = {};
     $globals->{"VERSION"}              = $self->version();
