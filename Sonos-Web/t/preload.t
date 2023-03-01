@@ -5,14 +5,14 @@ require IO::Select;
 
 use Test::More tests => 2;
 
-BEGIN { use_ok('Sonos::Discovery') };
+BEGIN { use_ok('Sonos::System') };
 
 my @locations = (
     'http://192.168.2.200:1400/xml/device_description.xml',
     'http://192.168.2.102:1400/xml/device_description.xml',
 );
 
-my $client = Sonos::Discovery->new(undef, @locations);
+my $client = Sonos::System->new(@locations);
 my @selsockets = $client->{_controlpoint}->sockets();
 my $select = IO::Select->new(@selsockets);
 

@@ -1,4 +1,4 @@
-package Sonos::Discovery;
+package Sonos::System;
 
 use v5.36;
 use strict;
@@ -22,6 +22,12 @@ use Data::Dumper;
 $Data::Dumper::Maxdepth = 4;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
+
+sub discover {
+    my $self = shift;
+    return $self->new(@_);
+}
+
 
 sub new {
     my($self, $loop, @locations) = @_;

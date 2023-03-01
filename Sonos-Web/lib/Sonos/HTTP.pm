@@ -413,7 +413,7 @@ sub rest_api($self, $r) {
     $response->add_content( $json );
     $response->content_type( "application/json" );
     $response->content_length( length $response->content );
-    $req->respond( $response );
+    $r->respond( $response );
 
     return 1;
 }

@@ -5,9 +5,9 @@ require IO::Select;
 
 use Test::More tests => 2;
 
-BEGIN { use_ok('Sonos::Discovery') };
+BEGIN { use_ok('Sonos::System') };
 
-my $client = Sonos::Discovery->new();
+my $client = Sonos::System->discover();
 my @selsockets = $client->{_controlpoint}->sockets();
 my $select = IO::Select->new(@selsockets);
 

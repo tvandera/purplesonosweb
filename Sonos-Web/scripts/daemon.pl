@@ -9,7 +9,7 @@ require IO::Async::Handle;
 require IO::Async::Loop::Select;
 use IO::Async::Timer::Periodic;
 
-require Sonos::Discovery;
+require Sonos::System;
 require Sonos::HTTP;
 
 use Log::Log4perl qw(:easy);
@@ -18,12 +18,12 @@ use Data::Dumper;
 
 
 my @locations = (
-    'http://192.168.2.200:1400/xml/device_description.xml',
-    'http://192.168.2.102:1400/xml/device_description.xml',
+    'http://192.168.2.100:1400/xml/device_description.xml',
+    'http://192.168.2.198:1400/xml/device_description.xml',
 );
 
 my $loop = IO::Async::Loop::Select->new;
-my $discover = Sonos::Discovery->new($loop, @locations);
+my $discover = Sonos::System->discover($loop, @locations);
 my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPort => 9999);
 
 $SIG{INT} = sub {

@@ -7,18 +7,18 @@ require IO::Async::Handle;
 require IO::Async::Timer::Periodic;
 require IO::Async::Loop::Select;
 
-require Sonos::Discovery;
+require Sonos::System;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 use Data::Dumper;
 
 my $loop = IO::Async::Loop::Select->new;
-my $client = Sonos::Discovery->new($loop);
+my $client = Sonos::System->new($loop);
 
 # my $timer = IO::Async::Timer::Periodic->new(
 #    interval => 5,
-# 
+#
 #    on_tick => sub {
 #         my $player = ($client->players)[0];
 #         if ($player->isStopped()) {
@@ -30,9 +30,9 @@ my $client = Sonos::Discovery->new($loop);
 #         }
 #    },
 # );
-# 
+#
 # $timer->start;
-# 
+#
 # $loop->add($timer);
 
 $loop->run;
