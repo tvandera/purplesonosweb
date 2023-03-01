@@ -56,16 +56,9 @@ sub lastUpdate($self) {
     return $self->system()->lastUpdate();
 }
 
-sub player($self, $name_or_uuid) {
+sub player($self, $name_or_uuid = undef) {
+    $name_or_uuid = $self->qf("zone") unless $name_or_uuid;
     return $self->system()->player($name_or_uuid);
-}
-
-sub baseURL($self) {
-    return "/";
-}
-
-sub diskpath($self, $path) {
-    return catfile("html", $path);
 }
 
 sub qf($self, $field = undef, $default = undef) {
@@ -221,7 +214,7 @@ sub build_zone_data($self, $player = undef) {
 
 ###############################################################################
 sub build_queue_data($self) {
-    my $player = $self->qf("zone");
+    my $player = $self->player();
     return {} unless $player;
 
     my $queue = $player->queue();

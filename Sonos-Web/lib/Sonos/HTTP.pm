@@ -186,6 +186,22 @@ sub sanitizeRequest($self, $r) {
     }
 
 
+    if (exists $qf{what}) {
+        my $what = $qf{what};
+        my @allowed_requests = qw(globals music zones zone queue all);
+        unless (grep { $what eq $_ } @allowed_requests) {
+            return $self->send_error($r, 404, "Request \"$what\" unknown. Known: " . (join ", ", @allowed_requests));
+        }
+
+        my @requires_zone = qw(zone queue);
+        if ((grep { $what eq $_ } @requires_zone) && !$player) {
+            return $self->send_error($r, 404, "Request \"$what\" requires a zone= argument");
+        }
+
+    }
+
+
+
     return 0;
 }
 
