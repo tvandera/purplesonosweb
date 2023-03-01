@@ -287,7 +287,7 @@ sub build_globals_data($self) {
 }
 
 ###############################################################################
-sub build_map($self) {
+sub build_all_data($self) {
     my %map = ();
 
     my $globals = $self->build_globals_data();

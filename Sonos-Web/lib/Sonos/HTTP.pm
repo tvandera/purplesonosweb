@@ -44,16 +44,10 @@ sub new {
     $self->register_handler("/getaa", sub { $self->send_albumart_response(@_) });
     $self->register_handler("/getAA", sub { $self->send_albumart_response(@_) });
     $self->register_handler("/hello", sub { $self->send_hello(@_) });
-
-
-    for (qw(globals action zone music active)) {
-        $self->register_handler("/api/$_", sub { $self->rest_api(@_) });
-    }
+    $self->register_handler("/api", sub { $self->rest_api(@_) });
 
     my $httpserver = Net::Async::HTTP::Server->new(
-        on_request => sub {
-            $self->handle_request(@_);
-        }
+        on_request => sub { $self->handle_request(@_); }
     );
 
     $loop->add( $httpserver );
@@ -230,22 +224,19 @@ sub handle_request($self, $server, $r) {
         return $self->send_file_response($r, $diskpath);
     }
 
-    if ( exists $qf{action} ) {
-        my $when_updated = sub { $self->send_tmpl_response($r, $diskpath) };
-        $self->action($r, $when_updated);
-    } else {
-        $self->send_tmpl_response($r, $diskpath);
-    }
-
+    $self->action($r, sub { $self->send_tmpl_response($r, $diskpath) });
 }
 
 ###############################################################################
 sub action {
-    my ($self, $r, $send_update) = @_;
+    my ($self, $r, $do_after) = @_;
 
     my %qf = $r->query_form;
-    my $mpath = decode( "UTF-8", $qf{mpath} );
     my $action = $qf{action};
+
+    return $do_after->() unless $action;
+
+    my $mpath = decode( "UTF-8", $qf{mpath} );
     my $lastupdate = $qf{lastupdate};
 
     my $player = $self->player($qf{zone}) if $qf{zone};
@@ -304,13 +295,9 @@ sub action {
     my $nowait = !$code->() || $qf{NoWait};
 
     # delay send_tmpl, or do immediately
-    if ($nowait) {
-        $send_update->();
-    } else {
-        $service->onUpdate($send_update);
-    }
+    return $do_after->() if ($nowait);
 
-    return $nowait;
+    $service->onUpdate($do_after);
 }
 
 ###############################################################################
@@ -411,20 +398,15 @@ sub send_hello($self, $req) {
     return 1;
 }
 
-sub rest_api($self, $req) {
-    my %qf = $req->query_form;
-    my $endpoint = $req->path =~ m@/\w+$@;
-    my $builder = Sonos::HTTP::MapBuilder->new($self->system(), \%qf);
+sub rest_api($self, $r) {
+    $self->sanitizeRequest($r) && return;
 
-    my %dispatch = (
-        "globals"=> sub { $builder->build_globals_data() },
-        "queue"  => sub { $builder->build_queue_data() },
-        "zones"  => sub { $builder->build_zones_data() },
-        "music"  => sub { $builder->build_music_data() },
-        "active" => sub { $builder->build_zone_data() },
-    );
+    my %qf = $r->query_form;
+    my $builder = Sonos::HTTP::Builder->new($self->system(), \%qf);
 
-    my $data = $dispatch{$endpoint}->();
+    my $what = $qf{"what"} || "zones";
+    my $method = "build_" . $what . "_data";
+    my $data = $builder->$method();
     my $json = $builder->to_json($data);
 
     my $response = HTTP::Response->new( 200 );

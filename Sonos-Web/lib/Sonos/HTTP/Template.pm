@@ -42,7 +42,7 @@ sub new {
         loop_context_vars => 1
     );
 
-    my $map    = $self->build_map();
+    my $map    = $self->build_all_data();
     $template->param(%$map);
 
     return $self;
