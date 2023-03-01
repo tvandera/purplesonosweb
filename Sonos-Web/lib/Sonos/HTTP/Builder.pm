@@ -82,8 +82,8 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
     if ($item->populated()) {
         my $mpath_arg = "";
         $mpath_arg .= $item->isQueueItem() ?  "queue=" : "mpath=";
-        $mpath_arg .= uri_escape_utf8($item->id());
-        $mpath_arg .= "&zone=" . $player->friendlyName() . "&" if $player;
+        $mpath_arg .= uri_escape_utf8($item->id()) . "&";
+        $mpath_arg .= "zone=" . $player->friendlyName() . "&" if $player;
 
         %data = (
             $prefix . "_NAME"        => encode_entities( $item->title() ),
@@ -271,7 +271,9 @@ sub build_globals_data($self) {
 
     my $qf = $self->qf();
     my @keys    = grep !/action|rand|mpath|msearch|link/, ( keys %$qf );
-    $globals->{"ALL_ARG"} = join "&", map { "$_=$qf->{$_}" } @keys;
+    my $all_arg = join "&", map { "$_=$qf->{$_}" } @keys;
+    $all_arg .= "&" if $all_arg;
+    $globals->{"ALL_ARG"} = $all_arg;
 
     $globals->{"MUSICDIR_AVAILABLE"} = 0;
     $globals->{"ZONES_LASTUPDATE"}   = $self->lastUpdate(); # FIXME
