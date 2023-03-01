@@ -58,7 +58,8 @@ sub lastUpdate($self) {
 
 sub player($self, $name_or_uuid = undef) {
     $name_or_uuid = $self->qf("zone") unless $name_or_uuid;
-    return $self->system()->player($name_or_uuid);
+    return $self->system()->player($name_or_uuid) if $name_or_uuid;
+    return; # undef
 }
 
 sub qf($self, $field = undef, $default = undef) {
