@@ -1,4 +1,4 @@
-package Sonos::HTTP::MapBuilder;
+package Sonos::HTTP::Builder;
 
 use v5.36;
 use strict;

@@ -20,7 +20,7 @@ use File::Spec::Functions 'catfile';
 use MIME::Types;
 
 require Sonos::HTTP::Template;
-require Sonos::HTTP::MapBuilder;
+require Sonos::HTTP::Builder;
 
 ###############################################################################
 # HTTP
