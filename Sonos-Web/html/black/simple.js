@@ -55,15 +55,15 @@ function drawControl() {
 }
 
 
-function goto(base, extra) { 
-    var url = base + '.html?' + zone_arg + music_arg; 
+function goto(base, extra) {
+    var url = base + '.html?' + zone_arg + music_arg;
     if (typeof extra !== 'undefined') url += extra;
-    window.location.href = url; 
+    window.location.href = url;
 }
 function reload() {
     if (page() != "playing") return;
 
-    var url = '/zone_data.html?action=Wait&' + zone_arg + 'lastupdate=' + last_update; 
+    var url = '/zone_data.html?action=Wait&' + zone_arg + 'lastupdate=' + last_update;
     var r   = new XMLHttpRequest();
     r.open("GET",url,true);
     r.onreadystatechange = function() { if (r.readyState == 4) eval(r.responseText); }
@@ -81,8 +81,8 @@ function send(cmd) {
 
 function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
 function seek(to) { window.location.href = "queue.html?" + zone_arg + "action=Seek&" + music_arg + to; }
-function play(music_arg){ send("PlayMusic&" + music_arg); goto("playing"); } 
-function add(music_arg){ send("AddMusic&" + music_arg); goto("playing"); } 
+function play(music_arg){ send("PlayMusic&" + music_arg); goto("playing"); }
+function add(music_arg){ send("AddMusic&" + music_arg); goto("playing"); }
 
 function softer() {
    send('MuchSofter');
@@ -97,5 +97,5 @@ function louder() {
    if (zone_info.ACTIVE_VOLUME > 100) zone_info.ACTIVE_VOLUME = 100;
    updateText("volume", "" +  zone_info.ACTIVE_VOLUME + "%");
 }
-    
+
 

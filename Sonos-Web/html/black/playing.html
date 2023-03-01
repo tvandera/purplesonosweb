@@ -2,18 +2,18 @@
 
 <div id="top-labels">
      <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
-     <h4 id="musiclabel" onclick="goto('music')">MUSIC LIBRARY</h4> 
+     <h4 id="musiclabel" onclick="goto('music')">MUSIC LIBRARY</h4>
 </div>
 
-<TMPL_IF name="ACTIVE_ZONE"> 
+<TMPL_IF name="HAS_ACTIVE_ZONE">
 <div id="current-track-info">
-    <img class="albumart" id="albumart" 
+    <img class="albumart" id="albumart"
       <TMPL_IF name="ACTIVE_ALBUMART">
          src="<TMPL_VAR name="ACTIVE_ALBUMART">"
       <TMPL_ELSE>
          src="tiles/missingaa_lite.svg"
       </TMPL_IF>
-    width="200" height="200"><br> 
+    width="200" height="200"><br>
     <label id="info"></label>
 </div>
 
@@ -48,7 +48,7 @@
       </TMPL_UNLESS>
     >
 </div>
- 
+
 <div id="volumes">
    <img onclick="softer();" width="44" height="44" src="svg/minus.svg" id="muchsofter">
     <label id="volume"><TMPL_VAR name="ACTIVE_VOLUME">%</label>

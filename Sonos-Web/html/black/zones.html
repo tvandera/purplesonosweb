@@ -1,14 +1,14 @@
 <TMPL_INCLUDE name="header.tmpl">
 
-<TMPL_IF NAME="ACTIVE_ZONE">
+<TMPL_IF NAME="HAS_ACTIVE_ZONE">
   <div id="top-labels">
      <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
   </div>
 </TMPL_IF>
 
 <div id="zones">
-<TMPL_LOOP name="ZONES_LOOP"> 
- <div 
+<TMPL_LOOP name="ZONES_LOOP">
+ <div
      <TMPL_IF name="ZONE_ACTIVE">
         class="active"
      <TMPL_ELSE>
@@ -21,18 +21,18 @@
        <img style='float: right;' onclick="goto('zones', '&action=Link&link=<TMPL_VAR name="ACTIVE_ZONEID">'); return true;" width="44" height="44" src="svg/link.svg">
    </TMPL_UNLESS>
    </TMPL_IF>
- 
+
    <TMPL_IF NAME="ZONE_NUMLINKED">
        <img style='float: right;' onclick="goto('zones', '&action=Unlink&link=<TMPL_VAR name="ZONE_ID">');" width="44" height="44" src="svg/unlink.svg">
    </TMPL_IF>
 
-   <ul 
+   <ul
        onclick="zone('<TMPL_VAR name="ZONE_ID">');">
-    <TMPL_LOOP name="ZONE_MEMBERS"> 
+    <TMPL_LOOP name="ZONE_MEMBERS">
        <li style="background-image: url(zone_icons/<TMPL_VAR name="ZONE_ICON">.png);">
          <TMPL_VAR name="ZONE_NAME" >
       </li>
-    </TMPL_LOOP> 
+    </TMPL_LOOP>
   </ul>
 
   <div class="zoneinfo">

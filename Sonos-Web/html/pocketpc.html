@@ -7,10 +7,10 @@
 <BODY>
 
 <table width=100% cellspacing=0 cellpadding=0><tr><td>
-<TMPL_UNLESS NAME=ACTIVE_ZONE> 
+<TMPL_UNLESS NAME=HAS_ACTIVE_ZONE>
 To begin, select a zone:<BR>
-</TMPL_UNLESS> 
-<TMPL_LOOP NAME=ZONES_LOOP> 
+</TMPL_UNLESS>
+<TMPL_LOOP NAME=ZONES_LOOP>
 	<TMPL_IF NAME=ZONE_ACTIVE>
 		<A HREF="/pocketpc.html?<TMPL_VAR NAME=ZONE_ARG>"><font size=+1 color=#000000><B><TMPL_VAR NAME=ZONE_NAME></font></B></A>
 	<TMPL_ELSE>
@@ -20,10 +20,10 @@ To begin, select a zone:<BR>
 </td><td align=right><font size=-1><A HREF="/pocketpc.html?<TMPL_VAR NAME=ALL_ARG>">Refresh</A></FONT>
 </td></tr></table>
 <hr>
-<TMPL_IF NAME=ACTIVE_ZONE> 
+<TMPL_IF NAME=HAS_ACTIVE_ZONE>
 
 <table border=0 width=100%  cellspacing=0 cellpadding=0>
-<TMPL_IF NAME=ACTIVE_ISRADIO> 
+<TMPL_IF NAME=ACTIVE_ISRADIO>
 <tr><td colspan=2><b>Radio</b></td></tr>
 <tr><td colspan=2><TMPL_VAR NAME=ACTIVE_NAME></td></tr>
 <tr><td colspan=2><TMPL_VAR NAME=ACTIVE_NAME></td></tr>
@@ -98,7 +98,7 @@ To begin, select a zone:<BR>
 <B><TMPL_VAR NAME=MUSIC_ERROR></B>
 
 <table border=0 cellspacing=1 cellpadding=0>
-<TMPL_LOOP NAME=MUSIC_LOOP> 
+<TMPL_LOOP NAME=MUSIC_LOOP>
 	<tr>
 	<td><font size=-1>
 <A HREF="/pocketpc.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic">+</A></font></td>

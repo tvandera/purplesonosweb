@@ -4,7 +4,7 @@
 </HEAD>
 <BODY>
 <FONT SIZE=0><A TARGET=_top HREF="index.html?<TMPL_VAR NAME=ALL_ARG>">Refresh</A></FONT><P>
-<TMPL_LOOP NAME=ZONES_LOOP> 
+<TMPL_LOOP NAME=ZONES_LOOP>
     <TMPL_IF NAME=ZONE_ACTIVE><B></TMPL_IF>
     <TMPL_IF NAME=ZONE_LINKED>
        &nbsp; &nbsp;<TMPL_VAR NAME=ZONE_NAME>
@@ -19,7 +19,7 @@
     <BR>
 </TMPL_LOOP>
 <P>
-<TMPL_IF NAME=ACTIVE_ZONE>
+<TMPL_IF NAME=HAS_ACTIVE_ZONE>
     <A TARGET=_top HREF="index.html?zone=<TMPL_VAR NAME=ACTIVE_ZONEID>&action=LinkAll">Party Mode</A>
 <TMPL_ELSE>
     <B>Select a zone to start</B>

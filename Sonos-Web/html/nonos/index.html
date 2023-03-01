@@ -5,52 +5,52 @@
 <title>NONOS - Web SONOS Controller</title>
 <meta http-equiv="refresh" content="3000;URL=index.html?<TMPL_VAR NAME=ALL_ARG>">
 </head>
-<body bgcolor="#697583" bottommargin="0" leftmargin="0" rightmargin="0" topmargin="0"> 
-<table  border="0" align="center" cellpadding="8" cellspacing="0"> 
-<tr> 
+<body bgcolor="#697583" bottommargin="0" leftmargin="0" rightmargin="0" topmargin="0">
+<table  border="0" align="center" cellpadding="8" cellspacing="0">
+<tr>
   <td>
-  <table  border="0" align="center" cellpadding="0" cellspacing="0"> 
-  <tr> 
+  <table  border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
     <td width="185" align="left" valign="top">
-    <table width="185" border="0" cellspacing="0" cellpadding="0"> 
+    <table width="185" border="0" cellspacing="0" cellpadding="0">
 
     <!-- NOW PLAYING START-->
-    <tr><td><img src="src_table_top.gif" width="275" height="7"></td></tr> 
-    <tr> 
+    <tr><td><img src="src_table_top.gif" width="275" height="7"></td></tr>
+    <tr>
       <td height="256" align="left" valign="top" bgcolor="#E4F2FF">
-      <table width="275" border="0" cellspacing="0" cellpadding="0"> 
-      <tr> 
-        <td width="10"><img src="shim.gif" height="8" width="8"></td> 
+      <table width="275" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td width="10"><img src="shim.gif" height="8" width="8"></td>
         <td width="167" align="left" valign="top">
           <font color="#990000" face="Arial, Helvetica, sans-serif" size="3"><b>NOW PLAYING
-          <br> 
-          <TMPL_VAR NAME=ACTIVE_ZONE> <br>
-          <br> 
+          <br>
+          <TMPL_VAR NAME=HAS_ACTIVE_ZONE> <br>
+          <br>
           </b></font>
 
           <TMPL_IF NAME=ACTIVE_ISRADIO>
             <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Source<br></font>
             <font color="#0A3157" face="Arial, Helvetica, sans-serif" size="2"><b>Internet Radio
-            <br> 
-            <br> 
+            <br>
+            <br>
             </b></font>
             <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Station<br></font>
-            <font color="#0A3157" size="2" face="Arial, Helvetica, sans-serif"><b><TMPL_VAR NAME=ACTIVE_ALBUM> </b></font> 
-            <hr align="center" noshade color="#99CCFF" size="1" width="100%"> 
-            <br> 
+            <font color="#0A3157" size="2" face="Arial, Helvetica, sans-serif"><b><TMPL_VAR NAME=ACTIVE_ALBUM> </b></font>
+            <hr align="center" noshade color="#99CCFF" size="1" width="100%">
+            <br>
             <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Information</font>
-            <font color="#0A3157" size="2" face="Arial, Helvetica, sans-serif"><b><br><TMPL_VAR NAME=ACTIVE_NAME></b></font> 
-          <TMPL_ELSE> 
+            <font color="#0A3157" size="2" face="Arial, Helvetica, sans-serif"><b><br><TMPL_VAR NAME=ACTIVE_NAME></b></font>
+          <TMPL_ELSE>
             <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Track [<TMPL_VAR NAME=ACTIVE_TRACK_NUM>/<TMPL_VAR NAME=ACTIVE_TRACK_TOT>]</font>
 
-            <font color="#0A3157" face="Arial, Helvetica, sans-serif" size="2"><b><TMPL_VAR NAME=ACTIVE_NAME> 
+            <font color="#0A3157" face="Arial, Helvetica, sans-serif" size="2"><b><TMPL_VAR NAME=ACTIVE_NAME>
             <hr align="center" noshade color="#99CCFF" size="1" width="100%">
-            </b></font>						
-            <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Artist</font>                         
+            </b></font>
+            <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Artist</font>
             <font color="#0A3157" face="Arial, Helvetica, sans-serif" size="2"><b><TMPL_VAR NAME=ACTIVE_ARTIST>
             <hr align="center" noshade color="#99CCFF" size="1" width="100%">
             </b></font>
-            <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Album</font> 
+            <font color="#697583" face="Arial, Helvetica, sans-serif" size="1">Album</font>
             <font color="#0A3157" face="Arial, Helvetica, sans-serif" size="2"><b><TMPL_VAR NAME=ACTIVE_ALBUM></b></font>
 
             <hr align="center" noshade color="#99CCFF" size="1" width="100%">
@@ -60,18 +60,18 @@
             </TMPL_IF>
 
           </TMPL_IF>
-        </td> 
-        <td width="10"><img src="shim.gif" height="8" width="8"></td> 
-      </tr> 
+        </td>
+        <td width="10"><img src="shim.gif" height="8" width="8"></td>
+      </tr>
       </table>
-      </td> 
-    </tr> 
-    <tr> <td><img src="src_table_bottom.gif" width="275" height="7"></td> </tr> 
+      </td>
+    </tr>
+    <tr> <td><img src="src_table_bottom.gif" width="275" height="7"></td> </tr>
     <!-- NOW PLAYING END-->
   </table>
-  </td> 
+  </td>
 
-  <td width="4"><img src="shim.gif" width="4" height="256"></td> 
+  <td width="4"><img src="shim.gif" width="4" height="256"></td>
   <td width="275" align="left" valign="top">
   <table width="275" border="0" cellspacing="0" cellpadding="0">
     <!-- ZONES START  -->
@@ -82,7 +82,7 @@
         <tr>
           <td width="8"><img src="shim.gif" height="8" width="8"></td>
           <td width="258" align="left" valign="top"> <font color="#F7F7F7" face="Arial, Helvetica, sans-serif" size="3"><b>ZONES</b></font><br>
-          <TMPL_LOOP NAME=ZONES_LOOP> 
+          <TMPL_LOOP NAME=ZONES_LOOP>
             <TMPL_IF NAME=ZONE_IMG><IMG SRC="<TMPL_VAR NAME=ZONE_IMG>" align="right"> </TMPL_IF>
             <TMPL_IF NAME=ZONE_ACTIVE><I></TMPL_IF>
             <TMPL_IF NAME=ZONE_LINKED><font color="#FFFFFF" face="Arial, Helvetica, sans-serif" size="1">&nbsp; &nbsp; <TMPL_VAR NAME=ZONE_NAME></font>
@@ -92,7 +92,7 @@
             <BR>
           </TMPL_LOOP>
           <P>
-          <TMPL_UNLESS NAME=ACTIVE_ZONE>
+          <TMPL_UNLESS NAME=HAS_ACTIVE_ZONE>
             <B><font color="#FFFFFF" face="Arial, Helvetica, sans-serif" size="1">Select a zone to start</font></B>
           </TMPL_UNLESS> </td>
           <td width="8"><img src="shim.gif" height="8" width="8"></td>
@@ -105,7 +105,7 @@
     <tr> <td><img src="shim.gif" height="4" width="275"></td> </tr>
     <!-- CRTL START -->
     <tr> <td><img src="crtl_table_top.gif" width="275" height="8"></td> </tr>
-    <tr> 
+    <tr>
       <td bgcolor="#F7F7F7">
       <table width="275" border="0" cellspacing="0" cellpadding="0">
       <tr>
@@ -146,7 +146,7 @@
       <tr>
         <td width="8"><img src="shim.gif" height="8" width="8"></td>
         <td colspan="2" align="left" valign="top">
-        <TMPL_LOOP NAME=QUEUE_LOOP> 
+        <TMPL_LOOP NAME=QUEUE_LOOP>
           <A HREF="index.html?<TMPL_VAR NAME=QUEUE_ARG>&action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
           <A HREF="index.html?<TMPL_VAR NAME=QUEUE_ARG>&action=Seek"><TMPL_VAR NAME=QUEUE_NAME></A>
           <BR>
@@ -166,9 +166,9 @@
     <tr> <td><img src="src_table_bottom.gif" width="275" height="8"></td> </tr>
     <!-- QUEUE END -->
     </table>
-  </td> 
+  </td>
 
-  <td width="4"><img src="shim.gif" width="4" height="0"></td> 
+  <td width="4"><img src="shim.gif" width="4" height="0"></td>
   <td width="275" align="left" valign="top">
   <table width="275" border="0" cellspacing="0" cellpadding="0">
     <!-- MUSIC START -->
@@ -192,7 +192,7 @@
         <td width="8"><img src="shim.gif" height="8" width="8"></td>
         <td colspan="2" align="left" valign="top"> <font color="#515A65" face="Arial, Helvetica, sans-serif" size="0">
         <B><TMPL_VAR NAME=MUSIC_ERROR></B>
-        <TMPL_LOOP NAME=MUSIC_LOOP> 
+        <TMPL_LOOP NAME=MUSIC_LOOP>
           <TMPL_UNLESS NAME=MUSIC_ROOT>
             <A HREF="index.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
             <A HREF="index.html?<TMPL_VAR NAME=ALL_ARG><TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
@@ -228,12 +228,12 @@
     <tr> <td><img src="src_table_bottom.gif" width="275" height="8"></td> </tr>
     <!-- MUSIC END -->
     </table>
-    </td> 
-  </tr> 
+    </td>
+  </tr>
   </table>
-  </td> 
-</tr> 
-</table> 
+  </td>
+</tr>
+</table>
 <map name="Map">
   <area shape="rect" coords="-8,1,32,41" href="index.html?<TMPL_VAR NAME=ALL_ARG>&action=MuchSofter">
   <area shape="rect" coords="31,1,68,39" href="index.html?<TMPL_VAR NAME=ALL_ARG>&action=Softer">
