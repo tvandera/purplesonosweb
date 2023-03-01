@@ -132,7 +132,7 @@ sub build_zones_data($self) {
 
 ###############################################################################
 sub build_zone_data($self, $player = undef) {
-    $player = $self->qf("player") unless $player;
+    $player = $self->player() unless $player;
     return {} unless $player;
 
     my %activedata;
