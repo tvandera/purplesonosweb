@@ -138,7 +138,7 @@ sub build_zone_data($self, $player = undef) {
 
     my %activedata;
     my $updatenum = $self->qf("updatenum", -1);
-    my $active_player = $self->qf("zone");
+    my $active_player = $self->player();
 
     my $render = $player->renderingControl();
     my $av = $player->avTransport();
