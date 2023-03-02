@@ -101,6 +101,10 @@ sub sockets($self) {
     return $self->controlPoint()->sockets()
 }
 
+sub log($self, $comp, @args) {
+    INFO sprintf("[%12s]: ", $comp), @args;
+}
+
 sub addToLoop($self, $loop) {
     carp "No a IO::Async::Loop::Select" unless $loop isa 'IO::Async::Loop::Select';
     carp "Already added" if defined $self->{_loop};

@@ -97,13 +97,17 @@ sub getService($self, $name) {
     return $self->{_services}->{$name};
 }
 
+sub system($self) {
+    return $self->{_discovery};
+}
+
 # UPnP::ControlPoint object
 sub getUPnP($self) {
     return $self->{_upnp};
 }
 
 sub log($self, @args) {
-    INFO sprintf("[%12s]: ", $self->friendlyName), @args;
+    $self->system()->log($self->friendlyName, @args);
 }
 
 # -- methods for the different services --
