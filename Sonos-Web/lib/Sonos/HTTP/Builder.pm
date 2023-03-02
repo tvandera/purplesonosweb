@@ -97,6 +97,7 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
             $prefix . "_ISRADIO"     => int( $item->isRadio() ),
             $prefix . "_ISALBUM"     => int( $item->isAlbum() ),
             $prefix . "_ISFAV"       => int( $item->isFav() ),
+            $prefix . "_ISTOP"       => int( $item->isTop() ),
             $prefix . "_ISCONTAINER" => int( $item->isContainer() ),
             $prefix . "_ARG"         => $mpath_arg,
         );

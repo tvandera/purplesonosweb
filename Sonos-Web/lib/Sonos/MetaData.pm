@@ -18,21 +18,21 @@ use constant ROOT_ID => "";
 sub topItems() {
     my @table = (
         [ "update_id",             "dc:title",          "parentID", "id",   "upnp:class", "upnp:albumArtURI"  ],
-        [ "",                      "Music Library",      NO_PARENT_ID, "",        "container", "tiles/library.svg" ],
+        [ "",                      "Music Library",      NO_PARENT_ID, "",  "container.top", "tiles/library.svg" ],
 
-        [ "FavoritesUpdateID",     "Favorites",          "", "FV:2",        "container.sonos-favorite", "tiles/favorites.svg" ],
+        [ "FavoritesUpdateID",     "Favorites",          "", "FV:2",        "container.top", "tiles/favorites.svg" ],
 
-        [ "ShareListUpdateID",     "Artists",            "", "A:ARTIST",    "container.musicArtist", "tiles/artists.svg" ],
-        [ "ShareListUpdateID",     "Albums",             "", "A:ALBUM",     "container.musicAlbum", "tiles/album.svg" ],
-        [ "ShareListUpdateID",     "Genres",             "", "A:GENRE",     "container.musicGenre", "tiles/genre.svg" ],
-        [ "ShareListUpdateID",     "Composers",          "", "A:COMPOSER",  "container.composer", "tiles/composers.svg" ],
-        [ "ShareListUpdateID",     "Tracks",             "", "A:TRACKS",    "container.musicTrack", "tiles/track.svg" ],
-        [ "ShareListUpdateID",     "Imported Playlists", "", "A:PLAYLISTS", "container.playlistContainer", "tiles/playlist.svg" ],
-        [ "ShareListUpdateID",     "Folders",            "", "S:",          "container.musicTrack", "tiles/folder.svg" ],
+        [ "ShareListUpdateID",     "Artists",            "", "A:ARTIST",    "container.top", "tiles/artists.svg" ],
+        [ "ShareListUpdateID",     "Albums",             "", "A:ALBUM",     "container.top", "tiles/album.svg" ],
+        [ "ShareListUpdateID",     "Genres",             "", "A:GENRE",     "container.top", "tiles/genre.svg" ],
+        [ "ShareListUpdateID",     "Composers",          "", "A:COMPOSER",  "container.top", "tiles/composers.svg" ],
+        [ "ShareListUpdateID",     "Tracks",             "", "A:TRACKS",    "container.top", "tiles/track.svg" ],
+        [ "ShareListUpdateID",     "Imported Playlists", "", "A:PLAYLISTS", "container.top", "tiles/playlist.svg" ],
+        [ "ShareListUpdateID",     "Folders",            "", "S:",          "container.top", "tiles/folder.svg" ],
 
-        [ "RadioLocationUpdateID", "Radio",              "", "R:0/0",       "container.audioBroadcast", "tiles/radio_logo.svg" ],
+        [ "RadioLocationUpdateID", "Radio",              "", "R:0/0",       "container.top", "tiles/radio_logo.svg" ],
 
-        [ "SavedQueuesUpdateID",   "Playlists",          "", "SQ:",         "container.playlistContainer", "tiles/sonos_playlists.svg" ],
+        [ "SavedQueuesUpdateID",   "Playlists",          "", "SQ:",         "container.top", "tiles/sonos_playlists.svg" ],
     );
 
     my @keys = @{shift @table};
@@ -233,6 +233,7 @@ sub isRadio($self) { return $self->class() eq "audioBroadcast"; }
 sub isSong($self)  { return $self->class() eq "musicTrack"; }
 sub isAlbum($self) { return $self->class() eq "musicAlbum"; }
 sub isFav($self)   { return $self->class() eq "favorite"; }
+sub isTop($self)   { return $self->class() eq "top"; }
 sub isContainer($self) {
     my $class = $self->prop("upnp:class");
     return $class =~ m/container/g;
