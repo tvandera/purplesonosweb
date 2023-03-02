@@ -19,12 +19,6 @@ require File::MimeInfo;
 
 require Image::Resize;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
-
-use Data::Dumper;
-use Carp;
-
 use constant AA_BASENAME => "albumart_cache";
 use constant JSON_BASENAME => "albumart_cache.json";
 
@@ -61,8 +55,7 @@ sub load($self) {
 
     for (@items) {
         my ($sha, $mime_type, $filename) = @$_;
-        my $full_filename = $self->cacheDir() . "/" . $filename;
-        my $blob = read_file($full_filename);
+        my $blob = read_file($self->cacheDir() . "/" . $filename) if $filename;
         $self->{_album_art}->{$sha} = [ $mime_type, $blob, $filename ];
     }
 }
@@ -111,7 +104,10 @@ sub get($self, $uri) {
 
     # in memory cache?
     my $cache_ref = $self->{_album_art}->{$sha};
-    return $sha, @$cache_ref if defined $cache_ref;
+    if (defined $cache_ref) {
+        $self->system()->log("aacache", "hit [$uri]");
+        return $sha, @$cache_ref;
+    }
 
     # choose a random player to download from
     my @players = $self->system()->players();
@@ -138,6 +134,8 @@ sub get($self, $uri) {
     # save + write json
     $self->{_album_art}->{$sha} = [ $mime_type, $blob, $filename ];
     $self->save();
+
+    $self->system()->log("aacache", "miss [$uri]");
 
     return $sha, $mime_type, $blob, $filename;
 }
