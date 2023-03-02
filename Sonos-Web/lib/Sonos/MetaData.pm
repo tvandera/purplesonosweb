@@ -138,7 +138,13 @@ sub content($self)             { return $self->prop("res", "content"); }
 sub title($self)               { return $self->prop("dc:title"); }
 sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
-sub albumArtURI($self)         { return $self->prop("upnp:albumArtURI"); }
+
+sub albumArtURI($self) {
+    my $aa = $self->prop("upnp:albumArtURI");
+    return $aa unless ref $aa eq "ARRAY";
+    return $aa->[0];
+}
+
 sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber"); }
 sub description($self)         { return $self->prop("r:desciption"); }
 
