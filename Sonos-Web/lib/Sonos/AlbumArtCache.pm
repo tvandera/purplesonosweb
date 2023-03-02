@@ -17,6 +17,8 @@ use IO::Scalar;
 require File::MimeInfo::Magic;
 require File::MimeInfo;
 
+require Image::Resize;
+
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
 
@@ -52,10 +54,10 @@ sub cacheFilename($self) {
 }
 
 sub load($self) {
-    my $filename = $self->cacheFilename();
-    return if not -e $filename;
+    my $cachefilename = $self->cacheFilename();
+    return if not -e $cachefilename;
 
-    my @items = @{decode_json(read_file($filename))};
+    my @items = @{decode_json(read_file($cachefilename))};
 
     for (@items) {
         my ($sha, $mime_type, $filename) = @$_;
@@ -93,6 +95,13 @@ sub extensionOf($self, $blob) {
     return shift @extensions;
 }
 
+sub resize($self, $blob) {
+    my $gdinput = GD::Image->new($blob);
+    my $image = Image::Resize->new($gdinput);
+    my $gdoutput = $image->resize(200, 200);
+    return $gdoutput->jpeg();
+}
+
 
 # returns a JPEG/PNG/.. blob
 # - cache key: albumArtURI
@@ -115,6 +124,8 @@ sub get($self, $uri) {
 
     if ($response->is_success()) {
         $blob = $response->content;
+        $blob = $self->resize($blob);
+
         # Sonos returns the wrong or no mime type, determine from blob
         $mime_type = $self->mimeTypeOf($blob);
         $filename = sha256_hex($blob) . "." . $self->extensionOf($blob);
