@@ -12,11 +12,7 @@ use List::Util qw(first);
 use JSON::XS;
 use File::Slurp;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
 
-use Data::Dumper;
-use Carp;
 
 sub contentDirectory($self) {
     return $self->player()->contentDirectory();

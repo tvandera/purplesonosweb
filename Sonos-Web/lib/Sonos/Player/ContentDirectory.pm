@@ -9,11 +9,7 @@ use base 'Sonos::Player::Service';
 require Sonos::MetaData;
 require Sonos::Player::Queue;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
 
-use Data::Dumper;
-use Carp;
 
 use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
@@ -121,7 +117,6 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0) {
     @items = map { Sonos::Player::Service::derefHelper($_) }  @items;
 
     $self->player()->log(" .  Found " . scalar(@items) . " entries.");
-    #DEBUG Dumper(@items[0..10]);
 
     return @items unless $recurse;
 

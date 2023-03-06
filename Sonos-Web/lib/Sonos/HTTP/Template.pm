@@ -7,10 +7,6 @@ use strict;
 use warnings;
 
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
-use Data::Dumper;
-use Carp;
 
 use HTML::Entities;
 use URI::Escape;

@@ -4,10 +4,6 @@ use v5.36;
 use strict;
 use warnings;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
-use Data::Dumper;
-use Carp;
 
 require IO::Async::Listener;
 require HTTP::Daemon;
@@ -69,7 +65,7 @@ sub qf($self, $field = undef, $default = undef) {
 }
 
 sub log($self, @args) {
-    INFO sprintf("[%12s]: ", "template"), @args;
+    $self->system()->log("template", @args);
 }
 
 sub to_json {

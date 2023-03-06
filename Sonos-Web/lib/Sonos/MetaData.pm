@@ -6,11 +6,7 @@ use warnings;
 
 use List::MoreUtils qw(zip);
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
 
-use Data::Dumper;
-use Carp;
 
 use constant NO_PARENT_ID => "NO_PARENT";
 use constant ROOT_ID => "";

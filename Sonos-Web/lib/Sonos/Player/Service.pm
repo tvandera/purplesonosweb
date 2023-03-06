@@ -7,8 +7,6 @@ use warnings;
 use constant SERVICE_PREFIX => "urn:schemas-upnp-org:service:";
 use constant SERVICE_SUFFIX => ":1";
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
 
 use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
@@ -16,7 +14,6 @@ XML::Liberal->globally_override('LibXML');
 
 use HTML::Entities;
 
-use Data::Dumper;
 
 sub new {
     my($self, $player) = @_;

@@ -4,10 +4,6 @@ use v5.36;
 use strict;
 use warnings;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
-use Data::Dumper;
-use Carp;
 
 use File::Slurp qw(read_file);
 
@@ -95,7 +91,7 @@ sub diskpath($self, $path) {
 }
 
 sub log($self, @args) {
-    INFO sprintf("[%12s]: ", "httpd"), @args;
+    $self->system()->log("httpd", @args);
 }
 
 
@@ -304,7 +300,7 @@ sub action {
         "Browse"     => [ undef, sub { return 0; } ],
     );
 
-    carp "Unknown action \"$action\"" unless exists $dispatch{$action};
+    warn "Unknown action \"$action\"" unless exists $dispatch{$action};
 
     my ($service, $code) = @{$dispatch{$action}};
 

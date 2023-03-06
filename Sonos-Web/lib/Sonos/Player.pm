@@ -8,8 +8,6 @@ use List::Util qw(all max);
 
 require UPnP::ControlPoint;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init( { level => $DEBUG, utf8     => 1, });
 
 use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
@@ -17,8 +15,6 @@ XML::Liberal->globally_override('LibXML');
 
 use HTML::Entities;
 
-use Data::Dumper;
-use Carp;
 
 require Sonos::Player::ZoneGroupTopology;
 require Sonos::Player::ContentDirectory;

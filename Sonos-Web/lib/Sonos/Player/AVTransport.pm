@@ -8,11 +8,7 @@ use v5.36;
 use strict;
 use warnings;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
 
-use Data::Dumper;
-use Carp;
 
 
 # Global
@@ -61,7 +57,6 @@ sub isQueueItem($self) { return 0; }
 sub isTop($self)       { return 0; }
 
 sub info($self) {
-    #DEBUG Dumper($self->{_state});
     my @fields = (
         "lastUpdateReadable",
         "transportState",
@@ -76,7 +71,6 @@ sub info($self) {
     for ( "curTrack", "curTransport", "nextTrack" ) {
         next unless $self->$_()->populated();
         $self->log("  $_:");
-        # $self->log(Dumper($self->$_()));
         $self->$_()->log($self, " " x 4);
     }
 

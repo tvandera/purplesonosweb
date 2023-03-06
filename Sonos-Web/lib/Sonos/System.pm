@@ -15,7 +15,9 @@ require IO::Async::Handle;
 require IO::Async::Loop::Select;
 
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
+Log::Log4perl->easy_init(
+    $DEBUG
+);
 
 use Carp;
 use Data::Dumper;

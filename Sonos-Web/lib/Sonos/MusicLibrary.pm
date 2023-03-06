@@ -10,11 +10,7 @@ use List::Util qw(first reduce);
 use JSON::XS;
 use File::Slurp;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
 
-use Data::Dumper;
-use Carp;
 
 use constant JSON_BASENAME => "content_cache.json";
 
@@ -146,15 +142,15 @@ sub addItemsOnly($self, @items) {
 
         next if $item->isRootItem();
 
-        carp "Parent item with id $parentid does not exist"
+        warn "Parent item with id $parentid does not exist"
             unless exists $self->{_items}->{$parentid};
 
-        carp "Parent id $parentid not lexographically before child $id"
+        warn "Parent id $parentid not lexographically before child $id"
             unless $parentid lt $id;
 
         $self->{_tree}->{$parentid} = [] unless defined $self->{_tree}->{$parentid};
         my $itemlist = $self->{_tree}->{$parentid};
-        carp "Item with id $id already exists in parent list" if grep{$_ eq $id} @$itemlist;
+        warn "Item with id $id already exists in parent list" if grep{$_ eq $id} @$itemlist;
 
         push @$itemlist, $id;
     }
