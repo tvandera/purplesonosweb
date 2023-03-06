@@ -38,7 +38,6 @@ sub new {
 
     # HTTP Handlers
     $self->register_handler("/getaa", sub { $self->send_albumart_response(@_) });
-    $self->register_handler("/getAA", sub { $self->send_albumart_response(@_) });
     $self->register_handler("/hello", sub { $self->send_hello(@_) });
     $self->register_handler("/api", sub { $self->rest_api(@_) });
 
@@ -184,7 +183,7 @@ sub sanitizeRequest($self, $r) {
 
     if (exists $qf{what}) {
         my $what = $qf{what};
-        my @allowed_requests = qw(globals music zones zone queue all);
+        my @allowed_requests = qw(globals music zones zone queue none all);
         unless (grep { $what eq $_ } @allowed_requests) {
             return $self->send_error($r, 404, "Request \"$what\" unknown. Known: " . (join ", ", @allowed_requests));
         }
@@ -411,21 +410,21 @@ sub send_hello($self, $req) {
 }
 
 sub rest_api($self, $r) {
-    $self->sanitizeRequest($r) && return;
+    $self->action($r, sub {
+        my %qf = $r->query_form;
+        my $builder = Sonos::HTTP::Builder->new($self->system(), \%qf);
 
-    my %qf = $r->query_form;
-    my $builder = Sonos::HTTP::Builder->new($self->system(), \%qf);
+        my $what = $qf{"what"} || "zones";
+        my $method = "build_" . $what . "_data";
+        my $data = $builder->$method();
+        my $json = $builder->to_json($data);
 
-    my $what = $qf{"what"} || "zones";
-    my $method = "build_" . $what . "_data";
-    my $data = $builder->$method();
-    my $json = $builder->to_json($data);
-
-    my $response = HTTP::Response->new( 200 );
-    $response->add_content( $json );
-    $response->content_type( "application/json" );
-    $response->content_length( length $response->content );
-    $r->respond( $response );
+        my $response = HTTP::Response->new( 200 );
+        $response->add_content( $json );
+        $response->content_type( "application/json" );
+        $response->content_length( length $response->content );
+        $r->respond( $response );
+    });
 
     return 1;
 }

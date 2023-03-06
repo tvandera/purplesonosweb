@@ -73,6 +73,7 @@ sub to_json {
     $self->{_json}->encode(@_);
 }
 
+
 sub build_item_data($self, $prefix, $item, $player = undef) {
     my %data;
     if ($item->populated()) {
@@ -119,6 +120,9 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
     return %data;
 }
 
+sub build_none_data($self) {
+    return {};
+}
 
 ###############################################################################
 sub build_zones_data($self) {
