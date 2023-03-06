@@ -60,23 +60,28 @@ function goto(base, extra) {
     if (typeof extra !== 'undefined') url += extra;
     window.location.href = url;
 }
+
 function reload() {
     if (page() != "playing") return;
 
-    var url = '/zone_data.html?action=Wait&' + zone_arg + 'lastupdate=' + last_update;
+    var url = '/api?what=zone&action=Wait&' + zone_arg + 'lastupdate=' + last_update;
     var r   = new XMLHttpRequest();
     r.open("GET",url,true);
-    r.onreadystatechange = function() { if (r.readyState == 4) eval(r.responseText); }
+    r.onreadystatechange = function() {
+        if (r.readyState == 4)
+            zone_info = eval(r.responseText);
+    };
     r.send();
 }
+
 function browse(music_arg) { window.location.href = 'music.html?' + zone_arg + music_arg + "&action=Browse"; }
 function zone(name)   { window.location.href = 'playing.html?zone=' + name + "&" + music_arg; }
 
 function send(cmd) {
-  var url = '/action.html?NoWait=1&' + zone_arg + 'action=' + cmd;
-  var r   = new XMLHttpRequest();
-  r.open("GET",url,true);
-  r.send();
+    var url = '/api?what=none&NoWait=1&' + zone_arg + 'action=' + cmd;
+    var r = new XMLHttpRequest();
+    r.open("GET", url, true);
+    r.send();
 }
 
 function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
