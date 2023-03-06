@@ -78,7 +78,7 @@ sub player($self) {
 }
 
 sub system($self) {
-    return $self->player()->{_discovery};
+    return $self->player()->{_system};
 }
 
 sub baseURL($self) {

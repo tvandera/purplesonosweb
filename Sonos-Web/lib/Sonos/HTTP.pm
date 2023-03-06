@@ -27,7 +27,7 @@ sub new {
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _discovery => $discover,
+        _system => $discover,
         _daemon => undef,
         _handlers => {},
         _loop => $loop,
@@ -71,7 +71,7 @@ sub version($self) {
 }
 
 sub system($self) {
-    return $self->{_discovery};
+    return $self->{_system};
 }
 
 sub player($self, $name_or_uuid) {

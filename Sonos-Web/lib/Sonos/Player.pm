@@ -37,7 +37,7 @@ sub new {
 
     $self = bless {
         _upnp => $upnp,
-        _discovery => $discover,
+        _system => $discover,
         _services => { },
         _callbacks => [ ],
     }, $class;
@@ -94,7 +94,7 @@ sub getService($self, $name) {
 }
 
 sub system($self) {
-    return $self->{_discovery};
+    return $self->{_system};
 }
 
 # UPnP::ControlPoint object

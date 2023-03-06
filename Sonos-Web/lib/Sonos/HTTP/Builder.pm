@@ -26,7 +26,7 @@ sub new {
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _discovery => $discover,
+        _system => $discover,
         _qf => $qf,
         _json => JSON->new(),
     }, $class;
@@ -41,7 +41,7 @@ sub version($self) {
 }
 
 sub system($self) {
-    return $self->{_discovery};
+    return $self->{_system};
 }
 
 sub players($self) {

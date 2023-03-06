@@ -16,11 +16,11 @@ use constant JSON_BASENAME => "content_cache.json";
 
 # Contains music library cache
 sub new {
-    my($self, $discovery) = @_;
+    my($self, $system) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _discovery => $discovery,
+        _system => $system,
         _updateids => { },
         _items => { },
         _tree => { },
@@ -62,8 +62,8 @@ sub version($self, $id) {
     return @$value;
 }
 
-sub discovery($self) {
-    return $self->{_discovery};
+sub system($self) {
+    return $self->{_system};
 }
 
 sub playerForID($self, $id) {
@@ -77,7 +77,7 @@ sub playerForID($self, $id) {
 
     # now find what player to contact based on _updateids
     my ($uuid, $version) = @{$self->{_updateids}->{$rootid}};
-    my $player = $self->discovery()->player($uuid);
+    my $player = $self->system()->player($uuid);
     return $player
 }
 
@@ -164,7 +164,7 @@ sub addItems($self, $id, $udn, $version, @items) {
 
 sub player($self, $id) {
     my ($udn, $version) = $self->{_updateids}->{$id};
-    $self->{_discovery}->player($udn);
+    $self->{_system}->player($udn);
 }
 
 sub addTopItems($self) {

@@ -24,11 +24,11 @@ use constant JSON_BASENAME => "albumart_cache.json";
 
 # Contains music library cache
 sub new {
-    my($self, $discovery) = @_;
+    my($self, $system) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _discovery => $discovery,
+        _system => $system,
         _album_art => {},
         _useragent => LWP::UserAgent->new(),
     }, $class;
@@ -74,7 +74,7 @@ sub save($self) {
 }
 
 sub system($self) {
-    return $self->{_discovery};
+    return $self->{_system};
 }
 
 sub mimeTypeOf($self, $blob) {
