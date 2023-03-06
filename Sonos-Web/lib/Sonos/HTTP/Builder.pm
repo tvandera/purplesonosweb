@@ -127,7 +127,7 @@ sub build_none_data($self) {
 ###############################################################################
 sub build_zones_data($self) {
     my @zones = map { $self->build_zone_data( $_ ) } $self->players();
-    return \@zones;
+    return { "ZONES_LOOP" => \@zones };
 }
 
 
@@ -209,8 +209,6 @@ sub build_zone_data($self, $player = undef) {
     $activedata{ZONE_LINK}      = $zonetopology->coordinator()->{UUID};
     $activedata{ZONE_LINK_NAME} = $zonetopology->coordinator()->{ZoneName};
 
-    $activedata{ACTIVE_JSON} = $self->to_json( \%activedata );
-
     return \%activedata;
 }
 
@@ -232,7 +230,6 @@ sub build_queue_data($self) {
 
     my @loop_data = map { { $self->build_item_data("QUEUE", $_, $player) } } $queue->items();
     $queuedata{QUEUE_LOOP} = \@loop_data;
-    $queuedata{QUEUE_JSON} = $self->to_json( \@loop_data );
 
     return \%queuedata;
 }
@@ -253,7 +250,6 @@ sub build_music_data($self) {
 
     %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
     $musicdata{"MUSIC_UPDATED"}    = 1;
-
 
     my @music_loop_data = map { { $self->build_item_data("MUSIC", $_) } } @elements;
 
@@ -285,26 +281,8 @@ sub build_globals_data($self) {
 
 ###############################################################################
 sub build_all_data($self) {
-    my %map = ();
-
-    my $globals = $self->build_globals_data();
-    $map{GLOBALS_JSON} = $self->to_json( $globals );
-    %map = ( %map, %$globals );
-
-    my $zones = $self->build_zones_data();
-    $map{ZONES_LOOP} = $zones;
-    $map{ZONES_JSON} = $self->to_json( $zones );
-
-    my $queue = $self->build_queue_data();
-    $map{QUEUE_JSON} = $self->to_json( $queue );
-    %map = ( %map, %$queue );
-
-    my $music = $self->build_music_data();
-    $map{MUSIC_JSON} = $self->to_json( $music );
-    %map = ( %map, %$music );
-
-    my $zone = $self->build_zone_data( $self->qf("player") );
-    %map = ( %map, %$zone );
-
-    return \%map;
+    my @categories = ( "globals" , "zones", "queue", "music", "zones" ) ;
+    my @methods = map { "build_" . $_ . "_data" } @categories;
+    my %data =  map { %{ $self->$_() } } @methods;
+    return \%data;
 }
