@@ -281,7 +281,7 @@ sub build_globals_data($self) {
 
 ###############################################################################
 sub build_all_data($self) {
-    my @categories = ( "globals" , "zones", "queue", "music", "zones" ) ;
+    my @categories = ( "globals" , "zone", "queue", "music", "zones" ) ;
     my @methods = map { "build_" . $_ . "_data" } @categories;
     my %data =  map { %{ $self->$_() } } @methods;
     return \%data;
