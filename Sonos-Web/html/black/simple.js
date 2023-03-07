@@ -31,7 +31,6 @@ function updateToggle(first, second, doFirst) {
     document.getElementById(second).style.display  = (doFirst?"none":"inline");
 }
 
-
 function drawControl() {
     if (page() != "playing") return;
 
@@ -52,6 +51,8 @@ function drawControl() {
     var image = zone_info.ACTIVE_ALBUMART;
     if (!image) image = "tiles/missingaa_lite.svg";
     updateSrc('albumart', image);
+
+    update();
 }
 
 
@@ -61,27 +62,43 @@ function goto(base, extra) {
     window.location.href = url;
 }
 
-function reload() {
-    if (page() != "playing") return;
 
-    var url = '/api?what=zone&action=Wait&' + zone_arg + 'lastupdate=' + last_update;
-    var r   = new XMLHttpRequest();
-    r.open("GET",url,true);
-    r.onreadystatechange = function() {
-        if (r.readyState == 4)
-            zone_info = eval(r.responseText);
-    };
-    r.send();
-}
-
-function browse(music_arg) { window.location.href = 'music.html?' + zone_arg + music_arg + "&action=Browse"; }
+function browse(music_arg) {window.location.href = 'music.html?' + zone_arg + music_arg + "&action=Browse"; }
 function zone(name)   { window.location.href = 'playing.html?zone=' + name + "&" + music_arg; }
 
-function send(cmd) {
-    var url = '/api?what=none&NoWait=1&' + zone_arg + 'action=' + cmd;
+var zone_info = null;
+
+function update() {
+    if (page() != "playing") return;
+
+    cmd = zone_info ? "Wait" : "None";
+    r = send(
+        cmd = cmd,
+        what = "zone",
+        onload = function() {
+            console.log(this);
+            zone_info = JSON.parse(this.responseText);
+            last_update = zone_info.ACTIVE_LASTUPDATE;
+            drawControl();
+        }
+    );
+}
+
+function send(cmd, what = "none", onload = null) {
+    var nowait = onload ? "0" : "1";
+
+    var url = '/api?what=' + what + '&NoWait=' + nowait + '&' + zone_arg + 'action=' + cmd + '&lastupdate=' + last_update;
     var r = new XMLHttpRequest();
     r.open("GET", url, true);
+    if (onload)
+        r.onload = onload;
+    else
+        r.onload  = function() {
+            console.log(this);
+        }
     r.send();
+
+    return r;
 }
 
 function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
