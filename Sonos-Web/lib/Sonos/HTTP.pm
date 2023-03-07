@@ -168,6 +168,7 @@ sub sanitizeRequest($self, $r) {
         my %nozone_actions = (
             "DeleteMusic" => [ "mpath", ],
             "Browse" => [ "mpath", ],
+            "None" => [],
             "ReIndex" => [],
             "Wait" => [],
         );
@@ -297,6 +298,9 @@ sub action {
 
         # Browse music data
         "Browse"     => [ undef, sub { return 0; } ],
+
+        # No-op
+        "None"     => [ undef, sub { return 0; } ],
     );
 
     warn "Unknown action \"$action\"" unless exists $dispatch{$action};
