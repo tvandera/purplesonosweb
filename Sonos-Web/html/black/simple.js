@@ -76,7 +76,6 @@ function update() {
         cmd = cmd,
         what = "zone",
         onload = function() {
-            console.log(this);
             zone_info = JSON.parse(this.responseText);
             last_update = zone_info.ACTIVE_LASTUPDATE;
             drawControl();
@@ -90,12 +89,7 @@ function send(cmd, what = "none", onload = null) {
     var url = '/api?what=' + what + '&NoWait=' + nowait + '&' + zone_arg + 'action=' + cmd + '&lastupdate=' + last_update;
     var r = new XMLHttpRequest();
     r.open("GET", url, true);
-    if (onload)
-        r.onload = onload;
-    else
-        r.onload  = function() {
-            console.log(this);
-        }
+    if (onload) r.onload = onload;
     r.send();
 
     return r;
