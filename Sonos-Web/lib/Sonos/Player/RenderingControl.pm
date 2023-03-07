@@ -25,11 +25,11 @@ sub processUpdate {
 }
 
 sub getVolume($self, $channel = "Master") {
-    return $self->prop("Volume/$channel", sub{int} );
+    return $self->prop("Volume/$channel", "int");
 }
 
 sub getMute($self, $channel = "Master") {
-    return $self->prop("Mute/$channel", sub {int});
+    return $self->prop("Mute/$channel", "int");
 }
 
 sub setVolume($self, $value, $channel = "Master") {

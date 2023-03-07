@@ -3,6 +3,7 @@ package Sonos::MetaData;
 use v5.36;
 use strict;
 use warnings;
+use Carp;
 
 use List::MoreUtils qw(zip);
 
@@ -102,15 +103,18 @@ sub streamContentProp($self, $prop = undef) {
     return join " - ", @fields;
 }
 
-sub prop($self, $path, $func = undef) {
+sub prop($self, $path, $type = undef) {
     my @path = split "/", $path;
     my $value = $self->{_data};
     for (@path) {
         $value = $value->{$_} if (ref $value eq 'HASH');
     }
 
-    $value = $func->($value) if $func;
+    return $value unless $type;
+    return int($value) if $type eq "int";
+    return int(!!$value) if $type eq "bool";
 
+    carp "Unknown type: $type";
     return $value;
 }
 
@@ -144,7 +148,7 @@ sub albumArtURI($self) {
     return $aa->[0];
 }
 
-sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber", \&int); }
+sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber", "int"); }
 sub description($self)         { return $self->prop("r:desciption"); }
 
 sub streamContent($self)       { return $self->streamContentProp(); }

@@ -4,6 +4,8 @@ use v5.36;
 use strict;
 use warnings;
 
+use Carp;
+
 use constant SERVICE_PREFIX => "urn:schemas-upnp-org:service:";
 use constant SERVICE_SUFFIX => ":1";
 
@@ -94,7 +96,7 @@ sub populated($self) {
     return $not_empty;
 }
 
-sub prop($self, $path, $func = undef) {
+sub prop($self, $path, $type = undef) {
     my @path = split "/", $path;
     my $value = $self->{_state};
     for (@path) {
@@ -105,8 +107,11 @@ sub prop($self, $path, $func = undef) {
         }
     }
 
-    $value = $func->($value) if $func;
+    return $value unless $type;
+    return int($value) if $type eq "int";
+    return int(!!$value) if $type eq "bool";
 
+    carp "Unknown type: $type";
     return $value;
 }
 
