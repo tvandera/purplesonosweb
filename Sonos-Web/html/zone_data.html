@@ -1,8 +1,0 @@
-<TMPL_IF NAME=ACTIVE_UPDATED>
-  zone_info = <TMPL_VAR NAME=ACTIVE_JSON>;
-  drawControl();
-</TMPL_IF>
-
-last_update = <TMPL_VAR NAME=LAST_UPDATE>; // <TMPL_VAR NAME=LAST_UPDATE_READABLE>  
-
-window.setTimeout("reload();", 300);
