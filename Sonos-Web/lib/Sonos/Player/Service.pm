@@ -94,7 +94,8 @@ sub populated($self) {
     return $not_empty;
 }
 
-sub prop($self, @path) {
+sub prop($self, $path, $func = undef) {
+    my @path = split "/", $path;
     my $value = $self->{_state};
     for (@path) {
         if (ref $value eq 'HASH' and defined $value->{$_}) {
@@ -103,6 +104,9 @@ sub prop($self, @path) {
             return;
         }
     }
+
+    $value = $func->($value) if $func;
+
     return $value;
 }
 

@@ -82,17 +82,13 @@ sub processUpdate {
     $self->SUPER::processUpdate(@_)
 }
 
-sub isPlaying($self) {
-    return $self->transportState() eq "PLAYING";
+sub stateIs($self, $value) {
+    return int($self->transportState() eq $value);
 }
 
-sub isPaused($self) {
-    return $self->transportState() eq "PAUSED_PLAYBACK";
-}
-
-sub isStopped($self) {
-    return $self->transportState() eq "STOPPED";
-}
+sub isPlaying($self) { return $self->stateIs("PLAYING"); }
+sub isPaused($self) { return $self->stateIs("PAUSED_PLAYBACK"); }
+sub isStopped($self) { return $self->stateIs("STOPPED"); }
 
 sub play($self) {
     return 0 if $self->isPlaying();
@@ -121,12 +117,16 @@ sub standaloneCoordinator($self) {
     return $self->action( "BecomeCoordinatorOfStandaloneGroup",);
 }
 
+sub playModeMatches($self, $value) {
+    return int($self->currentPlayMode() =~ /^$value/);
+}
+
 sub isRepeat($self) {
-    return $self->currentPlayMode() =~ /^REPEAT/;
+    return $self->playModeMatches("REPEAT");
 }
 
 sub isShuffle($self) {
-    return $self->currentPlayMode() =~ /^SHUFFLE/;
+    return $self->playModeMatches("SHUFFLE");
 }
 
 sub switchPlayMode($self, %switch_map) {

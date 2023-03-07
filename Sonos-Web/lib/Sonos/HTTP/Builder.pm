@@ -156,7 +156,7 @@ sub build_zone_data($self, $player = undef) {
     $activedata{ACTIVE_ZONEID}     = uri_escape($player->UDN());
     $activedata{ZONE_ACTIVE}       = int(defined $active_player && $player == $active_player );
     $activedata{ACTIVE_LASTUPDATE} = $player->lastUpdate();
-    $activedata{ACTIVE_UPDATED}    = ( $player->lastUpdate() > $updatenum );
+    $activedata{ACTIVE_UPDATED}    = int( $player->lastUpdate() > $updatenum );
 
     $activedata{ACTIVE_VOLUME}   = $render->getVolume();
     $activedata{ACTIVE_MUTED}    = $render->getMute();
@@ -164,15 +164,15 @@ sub build_zone_data($self, $player = undef) {
     %activedata = ( %activedata, $self->build_item_data("ACTIVE", $av, $player) );
 
     $activedata{ACTIVE_LENGTH}   = $av->lengthInSeconds();
-    $activedata{ACTIVE_TRACK_NUM} = encode_entities($av->currentTrack());
+    $activedata{ACTIVE_TRACK_NUM} = int($av->currentTrack());
 
-    $activedata{ACTIVE_TRACK_TOT} = encode_entities($number_of_tracks);
-    $activedata{ACTIVE_TRACK_TOT_0} = ( $number_of_tracks == 0 );
-    $activedata{ACTIVE_TRACK_TOT_1} = ( $number_of_tracks == 1 );
-    $activedata{ACTIVE_TRACK_TOT_GT_1} = ( $number_of_tracks > 1 );
+    $activedata{ACTIVE_TRACK_TOT}      = int($number_of_tracks);
+    $activedata{ACTIVE_TRACK_TOT_0}    = int( $number_of_tracks == 0 );
+    $activedata{ACTIVE_TRACK_TOT_1}    = int( $number_of_tracks == 1 );
+    $activedata{ACTIVE_TRACK_TOT_GT_1} = int( $number_of_tracks > 1 );
 
     $activedata{"ACTIVE_MODE"} = $transport_states{$transportstate};
-    $activedata{"ACTIVE_$_"}   = ($transportstate eq $_) for (keys %transport_states);
+    $activedata{"ACTIVE_$_"}   = int($transportstate eq $_) for (keys %transport_states);
 
     $activedata{ACTIVE_REPEAT} = $av->isRepeat();
     $activedata{ACTIVE_SHUFFLE} = $av->isShuffle();
@@ -226,7 +226,7 @@ sub build_queue_data($self) {
 
     my $updatenum = $self->qf("updatenum", -1);
     $queuedata{QUEUE_LASTUPDATE} = $queue->lastUpdate();
-    $queuedata{QUEUE_UPDATED}    = ( $queue->lastUpdate() > $updatenum );
+    $queuedata{QUEUE_UPDATED}    = int( $queue->lastUpdate() > $updatenum );
 
     my @loop_data = map { { $self->build_item_data("QUEUE", $_, $player) } } $queue->items();
     $queuedata{QUEUE_LOOP} = \@loop_data;
@@ -274,7 +274,7 @@ sub build_globals_data($self) {
 
     $globals->{"MUSICDIR_AVAILABLE"} = 0;
     $globals->{"ZONES_LASTUPDATE"}   = $self->lastUpdate(); # FIXME
-    $globals->{"ZONES_UPDATED"}      = ( $self->lastUpdate() > $updatenum );
+    $globals->{"ZONES_UPDATED"}      = int( $self->lastUpdate() > $updatenum );
 
     return $globals;
 }

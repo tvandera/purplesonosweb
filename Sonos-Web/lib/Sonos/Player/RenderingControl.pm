@@ -12,8 +12,8 @@ sub info($self) {
     $self->log($self->shortName, ":");
     for my $channel ('Master', 'LF', 'RF') {
       my $muted = "";
-      $muted = " (muted)" if $self->prop("Mute", $channel);
-      $self->log(" $channel: " . $self->prop("Volume", $channel) . $muted);
+      $muted = " (muted)" if $self->prop("Mute/$channel");
+      $self->log(" $channel: " . $self->prop("Volume/$channel") . $muted);
     }
 }
 
@@ -25,11 +25,11 @@ sub processUpdate {
 }
 
 sub getVolume($self, $channel = "Master") {
-    return $self->prop("Volume", $channel);
+    return $self->prop("Volume/$channel", sub{int} );
 }
 
 sub getMute($self, $channel = "Master") {
-    return $self->prop("Mute", $channel);
+    return $self->prop("Mute/$channel", sub {int});
 }
 
 sub setVolume($self, $value, $channel = "Master") {

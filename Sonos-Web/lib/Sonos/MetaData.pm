@@ -102,11 +102,14 @@ sub streamContentProp($self, $prop = undef) {
     return join " - ", @fields;
 }
 
-sub prop($self, @path) {
+sub prop($self, $path, $func = undef) {
+    my @path = split "/", $path;
     my $value = $self->{_data};
     for (@path) {
         $value = $value->{$_} if (ref $value eq 'HASH');
     }
+
+    $value = $func->($value) if $func;
 
     return $value;
 }
@@ -130,7 +133,7 @@ sub prop($self, @path) {
 
 sub id($self)                  { return $self->prop("id"); }
 sub parentID($self)            { return $self->prop("parentID"); }
-sub content($self)             { return $self->prop("res", "content"); }
+sub content($self)             { return $self->prop("res/content"); }
 sub title($self)               { return $self->prop("dc:title"); }
 sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
@@ -141,7 +144,7 @@ sub albumArtURI($self) {
     return $aa->[0];
 }
 
-sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber"); }
+sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber", \&int); }
 sub description($self)         { return $self->prop("r:desciption"); }
 
 sub streamContent($self)       { return $self->streamContentProp(); }
@@ -195,8 +198,8 @@ sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 # - "object.container.storageFolder"/>
 # - "object.container.bookmarkFolder"/>
 # only the last part
-sub classFrom($self, @from) {
-    my $full_classname = $self->prop(@from);
+sub classFrom($self, $from) {
+    my $full_classname = $self->prop($from);
     my @parts = split( /\./, $full_classname);
     return $parts[-1];
 }
@@ -210,7 +213,7 @@ sub class($self) {
 # and the `real` class will be in
 #  $item{"r:resMD"}->{"upnp:class"} "object.item.audioItem.audioBroadcast",
 sub realClass($self) {
-    return $self->classFrom("r:resMD", "upnp:class");
+    return $self->classFrom("r:resMD/upnp:class");
 }
 
 # split using "/", take" the last part
