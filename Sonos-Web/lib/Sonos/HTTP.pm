@@ -124,63 +124,49 @@ sub sanitizeRequest($self, $r) {
     if (exists $qf{action}) {
         my $action = $qf{action};
 
-        # requires zone= argument, but nothing else
-        my @noarg_actions = qw(
-            LinkAll
+        my %actions = (
+            "Louder"      => [ "zone" ],
+            "MuchLouder"  => [ "zone" ],
+            "MuchSofter"  => [ "zone" ],
+            "SetVolume"   => [ "zone", "volume" ],
+            "Softer"      => [ "zone" ],
+            "MuteOff"     => [ "zone" ],
+            "MuteOn"      => [ "zone" ],
+            "Next"        => [ "zone" ],
+            "Previous"    => [ "zone" ],
+            "Pause"       => [ "zone" ],
+            "Play"        => [ "zone" ],
+            "RepeatOff"   => [ "zone" ],
+            "RepeatOn"    => [ "zone" ],
+            "ShuffleOff"  => [ "zone" ],
+            "ShuffleOn"   => [ "zone" ],
+            "RemoveAll"   => [ "zone" ],
 
-            Louder MuchLouder MuchSofter SetVolume Softer
-            MuteOff MuteOn
+            "LinkAll"     => [ ],
+            "Link"        => [ "zone", "link", ],
+            "Unlink"      => [ "zone", "link", ],
 
-            Next Previous
-            Pause Play
-            RepeatOff RepeatOn
-            ShuffleOff ShuffleOn
+            "Remove"      => [ "zone", "queue", ],
+            "Seek"        => [ "zone", "queue", ],
 
-            RemoveAll
-        );
-
-        if (grep($action, @noarg_actions) && not $player) {
-            return $self->send_error($r, 404, "Action \"$action\" requires a zone= argument");
-        }
-
-
-        # require a zone= argument + something else
-        my %zone_actions = (
-            "Link"      => [ "link", ],
-            "Unlink"    => [ "link", ],
-            "Remove"    => [ "queue", ],
-            "Seek"      => [ "queue", ],
-            "AddMusic"  => [ "mpath", ],
-            "PlayMusic" => [ "mpath", ],
-            "Save"      => [ "savename", ],
-        );
-
-        if (exists $zone_actions{$action}) {
-            return $self->send_error($r, 404, "Action \"$action\" requires a zone= argument") unless $player;
-
-            my @needs = @{$zone_actions{$action}};
-            for (@needs) {
-                return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
-            }
-        }
-
-        # These actions DO NOT require a zone= argument
-        my %nozone_actions = (
+            "AddMusic"    => [ "zone", "mpath", ],
+            "PlayMusic"   => [ "zone", "mpath", ],
+            "Save"        => [ "zone", "savename", ],
             "DeleteMusic" => [ "mpath", ],
-            "Browse" => [ "mpath", ],
-            "None" => [],
-            "ReIndex" => [],
-            "Wait" => [],
+            "Browse"      => [ ], # uses mpath, but not required
+            "None"        => [ ],
+            "ReIndex"     => [ ],
+            "Wait"        => [ ],
         );
 
-        if (exists $nozone_actions{$action}) {
-            my @needs = @{$nozone_actions{$action}};
-            for (@needs) {
-                return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
-            }
+        return $self->send_error($r, 404, "Unknown action: \"$action\"")
+            unless (exists $actions{$action});
+
+        my @needs = @{$actions{$action}};
+        for (@needs) {
+            return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
         }
     }
-
 
     if (exists $qf{what}) {
         my $what = $qf{what};
@@ -193,7 +179,6 @@ sub sanitizeRequest($self, $r) {
         if ((grep { $what eq $_ } @requires_zone) && !$player) {
             return $self->send_error($r, 404, "Request \"$what\" requires a zone= argument");
         }
-
     }
 
 
@@ -317,28 +302,6 @@ sub action {
 }
 
 ###############################################################################
-sub handle_action {
-    my ($self,  $r ) = @_;
-    my %qf = $r->query_form;
-
-
-    if ( $qf{action} eq "ReIndex" ) {
-        sonos_reindex();
-    }
-    elsif ( $qf{action} eq "Unlink" ) {
-        sonos_unlink_zone( $qf{link} );
-    }
-    elsif ( $qf{action} eq "Wait" && $qf{lastupdate} ) {
-        return ( $self->system()->lastUpdate() > $qf{lastupdate} ) ? 1 : 5;
-    }
-    else {
-        return 0;
-    }
-    return 1;
-}
-
-
-###############################################################################
 sub send_tmpl_response($self, $r, $diskpath) {
     my %qf = $r->query_form;
 
@@ -372,6 +335,8 @@ sub send_albumart_response($self, $r) {
         # "Content-Disposition" => "attachment; filename=\".$filename\"",
         ], $blob);
     $r->respond($response);
+
+    return 1;
 }
 
 sub send_file_response($self, $r, $diskpath) {
