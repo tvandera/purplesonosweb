@@ -22,11 +22,11 @@ use MIME::Types;
 ###############################################################################
 
 sub new {
-    my($self, $discover, $qf, %args) = @_;
+    my($self, $system, $qf, %args) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _system => $discover,
+        _system => $system,
         _qf => $qf,
         _json => JSON->new(),
     }, $class;

@@ -32,12 +32,12 @@ use constant SERVICE_NAMES => (
 );
 
 sub new {
-    my($self, $upnp, $discover, %args) = @_;
+    my($self, $upnp, $system, %args) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
         _upnp => $upnp,
-        _system => $discover,
+        _system => $system,
         _services => { },
         _callbacks => [ ],
     }, $class;

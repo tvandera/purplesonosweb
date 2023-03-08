@@ -10,8 +10,8 @@ require IO::Async::Loop::Select;
 require Sonos::HTTP;
 
 my $loop = IO::Async::Loop::Select->new;
-my $discover = undef;
-my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPort => 9999);
+my $system = undef;
+my $daemon = Sonos::HTTP->new($loop, $system, LocalAddr => '0.0.0.0', LocalPort => 9999);
 
 $SIG{INT} = sub {
     print STDERR "Ctrl-C - stopping\n";

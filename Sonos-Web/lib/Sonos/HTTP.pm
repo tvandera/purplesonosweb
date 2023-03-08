@@ -23,11 +23,11 @@ require Sonos::HTTP::Builder;
 ###############################################################################
 
 sub new {
-    my($self, $loop, $discover, %args) = @_;
+    my($self, $loop, $system, %args) = @_;
 	my $class = ref($self) || $self;
 
     $self = bless {
-        _system => $discover,
+        _system => $system,
         _daemon => undef,
         _handlers => {},
         _loop => $loop,

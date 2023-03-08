@@ -24,10 +24,10 @@ require HTML::Template;
 ###############################################################################
 
 sub new {
-    my($self, $discover, $diskpath, $qf, %args) = @_;
+    my($self, $system, $diskpath, $qf, %args) = @_;
 	my $class = ref($self) || $self;
 
-    $self = $class->SUPER::new($discover, $qf, %args);
+    $self = $class->SUPER::new($system, $qf, %args);
 
     # One of our templates, now fill in the parts we know
     my $template = $self->{_template} = HTML::Template->new(

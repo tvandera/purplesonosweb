@@ -23,8 +23,8 @@ my @locations = (
 );
 
 my $loop = IO::Async::Loop::Select->new;
-my $discover = Sonos::System->discover($loop, @locations);
-my $daemon = Sonos::HTTP->new($loop, $discover, LocalAddr => '0.0.0.0', LocalPort => 9999);
+my $system = Sonos::System->discover($loop, @locations);
+my $daemon = Sonos::HTTP->new($loop, $system, LocalAddr => '0.0.0.0', LocalPort => 9999);
 
 $SIG{INT} = sub {
     print STDERR "Ctrl-C - stopping\n";
