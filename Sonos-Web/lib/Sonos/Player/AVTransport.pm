@@ -119,7 +119,12 @@ sub setRadio( $self, $mpath) {
 
     $self->setURI($entry->content(), decode_entities($urimetadata));
 }
-###############################################################################
+
+sub setQueue($self) {
+    my $id = $self->player()->UDN();
+    $self->setURI("x-rincon-queue:" . $id . "#0", "");
+}
+
 sub addURI( $self, $uri, $metadata, $queueSlot ) {
     return $self->action( "AddURIToQueue", $uri, $metadata, $queueSlot );
 }
