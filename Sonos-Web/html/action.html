@@ -1,6 +1,0 @@
-<TMPL_IF NAME=MUSIC_UPDATED>
-path = decodeURIComponent("<TMPL_VAR NAME=MUSIC_PATH>");
-sonos.music[path] = <TMPL_VAR NAME=MUSIC_JSON>;
-drawMusic(path);
-stopspin();
-</TMPL_IF>
