@@ -150,7 +150,7 @@ sub albumArtURI($self) {
     return $aa->[0];
 }
 
-sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber", "int"); }
+sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber", "int", -1); }
 sub description($self)         { return $self->prop("r:desciption"); }
 
 sub streamContent($self)       { return $self->streamContentProp(); }

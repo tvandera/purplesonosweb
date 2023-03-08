@@ -84,6 +84,7 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
 
         %data = (
             $prefix . "_NAME"        => encode_entities( $item->title() ),
+            $prefix . "_DESC"        => encode_entities( $item->description() ),
             $prefix . "_ARTIST"      => encode_entities( $item->creator() ),
             $prefix . "_ALBUM"       => encode_entities( $item->album() ),
             $prefix . "_CLASS"       => encode_entities( $item->class  ),
@@ -96,11 +97,13 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
             $prefix . "_ISFAV"       => int( $item->isFav() ),
             $prefix . "_ISTOP"       => int( $item->isTop() ),
             $prefix . "_ISCONTAINER" => int( $item->isContainer() ),
+            $prefix . "_TRACK_NUM"   => int( $item->originalTrackNumber() ),
             $prefix . "_ARG"         => $mpath_arg,
         );
     } else {
         %data = (
             $prefix . "_NAME"        => "",
+            $prefix . "_DESC"        => "",
             $prefix . "_ARTIST"      => "",
             $prefix . "_ALBUM"       => "",
             $prefix . "_CLASS"       => "",
@@ -112,6 +115,7 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
             $prefix . "_ISALBUM"     => 0,
             $prefix . "_ISFAV"       => 0,
             $prefix . "_ISCONTAINER" => 0,
+            $prefix . "_TRACK_NUM"   => -1,
             $prefix . "_ARG"         => "",
         );
     }
@@ -187,6 +191,7 @@ sub build_zone_data($self, $player = undef) {
     $activedata{ZONE_ARG}    = "zone=$zonename&";
 
     $activedata{ZONE_ICON} = $zonetopology->icon();
+    $activedata{ZONE_IMG} =  "zone_icons" . $zonetopology->icon() . ".png";
     $activedata{ZONE_LASTUPDATE} = $player->lastUpdate();
     $activedata{ZONE_NUMLINKED} = $num_linked;
     $activedata{ZONE_FANCYNAME} = $activedata{ZONE_NAME};
@@ -201,6 +206,7 @@ sub build_zone_data($self, $player = undef) {
                 "ZONE_ID"     => $uuid,
                 "ZONE_LINKED" => int( ! $zonetopology->isCoordinator($uuid) ),
                 "ZONE_ICON"   => $zonetopology->icon($uuid),
+                "ZONE_IMG"    => "zone_icons" . $zonetopology->icon($uuid) . ".png",
             }
         } @members
     ];
