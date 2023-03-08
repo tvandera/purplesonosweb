@@ -103,6 +103,10 @@ sub sockets($self) {
     return $self->controlPoint()->sockets()
 }
 
+sub loop($self) {
+    return $self->{_loop};
+}
+
 sub log($self, $comp, @args) {
     INFO sprintf("[%12s]: ", $comp), @args;
 }

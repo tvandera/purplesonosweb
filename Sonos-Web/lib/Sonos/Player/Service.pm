@@ -9,6 +9,7 @@ use Carp;
 use constant SERVICE_PREFIX => "urn:schemas-upnp-org:service:";
 use constant SERVICE_SUFFIX => ":1";
 
+use IO::Async::Timer::Periodic;
 
 use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
@@ -29,6 +30,15 @@ sub new {
     }, $class;
 
     $self->renewSubscription();
+
+    my $timer = IO::Async::Timer::Periodic->new(
+        interval => 1800, # renew subscription every 30 minutes
+        on_tick => sub { $self->renewSubscription(); },
+    );
+    $timer->start;
+
+    $self->system()->loop()->add( $timer );
+
 
     return $self;
 }
@@ -81,6 +91,10 @@ sub player($self) {
 
 sub system($self) {
     return $self->player()->{_system};
+}
+
+sub musicLibrary($self) {
+    return $self->system()->musicLibrary();
 }
 
 sub baseURL($self) {
