@@ -218,7 +218,7 @@ function drawQueue(zoneId) {
     if (!sonos.queues[zoneId]) return;
     var queue = sonos.queues[zoneId]; 
     var cur_track = curZoneInfo().ACTIVE_TRACK_NUM;
-    var zone_paused = curZoneInfo().ACTIVE_PAUSED;
+    var zone_paused = curZoneInfo().ACTIVE_PAUSED_PLAYBACK;
     var zone_playing = curZoneInfo().ACTIVE_PLAYING;
 
     var str = new Array();
