@@ -24,6 +24,7 @@ sub new {
         _updateids => { },
         _items => { },
         _tree => { },
+        _lastupdate => time,
     }, $class;
 
     $self->load();
@@ -60,6 +61,10 @@ sub version($self, $id) {
     my $value = $self->{_updateids}->{$id};
     return ("", -1) unless defined $value;
     return @$value;
+}
+
+sub lastUpdate($self) {
+    return $self->{_lastupdate};
 }
 
 sub system($self) {
@@ -154,6 +159,8 @@ sub addItemsOnly($self, @items) {
 
         push @$itemlist, $id;
     }
+
+    $self->{_lastupdate} = time;
 }
 
 sub addItems($self, $id, $udn, $version, @items) {

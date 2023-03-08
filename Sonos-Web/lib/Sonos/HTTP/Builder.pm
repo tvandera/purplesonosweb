@@ -147,6 +147,7 @@ sub build_zone_data($self, $player = undef) {
     my $render = $player->renderingControl();
     my $av = $player->avTransport();
     my $zonename = $player->zoneName();
+
     my $number_of_tracks = $av->numberOfTracks();
     my $transportstate = $av->transportState();
     my %transport_states = ( "TRANSITIONING" => 3, "PAUSED_PLAYBACK" => 2, "PLAYING" => 1, "STOPPED" => 0);
@@ -241,21 +242,23 @@ sub build_queue_data($self) {
 }
 
 sub build_music_data($self) {
+    my $updatenum = $self->qf("updatenum", -1);
     my %musicdata;
 
     my $mpath = $self->qf("mpath", "");
     $mpath    = "" if ( $mpath eq "/" );
 
-    $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
-    $musicdata{"MUSIC_LASTUPDATE"} = $main::MUSICUPDATE;
-    $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
 
     my $music      = $self->system()->musicLibrary();
     my $parent     = $music->item($mpath);
     my @elements   = $music->children($parent);
 
+    $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
+    $musicdata{"MUSIC_LASTUPDATE"} = $music->lastUpdate();
+    $musicdata{"MUSIC_UPDATED"}    = int( $music->lastUpdate() > $updatenum );
+    $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
+
     %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
-    $musicdata{"MUSIC_UPDATED"}    = 1;
 
     my @music_loop_data = map { { $self->build_item_data("MUSIC", $_) } } @elements;
 
