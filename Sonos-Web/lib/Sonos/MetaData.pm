@@ -103,16 +103,18 @@ sub streamContentProp($self, $prop = undef) {
     return join " - ", @fields;
 }
 
-sub prop($self, $path, $type = undef) {
+sub prop($self, $path, $type = undef, $default = undef) {
     my @path = split "/", $path;
     my $value = $self->{_data};
     for (@path) {
         $value = $value->{$_} if (ref $value eq 'HASH');
     }
 
+    $value = $default unless defined $value;
+
     return $value unless $type;
     return int($value) if $type eq "int";
-    return int(!!$value) if $type eq "bool";
+    return $value ? 1 : 0 if $type eq "bool";
 
     carp "Unknown type: $type";
     return $value;
