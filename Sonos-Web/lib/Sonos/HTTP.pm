@@ -292,6 +292,7 @@ sub action {
         "Softer"     => [ $render, sub { $render->changeVolume(-1); },],
         "Louder"     => [ $render, sub { $render->changeVolume(+1); },],
         "MuchLouder" => [ $render, sub { $render->changeVolume(+5); },],
+        "SetVolume"  => [ $render, sub { $render->setVolume($qf{volume}); },],
 
         # wait for update, unless already happened
         "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; } ],
