@@ -251,7 +251,13 @@ sub build_music_data($self) {
 
     my $music      = $self->system()->musicLibrary();
     my $parent     = $music->item($mpath);
-    my @elements   = $music->children($parent);
+
+    my @elements;
+    if (my $msearch = $self->qf("msearch")) {
+        @elements   = $music->search($msearch);
+    } else {
+        @elements   = $music->children($parent);
+    }
 
     $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
     $musicdata{"MUSIC_LASTUPDATE"} = $music->lastUpdate();

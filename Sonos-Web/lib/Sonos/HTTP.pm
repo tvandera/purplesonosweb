@@ -130,6 +130,7 @@ sub sanitizeRequest($self, $r) {
             "MuchSofter"  => [ "zone" ],
             "SetVolume"   => [ "zone", "volume" ],
             "Softer"      => [ "zone" ],
+
             "MuteOff"     => [ "zone" ],
             "MuteOn"      => [ "zone" ],
             "Next"        => [ "zone" ],
@@ -154,6 +155,7 @@ sub sanitizeRequest($self, $r) {
             "Save"        => [ "zone", "savename", ],
             "DeleteMusic" => [ "mpath", ],
             "Browse"      => [ ], # uses mpath, but not required
+            "Search"      => [ "msearch" ], # uses mpath, but not required
             "None"        => [ ],
             "ReIndex"     => [ ],
             "Wait"        => [ ],
@@ -282,8 +284,9 @@ sub action {
         # wait for update, unless already happened
         "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; } ],
 
-        # Browse music data
+        # Browse/Search music data
         "Browse"     => [ undef, sub { return 0; } ],
+        "Search"     => [ undef, sub { return 0; } ],
 
         # No-op
         "None"     => [ undef, sub { return 0; } ],

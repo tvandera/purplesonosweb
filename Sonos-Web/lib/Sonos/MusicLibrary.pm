@@ -121,6 +121,10 @@ sub item($self, $id) {
     return $self->{_items}->{$id};
 }
 
+sub search($self, $query) {
+    return grep { $_->title() =~ /$query/ } values %{$self->{_items}};
+}
+
 sub topItem($self) {
     return $self->item("");
 }
