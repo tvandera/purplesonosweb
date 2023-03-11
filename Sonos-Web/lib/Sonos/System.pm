@@ -79,6 +79,14 @@ sub populated($self) {
          all { $_->populated() } $self->players() );
 }
 
+sub wait($self) {
+    while (!$self->populated()) {
+        $self->loop()->loop_once();
+    }
+    
+    return $self;
+}
+
 sub player($self, $name_or_uuid) {
    carp "Need \$name_or_uuid" unless $name_or_uuid;
    my $player = $self->{_players}->{$name_or_uuid};
