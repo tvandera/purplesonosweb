@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "perl",
+            "request": "launch",
+            "name": "Perl-Debug",
+            "program": "${workspaceFolder}/Sonos-Web/scripts/daemon.pl",
+            "cwd": "${workspaceFolder}/Sonos-Web",
+            "stopOnEntry": false,
+            "reloadModules": true
+        },
+        {
+            "name": "iSonos",
+            "type": "node",
+            "program": "${workspaceFolder}/Sonos-Web/html/iSonos.js",
+            "cwd": "${workspaceFolder}/Sonos-Web",
+            "request": "launch"
+        }
+    ]
+}

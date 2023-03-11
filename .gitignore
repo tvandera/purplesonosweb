@@ -1,6 +1,5 @@
 *.log
 local
-.vscode
 cpanfile.snapshot
 *cache.json
 *cache
