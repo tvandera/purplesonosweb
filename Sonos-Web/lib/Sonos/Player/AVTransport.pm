@@ -105,6 +105,15 @@ sub stop($self) {
     return $self->action("Stop");
 }
 
+sub previous($self) {
+    return $self->action("Previous");
+}
+
+sub next($self) {
+    return $self->action("Next");
+}
+
+
 sub setURI( $self, $uri, $metadata ) {
     return $self->action( "SetAVTransportURI", $uri, $metadata );
 }
