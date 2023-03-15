@@ -56,7 +56,7 @@ sub processUpdate {
     $self->SUPER::processUpdate(@_);
 }
 
-sub get($self, $id) {
+sub item($self, $id) {
     return $self->{_items}->{$id};
 }
 

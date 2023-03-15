@@ -98,49 +98,34 @@ sub register_handler($self, $path, $callback) {
     $self->{_handlers}->{$path} = $callback;
 }
 
-sub validate($self, $r, $dispatch) {
-    unless ($self->system() and $self->system()->populated()) {
+sub validateRequest($self, $r) {
+   unless ($self->system() and $self->system()->populated()) {
         return $self->send_error($r, 501, "Waiting for discovery");
     }
 
     my %qf     = $r->query_form;
-    my $action = $qf{action};
-
-    unless (exists $dispatch->{$action}) {
-        return $self->send_error($r, $404, "Unknown action \"$action\"");
-    }
-
-    my ($service, $code, @needs) = @{$dispatch->{$action}};
-
-    my $player = undef;
-    my $av     = undef;
-    my $render = undef;
-    my $zone   = undef;
-    my $music  = undef;
-    my $lastupdate  = 0;
+    my $player;
 
     if (exists $qf{zone}) {
-        $zone   = $qf{zone};
+        my $zone   = $qf{zone};
         $player = $self->player($zone);
-        my $av = $player->avTransport() if $player;
-        my $render = $player->renderingControl() if $player;
-
         return $self->send_error($r, 404, "No such player: $zone") unless $player;
     }
 
-
     if (exists $qf{mpath}) {
-        my $mpath = decode( "UTF-8", $qf{mpath} );
-           $music = $self->system()->musicLibrary()->item($mpath);
-        return $self->send_error($r, 404, "No such music item: $mpath") unless $music;
+        my $path = decode( "UTF-8", $qf{mpath} );
+        my $item = $self->system()->musicLibrary()->item($path);
+        return $self->send_error($r, 404, "No such music item: $path") unless $item;
     }
 
-    unshift @needs, "zone" unless grep { $_ eq "nozone" } @needs;
-    @needs = grep { $_ ne "nozone" } @needs;
 
-    for (@needs) {
-        return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
-    }
+    if (exists $qf{queue}) {
+        my $path = decode( "UTF-8", $qf{queue} );
+        return $self->send_error($r, 404, "queue=$path requires a zone=") unless $player;
+
+        my $item = $player->queue()->item($path);
+        return $self->send_error($r, 404, "No such queue item: $path") unless $item;
+    } 
 
     if (exists $qf{what}) {
         my $what = $qf{what};
@@ -157,12 +142,32 @@ sub validate($self, $r, $dispatch) {
 
     return 0;
 }
+sub validateAction($self, $r, $dispatch) {
+    my %qf     = $r->query_form;
+    my $action = $qf{action};
+
+    unless (exists $dispatch->{$action}) {
+        return $self->send_error($r, $404, "Unknown action \"$action\"");
+    }
+
+    my ($service, $code, @needs) = @{$dispatch->{$action}};
+
+    unshift @needs, "zone" unless grep { $_ eq "nozone" } @needs;
+    @needs = grep { $_ ne "nozone" } @needs;
+
+    for (@needs) {
+        return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument")
+            unless (exists $qf{$_});
+    }
+
+    return 0;
+}
 
 sub handle_request($self, $server, $r) {
     my $path  = $r->path;
     my %qf   = $r->query_form;
 
-    $self->sanitizeRequest($r) && return;
+    $self->validateRequest($r) && return;
 
     $self->log("handling request: ", $r->as_http_request()->uri);
 
@@ -210,11 +215,14 @@ sub action {
     my $player = $self->player($qf{zone}) if $qf{zone};
     my $av = $player->avTransport() if $player;
     my $render = $player->renderingControl() if $player;
-    my $contentdir = $player->ContentDirectory() if $player;
-    my $music = $self->musicLibrary();
+    my $contentdir = $player->contentDirectory() if $player;
+    my $music = $self->system()->musicLibrary();
 
     my $mpath = decode( "UTF-8", $qf{mpath} );
-    my $item = $music->item($mpath) if $mpath;
+    my $mitem = $music->item($mpath) if $mpath;
+
+    my $qpath = decode( "UTF-8", $qf{queue} );
+    my $qitem = $player->queue()->item($qpath) if $qpath;
 
     my $dispatch = {
         "Play"       => [ $av, sub { $av->play() } ],
@@ -252,24 +260,22 @@ sub action {
             $av->play();
         }, "mpath", ],
         "DeleteMusic" => [ $av, sub {
-            return 1 unless $item->isPlaylist();
-            $contentdir->destroyObject($item);
+            $contentdir->destroyObject($qitem);
         }, "mpath", ],
         "Save"        => [ $av, sub { 
             $av->saveQueue($qf{savename});
         }, "savename", ],
 
         "Remove"      => [ $av, sub {
-            $av->RemoveTrackFromQueue($item->id())
+            $av->RemoveTrackFromQueue($qitem->id())
         }, "queue", ],
         "Seek"        => [ $av, sub {
-            return 1 unless $item->isQueueItem();
-            $av->seek($item->id());
+            $av->seekInQueue($qitem->id());
             $av->setQueue();
         }, "queue", ],
 
         # wait for update, unless already happened
-        "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; } ],
+        "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; }, 'lastupdate' ],
 
         # Browse/Search music data
         "Browse"     => [ undef, sub { return 0; }, "nozone" ],
@@ -283,7 +289,7 @@ sub action {
         "Unlink"      => [ "zone", "link", ],
     };
 
-    $self->validate($r, $dispatch);
+    $self->validateAction($r, $dispatch) && return 0;
 
 
     my ($service, $code) = @{$dispatch->{$action}};
