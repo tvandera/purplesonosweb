@@ -157,9 +157,9 @@ sub createObject( $self, $containerid, $elements ) {
     return  $self->contentDirProxy->CreateObject( $containerid, $elements );
 }
 
-# remove a radio station or play list
-sub destroyObject( $self, $objectid ) {
-    $self->contentDirProxy()->DestroyObject($objectid);
+# remove a playlist
+sub destroyObject( $self, $item ) {
+    $self->contentDirProxy()->DestroyObject($item->id());
 }
 
 ###############################################################################
