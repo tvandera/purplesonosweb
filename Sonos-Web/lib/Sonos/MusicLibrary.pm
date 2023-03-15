@@ -159,7 +159,7 @@ sub addItemsOnly($self, @items) {
 
         $self->{_tree}->{$parentid} = [] unless defined $self->{_tree}->{$parentid};
         my $itemlist = $self->{_tree}->{$parentid};
-        warn "Item with id $id already exists in parent list" if grep{$_ eq $id} @$itemlist;
+        warn "Item with id $id already seems to be a parent of $parentid" if grep{$_ eq $id} @$itemlist;
 
         push @$itemlist, $id;
     }
@@ -187,6 +187,7 @@ sub removeChildren($self, $id) {
     return unless ($self->hasChildren($id));
     my @childids = @{$self->{_tree}->{$id}};
     $self->remove($_) for @childids;
+    $self->{_tree}->{$id} = [];
 }
 
 sub remove($self, $id) {
