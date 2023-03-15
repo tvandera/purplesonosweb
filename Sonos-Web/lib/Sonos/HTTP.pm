@@ -98,19 +98,33 @@ sub register_handler($self, $path, $callback) {
     $self->{_handlers}->{$path} = $callback;
 }
 
-sub sanitizeRequest($self, $r) {
+sub validate($self, $r, $dispatch) {
     unless ($self->system() and $self->system()->populated()) {
         return $self->send_error($r, 501, "Waiting for discovery");
     }
 
     my %qf     = $r->query_form;
+    my $action = $qf{action};
+
+    unless (exists $dispatch->{$action}) {
+        return $self->send_error($r, $404, "Unknown action \"$action\"");
+    }
+
+    my ($service, $code, @needs) = @{$dispatch->{$action}};
+
     my $player = undef;
+    my $av     = undef;
+    my $render = undef;
     my $zone   = undef;
     my $music  = undef;
+    my $lastupdate  = 0;
 
     if (exists $qf{zone}) {
         $zone   = $qf{zone};
         $player = $self->player($zone);
+        my $av = $player->avTransport() if $player;
+        my $render = $player->renderingControl() if $player;
+
         return $self->send_error($r, 404, "No such player: $zone") unless $player;
     }
 
@@ -121,53 +135,11 @@ sub sanitizeRequest($self, $r) {
         return $self->send_error($r, 404, "No such music item: $mpath") unless $music;
     }
 
-    if (exists $qf{action}) {
-        my $action = $qf{action};
+    unshift @needs, "zone" unless grep { $_ eq "nozone" } @needs;
+    @needs = grep { $_ ne "nozone" } @needs;
 
-        my %actions = (
-            "Louder"      => [ "zone" ],
-            "MuchLouder"  => [ "zone" ],
-            "MuchSofter"  => [ "zone" ],
-            "SetVolume"   => [ "zone", "volume" ],
-            "Softer"      => [ "zone" ],
-
-            "MuteOff"     => [ "zone" ],
-            "MuteOn"      => [ "zone" ],
-            "Next"        => [ "zone" ],
-            "Previous"    => [ "zone" ],
-            "Pause"       => [ "zone" ],
-            "Play"        => [ "zone" ],
-            "RepeatOff"   => [ "zone" ],
-            "RepeatOn"    => [ "zone" ],
-            "ShuffleOff"  => [ "zone" ],
-            "ShuffleOn"   => [ "zone" ],
-            "RemoveAll"   => [ "zone" ],
-
-            "LinkAll"     => [ ],
-            "Link"        => [ "zone", "link", ],
-            "Unlink"      => [ "zone", "link", ],
-
-            "Remove"      => [ "zone", "queue", ],
-            "Seek"        => [ "zone", "queue", ],
-
-            "AddMusic"    => [ "zone", "mpath", ],
-            "PlayMusic"   => [ "zone", "mpath", ],
-            "Save"        => [ "zone", "savename", ],
-            "DeleteMusic" => [ "mpath", ],
-            "Browse"      => [ ], # uses mpath, but not required
-            "Search"      => [ "msearch" ], # uses mpath, but not required
-            "None"        => [ ],
-            "ReIndex"     => [ ],
-            "Wait"        => [ ],
-        );
-
-        return $self->send_error($r, 404, "Unknown action: \"$action\"")
-            unless (exists $actions{$action});
-
-        my @needs = @{$actions{$action}};
-        for (@needs) {
-            return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
-        }
+    for (@needs) {
+        return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument") unless exists $qf{$_};
     }
 
     if (exists $qf{what}) {
@@ -182,8 +154,6 @@ sub sanitizeRequest($self, $r) {
             return $self->send_error($r, 404, "Request \"$what\" requires a zone= argument");
         }
     }
-
-
 
     return 0;
 }
@@ -235,39 +205,18 @@ sub action {
 
     return $do_after->() unless $action;
 
-    my $mpath = decode( "UTF-8", $qf{mpath} );
     my $lastupdate = $qf{lastupdate};
 
     my $player = $self->player($qf{zone}) if $qf{zone};
     my $av = $player->avTransport() if $player;
     my $render = $player->renderingControl() if $player;
+    my $contentdir = $player->ContentDirectory() if $player;
+    my $music = $self->musicLibrary();
 
+    my $mpath = decode( "UTF-8", $qf{mpath} );
+    my $item = $music->item($mpath) if $mpath;
 
-# These actions require a zone= argument
-# ======================================
-
-# zones: Link(zone=..&link=..) LinkAll Unlink(zone=..&link=..)
-
-# renderingcontrol volume: Louder MuchLouder MuchSofter SetVolume Softer
-# renderingcontrol mute/unmute: MuteOff MuteOn
-
-# avtransport nav: Next Previous
-# avtransport state: Pause Play
-# avtransport repeat: RepeatOff RepeatOn
-# avtransport shuffle: ShuffleOff ShuffleOn
-
-# queue remove: Remove (queue=Q:0/xx) RemoveAll
-# queue nav: Seek (queue=Q:0/xx)
-# queue add: AddMusic PlayMusic (mpath=...)
-# queue save: Save (savename="My Saved Queue")
-
-# These actions DO NOT require a zone= argument
-# =============================================
-
-# music library: DeleteMusic(mpath=playlist) Browse(mpath=...) ReIndex
-# other: Wait
-
-    my %dispatch = (
+    my $dispatch = {
         "Play"       => [ $av, sub { $av->play() } ],
         "Pause"      => [ $av, sub { $av->pause() } ],
         "Stop"       => [ $av, sub { $av->stop() } ],
@@ -279,22 +228,65 @@ sub action {
         "Softer"     => [ $render, sub { $render->changeVolume(-1); },],
         "Louder"     => [ $render, sub { $render->changeVolume(+1); },],
         "MuchLouder" => [ $render, sub { $render->changeVolume(+5); },],
-        "SetVolume"  => [ $render, sub { $render->setVolume($qf{volume}); },],
+        "SetVolume"  => [ $render, sub { $render->setVolume($qf{volume}); }, "volume"],
+
+        "Next"        => [ $av, sub { $av->next() } ],
+        "Previous"    => [ $av, sub { $av->previous() } ],
+
+        "RepeatOff"   => [ $av, sub { $av->setRepeat(0) } ],
+        "RepeatOn"    => [ $av, sub { $av->setRepeat(1); } ],
+        "ShuffleOff"  => [ $av, sub { $av->setShuffle(0); } ],
+        "ShuffleOn"   => [ $av, sub { $av-setShuffle(1); } ],
+
+        # queue
+        "RemoveAll"   => [ $av, sub { 
+            $av->RemoveAllTracksFromQueue();
+        } ],
+        "AddMusic"    => [ $av, sub { 
+            $av->RemoveAllTracksFromQueue();
+            $av->addURI($qf{mpath}, 1);
+         }, "mpath", ],
+        "PlayMusic"   => [ $av, sub {
+            $av->RemoveAllTracksFromQueue();
+            $av->addURI($qf{mpath});
+            $av->play();
+        }, "mpath", ],
+        "DeleteMusic" => [ $av, sub {
+            return 1 unless $item->isPlaylist();
+            $contentdir->destroyObject($item);
+        }, "mpath", ],
+        "Save"        => [ $av, sub { 
+            $av->saveQueue($qf{savename});
+        }, "savename", ],
+
+        "Remove"      => [ $av, sub {
+            $av->RemoveTrackFromQueue($item->id())
+        }, "queue", ],
+        "Seek"        => [ $av, sub {
+            return 1 unless $item->isQueueItem();
+            $av->seek($item->id());
+            $av->setQueue();
+        }, "queue", ],
 
         # wait for update, unless already happened
         "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; } ],
 
         # Browse/Search music data
-        "Browse"     => [ undef, sub { return 0; } ],
-        "Search"     => [ undef, sub { return 0; } ],
+        "Browse"     => [ undef, sub { return 0; }, "nozone" ],
+        "Search"     => [ undef, sub { return 0; }, "nozone", "msearch" ],
 
         # No-op
-        "None"     => [ undef, sub { return 0; } ],
-    );
+        "None"     => [ undef, sub { return 0; }, "nozone" ],
 
-    warn "Unknown action \"$action\"" unless exists $dispatch{$action};
+        "LinkAll"     => [ "nozone" ],
+        "Link"        => [ "zone", "link", ],
+        "Unlink"      => [ "zone", "link", ],
+    };
 
-    my ($service, $code) = @{$dispatch{$action}};
+    $self->validate($r, $dispatch);
+
+
+    my ($service, $code) = @{$dispatch->{$action}};
 
     my $nowait = !$code->() || $qf{NoWait};
 
