@@ -251,6 +251,7 @@ sub isContainer($self) {
 }
 
 sub isQueueItem($self) { return $self->id() =~ /^Q:/; }
+sub isPlayList($self) { return $self->class() eq "playlist";}
 
 sub getAlbumArt($self) {
     # ask owner for caching
