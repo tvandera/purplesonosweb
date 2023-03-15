@@ -192,13 +192,17 @@ sub setShuffle($self, $on_or_off) {
 
 # ---- queue ----
 
-sub seek($self, $queue) {
+sub seekInQueue($self, $queue) {
     $queue =~ s,^.*/,,;
     return $self->action("Seek", "TRACK_NR", $queue );
 }
 
 sub removeTrackFromQueue($self, $objectid) {
-    return $self->controlProxy()->RemoveTrackFromQueue( "0", $objectid );
+    return $self->action("RemoveTrackFromQueue", $objectid );
+}
+
+sub saveQueue($self, $name) {
+    return $self->action("SaveQueue", $name, "" );
 }
 
 1;
