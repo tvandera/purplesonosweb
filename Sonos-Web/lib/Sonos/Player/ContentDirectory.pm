@@ -23,7 +23,8 @@ sub info($self) {
     for (@containers) {
       my $num = scalar $self->musicLibrary->children($_);
       my $name = $_->title();
-      $self->log("  $name: $num items");
+      my $id = $_->id();
+      $self->log("  $name ($id): $num items");
     }
 }
 
