@@ -37,7 +37,7 @@ sub topItems() {
 }
 
 sub new {
-    my($self, $data, $owner) = @_;
+    my($self, $data, $owner, $alt) = @_;
 	my $class = ref($self) || $self;
 
     if ($data) {
@@ -52,6 +52,7 @@ sub new {
     $self = bless {
         _owner => $owner,
         _data => $data,
+        _alt => $alt, 
     }, $class;
 
     return $self;

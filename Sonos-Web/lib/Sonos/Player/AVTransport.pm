@@ -8,9 +8,6 @@ use v5.36;
 use strict;
 use warnings;
 
-
-
-
 # Global
 sub transportState($self)       { return $self->prop("TransportState"); }
 sub currentPlayMode($self)      { return $self->prop("CurrentPlayMode"); }
@@ -27,34 +24,17 @@ sub nextTrack($self)     { return Sonos::MetaData->new($self->prop("r:NextTrackM
 sub curTrack($self)      { return Sonos::MetaData->new($self->prop("CurrentTrackMetaData")); }
 sub curTransport($self)  { return Sonos::MetaData->new($self->prop("AVTransportURIMetaData")); }
 
-sub curMetaData($self)   { return $self->isRadio() ? $self->curTransport() : $self->curTrack(); }
-
-sub id($self)                  { return $self->currentTrack(); }
-sub parentID($self)            { return ""; }
-
-sub class($self)               { return $self->curMetaData()->class(); }
-sub title($self)               { return $self->curMetaData()->title(); }
-
-sub track($self)               { return $self->curTrack()->streamContentTitle() || $self->curTrack()->title(); }
-sub creator($self)             { return $self->curTrack()->creator() || $self->curTrack()->streamContentArtist(); }
-sub album($self)               { return $self->curTrack()->album() ||  $self->curTrack()->streamContentAlbum(); }
-
-sub albumArtURI($self)         { return $self->curTrack()->albumArtURI(); }
-sub originalTrackNumber($self) { return $self->curTrack()->originalTrackNumber(); }
-sub content($self)             { return $self->curTrack()->content(); }
-sub description($self)         { return $self->curTrack()->description(); }
-
-sub isRadio($self) {
-    return $self->curTransport()->populated()
-        && $self->curTransport()->isRadio();
+sub metaData($self) {
+    return Sonos::MetaData->new(
+        $self->prop("CurrentTrackMetaData"),
+        $self->prop("AVTransportURIMetaData")
+    );
 }
 
-sub isSong($self)      { return $self->curMetaData()->isSong(); }
-sub isAlbum($self)     { return 0; }
-sub isFav($self)       { return 0; }
-sub isContainer($self) { return 0; }
-sub isQueueItem($self) { return 0; }
-sub isTop($self)       { return 0; }
+sub isRadio($self) {
+    return Sonos::MetaData::bool($self->curTransport()->populated()
+        && $self->curTransport()->isRadio());
+}
 
 sub info($self) {
     my @fields = (

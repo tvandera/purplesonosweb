@@ -166,7 +166,7 @@ sub build_zone_data($self, $player = undef) {
     $activedata{ACTIVE_VOLUME}   = $render->getVolume();
     $activedata{ACTIVE_MUTED}    = $render->getMute();
 
-    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $av, $player) );
+    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $av->metaData(), $player) );
 
     $activedata{ACTIVE_LENGTH}   = $av->lengthInSeconds();
     $activedata{ACTIVE_TRACK_NUM} = int($av->currentTrack());
