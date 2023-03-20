@@ -7,10 +7,10 @@ use Carp;
 
 use List::MoreUtils qw(zip);
 
-
-
 use constant NO_PARENT_ID => "NO_PARENT";
 use constant ROOT_ID => "";
+
+sub bool($v) { $v ? '1' : '0'; }
 
 sub topItems() {
     my @table = (
@@ -103,16 +103,24 @@ sub streamContentProp($self, $prop = undef) {
     return join " - ", @fields;
 }
 
-sub prop($self, $path, $type = undef, $default = undef) {
+sub prop($self, $path, $type = "string", $default = undef) {
     my @path = split "/", $path;
     my $value = $self->{_data};
     for (@path) {
         $value = $value->{$_} if (ref $value eq 'HASH');
     }
 
+    my %defaults = ( 
+        "string" => "",
+        "int" => -1,
+        "bool" => 0,
+    );
+        
+    $default = $defaults{$type} unless defined $default;
+
     $value = $default unless defined $value;
 
-    return $value unless $type;
+    return $value if $type eq "string";
     return int($value) if $type eq "int";
     return $value ? 1 : 0 if $type eq "bool";
 
@@ -233,25 +241,40 @@ sub baseID($self) {
 
 
 sub isRootItem($self) {
-    return $self->parentID() eq NO_PARENT_ID;
+    return bool($self->parentID() eq NO_PARENT_ID);
 }
 
 sub isTopItem($self) {
-    return $self->parentID() eq ROOT_ID;
+    return bool($self->parentID() eq ROOT_ID);
 }
 
-sub isRadio($self) { return $self->class() eq "audioBroadcast"; }
-sub isSong($self)  { return $self->class() eq "musicTrack"; }
-sub isAlbum($self) { return $self->class() eq "musicAlbum"; }
-sub isFav($self)   { return $self->class() eq "favorite"; }
-sub isTop($self)   { return $self->class() eq "top"; }
+sub isClass($self, $class) {
+    use Data::Dumper;
+    use Carp;
+    carp Dumper($self) unless defined $self->class();
+    return bool($self->class() eq $class);
+}
+
+sub isRadio($self) { return $self->isClass("audioBroadcast"); }
+sub isSong($self)  { return $self->isClass("musicTrack"); }
+sub isAlbum($self) { return $self->isClass("musicAlbum"); }
+sub isFav($self)   { return $self->isClass("favorite"); }
+sub isTop($self)   { return $self->isClass("top"); }
+
 sub isContainer($self) {
-    my $class = $self->prop("upnp:class");
-    return $class =~ m/container/g;
+    my $fullclass = $self->prop("upnp:class");
+    my $iscontainer = $fullclass =~ m/container/g;
+    return bool($iscontainer);
 }
 
-sub isQueueItem($self) { return $self->id() =~ /^Q:/; }
-sub isPlayList($self) { return $self->class() eq "playlist";}
+sub isQueueItem($self) {
+    my $isq = $self->id() =~ /^Q:/;
+    return bool($isq);
+}
+
+sub isPlayList($self) {
+    return bool($self->class() eq "playlist");
+}
 
 sub getAlbumArt($self) {
     # ask owner for caching
