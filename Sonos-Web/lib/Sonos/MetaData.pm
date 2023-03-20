@@ -288,6 +288,7 @@ sub displayFields() {
         "title",
         "creator",
         "album",
+        "streamContent",
     );
 }
 
@@ -296,7 +297,7 @@ sub displayValues($self) {
 }
 
 sub as_string($self) {
-    return join " - ", $self->diplayValues;
+    return join " - ", $self->displayValues;
 }
 
 sub log($self, $logger, $indent) {
