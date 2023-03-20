@@ -248,14 +248,14 @@ sub action {
 
         # queue
         "RemoveAll"   => [ $av, sub { 
-            $av->RemoveAllTracksFromQueue();
+            $av->removeAllTracksFromQueue();
         } ],
         "AddMusic"    => [ $av, sub { 
-            $av->RemoveAllTracksFromQueue();
+            $av->removeAllTracksFromQueue();
             $av->addURI($qf{mpath}, 1);
          }, "mpath", ],
         "PlayMusic"   => [ $av, sub {
-            $av->RemoveAllTracksFromQueue();
+            $av->removeAllTracksFromQueue();
             $av->addURI($qf{mpath});
             $av->play();
         }, "mpath", ],

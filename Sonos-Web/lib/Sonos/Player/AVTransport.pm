@@ -201,6 +201,11 @@ sub removeTrackFromQueue($self, $objectid) {
     return $self->action("RemoveTrackFromQueue", $objectid );
 }
 
+sub removeAllTracksFromQueue($self) {
+    return $self->action("RemoveAllTracksFromQueue");
+}
+
+
 sub saveQueue($self, $name) {
     return $self->action("SaveQueue", $name, "" );
 }
