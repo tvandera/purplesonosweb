@@ -36,6 +36,18 @@ sub isRadio($self) {
         && $self->curTransport()->isRadio());
 }
 
+sub name($self) {
+    return $self->isRadio()
+        ? $self->curTransport()->title()
+        : $self->curTrack()->title();
+}
+
+sub description($self) {
+    return $self->isRadio()
+        ? $self->curTransport()->streamContent()
+        : $self->curTrack()->()->creator() . " / " . $self->curTrack()->album();
+}
+
 sub info($self) {
     my @fields = (
         "lastUpdateReadable",

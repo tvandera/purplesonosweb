@@ -52,8 +52,11 @@ sub new {
     $self = bless {
         _owner => $owner,
         _data => $data,
-        _alt => $alt, 
+        _alt => {},
     }, $class;
+
+
+    $self->{_alt} = $class->new($alt, $self) if ($alt);
 
     return $self;
 }
@@ -70,6 +73,10 @@ sub owner($self) {
     }
 
     return $owner;
+}
+
+sub alt($self) {
+    return $self->{_alt};
 }
 
 sub player($self) {
@@ -153,6 +160,10 @@ sub title($self)               { return $self->prop("dc:title"); }
 sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
 
+sub name($self)                { 
+
+}
+
 sub albumArtURI($self) {
     my $aa = $self->prop("upnp:albumArtURI");
     return $aa unless ref $aa eq "ARRAY";
@@ -232,7 +243,7 @@ sub realClass($self) {
 }
 
 # split using "/", take" the last part
-# used for sorting Queue items
+# used for sorting and indexing Queue items
 sub baseID($self) {
     my $full_id = $self->prop("id");
     return unless $full_id;
@@ -249,18 +260,15 @@ sub isTopItem($self) {
     return bool($self->parentID() eq ROOT_ID);
 }
 
-sub isClass($self, $class) {
-    use Data::Dumper;
-    use Carp;
-    carp Dumper($self) unless defined $self->class();
+sub isOfClass($self, $class) {
     return bool($self->class() eq $class);
 }
 
-sub isRadio($self) { return $self->isClass("audioBroadcast"); }
-sub isSong($self)  { return $self->isClass("musicTrack"); }
-sub isAlbum($self) { return $self->isClass("musicAlbum"); }
-sub isFav($self)   { return $self->isClass("favorite"); }
-sub isTop($self)   { return $self->isClass("top"); }
+sub isRadio($self) { return $self->isOfClass("audioBroadcast"); }
+sub isSong($self)  { return $self->isOfClass("musicTrack"); }
+sub isAlbum($self) { return $self->isOfClass("musicAlbum"); }
+sub isFav($self)   { return $self->isOfClass("favorite"); }
+sub isTop($self)   { return $self->isOfClass("top"); }
 
 sub isContainer($self) {
     my $fullclass = $self->prop("upnp:class");
@@ -286,6 +294,7 @@ sub getAlbumArt($self) {
 sub displayFields() {
     return  (
         "id",
+        "class",
         "title",
         "creator",
         "album",
