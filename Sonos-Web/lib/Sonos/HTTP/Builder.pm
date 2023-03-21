@@ -162,22 +162,18 @@ sub build_zone_data($self, $player = undef) {
     $activedata{active_zone}       = encode_entities( $zonename );
     $activedata{active_zoneid}     = uri_escape($player->UDN());
     $activedata{zone_active}       = int(defined $active_player && $player == $active_player );
-    $activedata{ACTIVE_LASTUPDATE} = $player->lastUpdate();
-    $activedata{ACTIVE_UPDATED}    = int( $player->lastUpdate() > $updatenum );
+    $activedata{active_lastupdate} = $player->lastUpdate();
+    $activedata{active_updated}    = int( $player->lastUpdate() > $updatenum );
 
     $activedata{active_volume}   = $render->getVolume();
     $activedata{active_muted}    = $render->getMute();
 
-    %activedata = ( %activedata, $self->build_item_data("ACTIVE", $av->metaData(), $player) );
+    %activedata = ( %activedata, $self->build_item_data("active", $av->metaData(), $player) );
     $activedata{active_name} = $av->name();
 
-    $activedata{active_length}   = $av->lengthInSeconds();
+    $activedata{active_length}    = $av->lengthInSeconds();
     $activedata{active_track_num} = int($av->currentTrack());
-
-    $activedata{active_track_tot}      = int($number_of_tracks);
-    $activedata{ACTIVE_TRACK_TOT_0}    = int( $number_of_tracks == 0 );
-    $activedata{ACTIVE_TRACK_TOT_1}    = int( $number_of_tracks == 1 );
-    $activedata{active_track_tot_gt_1} = int( $number_of_tracks > 1 );
+    $activedata{active_track_tot} = int($number_of_tracks);
 
     $activedata{"active_mode"} = $transport_states{$transportstate};
     $activedata{"active_$_"}   = int($transportstate eq $_) for (keys %transport_states);
@@ -217,7 +213,7 @@ sub build_zone_data($self, $player = undef) {
 
     $activedata{zone_linked}    = ! $zonetopology->isCoordinator();
     $activedata{zone_link}      = $zonetopology->coordinator()->{UUID};
-    $activedata{ZONE_LINK_NAME} = $zonetopology->coordinator()->{ZoneName};
+    $activedata{zone_link_name} = $zonetopology->coordinator()->{ZoneName};
 
     return \%activedata;
 }
@@ -231,12 +227,12 @@ sub build_queue_data($self) {
 
     my %queuedata;
 
-    $queuedata{QUEUE_ZONE}       = $player->zoneName;
-    $queuedata{QUEUE_ZONEID}     = uri_escape_utf8($player->UDN);
+    $queuedata{queue_zone}       = $player->zoneName;
+    $queuedata{queue_zoneid}     = uri_escape_utf8($player->UDN);
 
     my $updatenum = $self->qf("updatenum", -1);
-    $queuedata{QUEUE_LASTUPDATE} = $queue->lastUpdate();
-    $queuedata{QUEUE_UPDATED}    = int( $queue->lastUpdate() > $updatenum );
+    $queuedata{queue_lastupdate} = $queue->lastUpdate();
+    $queuedata{queue_updated}    = int( $queue->lastUpdate() > $updatenum );
 
     my @loop_data = map { { $self->build_item_data("queue", $_, $player) } } $queue->items();
     $queuedata{queue_loop} = \@loop_data;
