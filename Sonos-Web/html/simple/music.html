@@ -4,33 +4,33 @@
 </HEAD>
 <BODY>
 <FONT SIZE=0>
-<A TARGET=music HREF="music.html?<TMPL_VAR NAME=ALL_ARG>&action=ReIndex">ReIndex Music</A>
-<A TARGET=music HREF="music.html?<TMPL_VAR NAME=ALL_ARG>">Refresh</A>
-<A TARGET=music HREF="music.html?zone=<TMPL_VAR NAME=ACTIVE_ZONEID>&mpath=/">Top</A>
-<TMPL_UNLESS NAME=MUSIC_ROOT>
-<A TARGET=music HREF="music.html?zone=<TMPL_VAR NAME=ACTIVE_ZONEID>&mpath=<TMPL_VAR NAME=MUSIC_PARENT>">Up</A>
+<A TARGET=music HREF="music.html?<TMPL_VAR NAME=all_arg>&action=ReIndex">ReIndex Music</A>
+<A TARGET=music HREF="music.html?<TMPL_VAR NAME=all_arg>">Refresh</A>
+<A TARGET=music HREF="music.html?zone=<TMPL_VAR NAME=active_zoneid>&mpath=/">Top</A>
+<TMPL_UNLESS NAME=music_root>
+<A TARGET=music HREF="music.html?zone=<TMPL_VAR NAME=active_zoneid>&mpath=<TMPL_VAR NAME=music_parent>">Up</A>
 </TMPL_UNLESS>
 </FONT>
 <P>
-<FORM ACTION="music.html?<TMPL_VAR NAME=ALL_ARG>" METHOD="get">
+<FORM ACTION="music.html?<TMPL_VAR NAME=all_arg>" METHOD="get">
 Perl Expression:
-<INPUT NAME=msearch VALUE="<TMPL_VAR NAME=MUSIC_SEARCH>">
-<INPUT NAME=zone VALUE="<TMPL_VAR NAME=ACTIVE_ZONEID>" TYPE=HIDDEN>
+<INPUT NAME=msearch VALUE="<TMPL_VAR NAME=music_search>">
+<INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
 <INPUT VALUE="Search" TYPE=submit>
 </FORM>
 <HR>
-<B><TMPL_VAR NAME=MUSIC_ERROR></B>
+<B><TMPL_VAR NAME=music_error></B>
 
-<TMPL_LOOP NAME=MUSIC_LOOP>
-    <IMG BORDER=0 SRC=<TMPL_VAR NAME=MUSIC_ALBUMART>>
-    <TMPL_UNLESS NAME=MUSIC_ROOT>
-        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=ALL_ARG>&<TMPL_VAR NAME=MUSIC_ARG>&action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=ALL_ARG>&<TMPL_VAR NAME=MUSIC_ARG>&action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+<TMPL_LOOP NAME=music_loop>
+    <IMG BORDER=0 SRC=<TMPL_VAR NAME=music_albumart>>
+    <TMPL_UNLESS NAME=music_root>
+        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>&<TMPL_VAR NAME=music_arg>&action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>&<TMPL_VAR NAME=music_arg>&action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
     </TMPL_UNLESS>
-    <TMPL_UNLESS NAME=MUSIC_ISCONTAINER>
-        <TMPL_VAR NAME=MUSIC_NAME>
+    <TMPL_UNLESS NAME=music_iscontainer>
+        <TMPL_VAR NAME=music_name>
     <TMPL_ELSE>
-        <A TARGET=music HREF="music.html?<TMPL_VAR NAME=ALL_ARG>&<TMPL_VAR NAME=MUSIC_ARG>&action=Browse"><TMPL_VAR NAME=MUSIC_NAME></A>
+        <A TARGET=music HREF="music.html?<TMPL_VAR NAME=all_arg>&<TMPL_VAR NAME=music_arg>&action=Browse"><TMPL_VAR NAME=music_name></A>
     </TMPL_UNLESS>
     <BR>
 </TMPL_LOOP>

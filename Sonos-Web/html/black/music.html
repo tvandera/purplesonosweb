@@ -7,39 +7,39 @@
 
 <div id="music">
     <ul id='musiclist'>
-        <TMPL_IF name="MUSIC_PATH">
+        <TMPL_IF name="music_path">
             <li class='header'>
-            <img onClick="browse('mpath=<TMPL_VAR NAME=MUSIC_PARENT>')" src='tiles/back.svg'>
+            <img onClick="browse('mpath=<TMPL_VAR NAME=music_parent>')" src='tiles/back.svg'>
             <div>
-                <p id='musicpath'><TMPL_VAR name="MUSIC_NAME"></p>
+                <p id='musicpath'><TMPL_VAR name="music_name"></p>
                 <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
                 <TMPL_IF name="MUSIC_ISALBUM">
                 <p class='buttons'>
-                <a onclick="play('<TMPL_VAR NAME=MUSIC_ARG>');">Play</A> - 
-                <a onclick="add('<TMPL_VAR NAME=MUSIC_ARG>');">Add</A></p>
+                <a onclick="play('<TMPL_VAR NAME=music_arg>');">Play</A> - 
+                <a onclick="add('<TMPL_VAR NAME=music_arg>');">Add</A></p>
                 </TMPL_IF>
             </div>
             </li>
         </TMPL_IF>
         <TMPL_IF name="MUSIC_ISALBUM">
-            <TMPL_IF name="MUSIC_ALBUMART">
-            <li class='albumart'><img width="200" height="200" src="<TMPL_VAR name="MUSIC_ALBUMART">"></li>
+            <TMPL_IF name="music_albumart">
+            <li class='albumart'><img width="200" height="200" src="<TMPL_VAR name="music_albumart">"></li>
             </TMPL_IF>
         </TMPL_IF>
     
-    <TMPL_LOOP name="MUSIC_LOOP"> 
+    <TMPL_LOOP name="music_loop"> 
         <TMPL_IF name="MUSIC_ISRADIO">
-        <li onclick="play('<TMPL_VAR NAME=MUSIC_ARG>');">
+        <li onclick="play('<TMPL_VAR NAME=music_arg>');">
         <TMPL_ELSE>
-        <li onclick="browse('<TMPL_VAR NAME=MUSIC_ARG>');">
+        <li onclick="browse('<TMPL_VAR NAME=music_arg>');">
         </TMPL_IF>
-        <TMPL_IF name="MUSIC_ISSONG">
+        <TMPL_IF name="music_issong">
             <div class='trackno'><TMPL_VAR name="MUSIC_TRACK_NUM"></div>
         <TMPL_ELSE>
-            <img width="44" height="44" src="<TMPL_VAR name="MUSIC_ALBUMART">">
+            <img width="44" height="44" src="<TMPL_VAR name="music_albumart">">
         </TMPL_IF>
         <div>
-            <p class='title'><TMPL_VAR name="MUSIC_NAME"></p>
+            <p class='title'><TMPL_VAR name="music_name"></p>
             <p class='artist'><TMPL_VAR name="MUSIC_ARTIST"></p>
             <p class='description'><TMPL_VAR name="MUSIC_DESC"></p>
         </div>

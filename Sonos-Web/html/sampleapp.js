@@ -158,24 +158,24 @@ function drawZones() {
     for (i = 0; i<sonos.zones.length; i++) {
         var zone = sonos.zones[i];
 
-        if (!zone.ZONE_LINKED) {
+        if (!zone.zone_linked) {
             if (i != 0) str+= "</ul>";
-            str+= "<ul onClick=\"setCurrentZone('" + zone.ZONE_ID + "')\">";
+            str+= "<ul onClick=\"setCurrentZone('" + zone.zone_id + "')\">";
         }
 
-        if (app.currentZoneId == zone.ZONE_ID) str += "<b>";
+        if (app.currentZoneId == zone.zone_id) str += "<b>";
 
-        str += "<li style='background-image: url(zone_icons/" + zone.ZONE_ICON + ".png);'>" + zone.ZONE_NAME;
+        str += "<li style='background-image: url(zone_icons/" + zone.zone_icon + ".png);'>" + zone.zone_name;
         
-        if (zone.ZONE_LINKED) {
-            str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone.ZONE_ID+"')\">[U]</a>";
-        } else if (app.currentZoneId && app.currentZoneId != zone.ZONE_ID) {
-            str += " <a class=ulink href=\"#\" onClick=\"doLink('"+zone.ZONE_ID+"')\">[L]</a></font>";
+        if (zone.zone_linked) {
+            str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone.zone_id+"')\">[U]</a>";
+        } else if (app.currentZoneId && app.currentZoneId != zone.zone_id) {
+            str += " <a class=ulink href=\"#\" onClick=\"doLink('"+zone.zone_id+"')\">[L]</a></font>";
         }
 
         str += "</li>\n";
 
-        if (app.currentZoneId == zone.ZONE_ID) str += "</b>";
+        if (app.currentZoneId == zone.zone_id) str += "</b>";
     }
     str += "</ul>";
     updateText("zones", str);
@@ -184,7 +184,7 @@ function drawZones() {
 function curZoneInfo() {
     for (z in sonos.zones) {
         var zone = sonos.zones[z];
-        if (zone.ZONE_ID != app.currentZoneId) continue;
+        if (zone.zone_id != app.currentZoneId) continue;
         return zone;
     }
 }
@@ -193,21 +193,21 @@ function drawControl(zoneId) {
     if (zoneId != app.currentZoneId) return;
     var info = curZoneInfo();
 
-    var fancyName = info.ZONE_NAME;
+    var fancyName = info.zone_name;
     if (info.ZONE_NUMLINKED > 0) fancyName += ' + ' + info.ZONE_NUMLINKED;
 
     $("a[href=info-container]").text(fancyName);
     updateText('currentzonename', fancyName);
-    var name = info.ACTIVE_NAME;
-    if (!name && !info.ACTIVE_ALBUM && !info.ACTIVE_ARTIST)
+    var name = info.active_name;
+    if (!name && !info.active_album && !info.active_artist)
         name = "<em>Not playing</em>";
     updateText('song', name);
-    updateText('album', info.ACTIVE_ALBUM);
-    updateText('artist', info.ACTIVE_ARTIST);
-    updateToggle("pause", "play", info.ACTIVE_MODE == 1);
-    updateToggle("muteoff", "muteon", info.ACTIVE_MUTED);
-    $("#volume").simpleSlider("setValue", info.ACTIVE_VOLUME);
-    var image = info.ACTIVE_ALBUMART;
+    updateText('album', info.active_album);
+    updateText('artist', info.active_artist);
+    updateToggle("pause", "play", info.active_mode == 1);
+    updateToggle("muteoff", "muteon", info.active_muted);
+    $("#volume").simpleSlider("setValue", info.active_volume);
+    var image = info.active_albumart;
     if (!image) image = "tiles/missingaa_lite.svg";
     updateSrc('albumart', image);
     drawQueue(zoneId);
@@ -217,9 +217,9 @@ function drawQueue(zoneId) {
     if (zoneId != app.currentZoneId) return;
     if (!sonos.queues[zoneId]) return;
     var queue = sonos.queues[zoneId]; 
-    var cur_track = curZoneInfo().ACTIVE_TRACK_NUM;
-    var zone_paused = curZoneInfo().ACTIVE_PAUSED_PLAYBACK;
-    var zone_playing = curZoneInfo().ACTIVE_PLAYING;
+    var cur_track = curZoneInfo().active_track_num;
+    var zone_paused = curZoneInfo().active_paused_playback;
+    var zone_playing = curZoneInfo().active_playing;
 
     var str = new Array();
     str.push("<ul>");
@@ -240,7 +240,7 @@ function drawQueue(zoneId) {
 
         if (paused)       action = "doAction('Play');";
         else if (playing) action = "doAction('Pause');"
-        else              action = "doQAction('Seek', '" + item.QUEUE_ID + "'); doAction('Play');";
+        else              action = "doQAction('Seek', '" + item.queue_id + "'); doAction('Play');";
         str.push("<li onClick=\"" + action + "\">");
 
         if (paused) img = 'svg/pause.svg';
@@ -248,7 +248,7 @@ function drawQueue(zoneId) {
         else img = item.QUEUE_ALBUMART;
         str.push("<img class='albumart' src='" + img + "'>");
 
-        str.push("<div><p class='title'>" + item.QUEUE_NAME + "</p>");
+        str.push("<div><p class='title'>" + item.queue_name + "</p>");
         str.push("<p class='artist'>" + item.QUEUE_ARTIST + "</p>");
         str.push("</div>");
         str.push("</li>");
@@ -266,21 +266,21 @@ function drawMusic(path) {
     if (path != "") {
         str.push("<li class='header'>");
         str.push("<img onClick='browseBack()' src='tiles/back.svg'>");
-        str.push("<div><p id='musicpath'>" + info.MUSIC_NAME + "</p>");
+        str.push("<div><p id='musicpath'>" + info.music_name + "</p>");
         if (info.MUSIC_ARTIST) str.push("<p class='artist'>" + info.MUSIC_ARTIST + "</p>");
         if (info.MUSIC_CLASS == "object.container.album.musicAlbum") { 
             str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"AddMusic\", \"" + path + "\");'>Add</A></p>");
         }
         str.push("</div></li>");
 
-        if (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum") {
-            str.push("<li class='albumart'><img onerror='this.src=\"tiles/missingaa_lite.svg\";' src='" + info.MUSIC_ALBUMART + "'></li>");
+        if (info.music_albumart && info.MUSIC_CLASS == "object.container.album.musicAlbum") {
+            str.push("<li class='albumart'><img onerror='this.src=\"tiles/missingaa_lite.svg\";' src='" + info.music_albumart + "'></li>");
         }
     }
   
     // container items
-    for (i=0; i < info.MUSIC_LOOP.length; i++) {
-        var item = info.MUSIC_LOOP[i];
+    for (i=0; i < info.music_loop.length; i++) {
+        var item = info.music_loop[i];
         path = decodeURIComponent(item.MUSIC_REALPATH); 
         str.push("<li");
         if (item.MUSIC_REALCLASS == "object.item.audioItem.audioBroadcast")
@@ -288,13 +288,13 @@ function drawMusic(path) {
         else 
             str.push(" onClick='browseTo(\"" + path + "\")'>");
 
-        if (item.MUSIC_ALBUMART && ! (info.MUSIC_ALBUMART && info.MUSIC_CLASS == "object.container.album.musicAlbum")) { 
-            str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.MUSIC_ALBUMART) + "'>");
+        if (item.music_albumart && ! (info.music_albumart && info.MUSIC_CLASS == "object.container.album.musicAlbum")) { 
+            str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.music_albumart) + "'>");
         } else {
             str.push("<div class='trackno'>" + i + "</div>");
         }
 
-        str.push("<div><p class='title'>" + item.MUSIC_NAME + "</p>");
+        str.push("<div><p class='title'>" + item.music_name + "</p>");
         if (item.MUSIC_ARTIST && item.MUSIC_ARTIST != info.MUSIC_ARTIST)
             str.push("<p class='artist'>" + item.MUSIC_ARTIST + "</p>");
         if (item.MUSIC_DESC)

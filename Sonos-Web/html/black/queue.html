@@ -15,11 +15,11 @@
                 <p class="buttons" onclick="removeall()">Remove All</p>
             </div>
             </li>
-            <TMPL_LOOP NAME=QUEUE_LOOP>
-                <li onclick="seek('<TMPL_VAR NAME=QUEUE_ARG>');">
+            <TMPL_LOOP NAME=queue_loop>
+                <li onclick="seek('<TMPL_VAR NAME=queue_arg>');">
                     <img width="44" height="44" class="albumart" src="<TMPL_VAR name="QUEUE_ALBUMART">" />
                     <div>
-                        <p class="title"><TMPL_VAR name="QUEUE_NAME"></p>
+                        <p class="title"><TMPL_VAR name="queue_name"></p>
                         <p class="artist"><TMPL_VAR name="QUEUE_ARTIST"></p>
                     </div>
                   </a>

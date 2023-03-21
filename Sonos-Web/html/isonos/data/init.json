@@ -1,1 +1,1 @@
-{"init":{"last_update":"<TMPL_VAR NAME=LAST_UPDATE>","version":"<TMPL_VAR NAME=VERSION>","base_url":"<TMPL_VAR NAME=BASE_URL>"}}
+{"init":{"last_update":"<TMPL_VAR NAME=last_update>","version":"<TMPL_VAR NAME=version>","base_url":"<TMPL_VAR NAME=base_url>"}}

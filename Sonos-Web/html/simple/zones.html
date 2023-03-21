@@ -3,24 +3,24 @@
 <TITLE>Zones</TITLE>
 </HEAD>
 <BODY>
-<FONT SIZE=0><A TARGET=_top HREF="index.html?<TMPL_VAR NAME=ALL_ARG>">Refresh</A></FONT><P>
-<TMPL_LOOP NAME=ZONES_LOOP>
-    <TMPL_IF NAME=ZONE_ACTIVE><B></TMPL_IF>
-    <TMPL_IF NAME=ZONE_LINKED>
-       &nbsp; &nbsp;<TMPL_VAR NAME=ZONE_NAME>
-      <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=ALL_ARG>&link=<TMPL_VAR NAME=ACTIVE_ZONEID>&action=Unlink"><font size=-2>[U]</font></a>
+<FONT SIZE=0><A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT><P>
+<TMPL_LOOP NAME=zones_loop>
+    <TMPL_IF NAME=zone_active><B></TMPL_IF>
+    <TMPL_IF NAME=zone_linked>
+       &nbsp; &nbsp;<TMPL_VAR NAME=zone_name>
+      <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>&link=<TMPL_VAR NAME=active_zoneid>&action=Unlink"><font size=-2>[U]</font></a>
     <TMPL_ELSE>
-       <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=ZONE_ARG>"><TMPL_VAR NAME=ZONE_NAME></A>
-       <TMPL_UNLESS NAME=ZONE_ACTIVE>
-          <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=ALL_ARG>&link=<TMPL_VAR NAME=ACTIVE_ZONEID>&action=Link"><font size=-2>[L]</font></a>
+       <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A>
+       <TMPL_UNLESS NAME=zone_active>
+          <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>&link=<TMPL_VAR NAME=active_zoneid>&action=Link"><font size=-2>[L]</font></a>
        </TMPL_UNLESS>
     </TMPL_IF>
-    <TMPL_IF NAME=ZONE_ACTIVE></B></TMPL_IF>
+    <TMPL_IF NAME=zone_active></B></TMPL_IF>
     <BR>
 </TMPL_LOOP>
 <P>
-<TMPL_IF NAME=HAS_ACTIVE_ZONE>
-    <A TARGET=_top HREF="index.html?zone=<TMPL_VAR NAME=ACTIVE_ZONEID>&action=LinkAll">Party Mode</A>
+<TMPL_IF NAME=has_active_zone>
+    <A TARGET=_top HREF="index.html?zone=<TMPL_VAR NAME=active_zoneid>&action=LinkAll">Party Mode</A>
 <TMPL_ELSE>
     <B>Select a zone to start</B>
 </TMPL_IF>

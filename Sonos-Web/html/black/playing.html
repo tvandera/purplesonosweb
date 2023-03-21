@@ -5,11 +5,11 @@
      <h4 id="musiclabel" onclick="goto('music')">MUSIC LIBRARY</h4>
 </div>
 
-<TMPL_IF name="HAS_ACTIVE_ZONE">
+<TMPL_IF name="has_active_zone">
 <div id="current-track-info">
     <img class="albumart" id="albumart"
-      <TMPL_IF name="ACTIVE_ALBUMART">
-         src="<TMPL_VAR name="ACTIVE_ALBUMART">"
+      <TMPL_IF name="active_albumart">
+         src="<TMPL_VAR name="active_albumart">"
       <TMPL_ELSE>
          src="tiles/missingaa_lite.svg"
       </TMPL_IF>
@@ -20,12 +20,12 @@
 <div id="control">
     <img onclick="send('Previous');" width="44" height="44" src="svg/prev.svg" id="previous">
     <img onclick="send('Pause');" width="44" height="44" src="svg/pause.svg" id="pause"
-      <TMPL_UNLESS name="ACTIVE_PLAYING">
+      <TMPL_UNLESS name="active_playing">
             style="display: none;"
       </TMPL_UNLESS>
     >
     <img onclick="send('Play');" width="44" height="44" src="svg/play.svg" id="play"
-      <TMPL_IF name="ACTIVE_PLAYING">
+      <TMPL_IF name="active_playing">
             style="display: none;"
       </TMPL_IF>
     >
@@ -38,12 +38,12 @@
 
 <div id="mute">
     <img onclick="send('MuteOn');" width="44" height="44" src="svg/mute_off.svg" id="muteon"
-      <TMPL_IF name="ACTIVE_MUTED">
+      <TMPL_IF name="active_muted">
             style="display: none;"
       </TMPL_IF>
     >
     <img onclick="send('MuteOff');" width="44" height="44" src="svg/mute_on.svg" id="muteoff"
-      <TMPL_UNLESS name="ACTIVE_MUTED">
+      <TMPL_UNLESS name="active_muted">
             style="display: none;"
       </TMPL_UNLESS>
     >
@@ -51,7 +51,7 @@
 
 <div id="volumes">
    <img onclick="softer();" width="44" height="44" src="svg/minus.svg" id="muchsofter">
-    <label id="volume"><TMPL_VAR name="ACTIVE_VOLUME">%</label>
+    <label id="volume"><TMPL_VAR name="active_volume">%</label>
     <img onclick="louder();" width="44" height="44" src="svg/plus.svg" id="muchlouder">
 
 </div>

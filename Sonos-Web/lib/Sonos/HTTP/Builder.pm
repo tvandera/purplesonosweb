@@ -83,40 +83,40 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
         $mpath_arg .= "zone=" . $player->friendlyName() . "&" if $player;
 
         %data = (
-            $prefix . "_NAME"        => encode_entities( $item->title() ),
-            $prefix . "_DESC"        => encode_entities( $item->description() ),
-            $prefix . "_ARTIST"      => encode_entities( $item->creator() ),
-            $prefix . "_ALBUM"       => encode_entities( $item->album() ),
-            $prefix . "_CLASS"       => encode_entities( $item->class  ),
-            $prefix . "_CONTENT"     => uri_escape_utf8( $item->content  ),
-            $prefix . "_PARENT"      => uri_escape_utf8( $item->parentID ),
-            $prefix . "_ALBUMART"    => $item->albumArtURI,
-            $prefix . "_ISSONG"      => int( $item->isSong() ),
-            $prefix . "_ISRADIO"     => int( $item->isRadio() ),
-            $prefix . "_ISALBUM"     => int( $item->isAlbum() ),
-            $prefix . "_ISFAV"       => int( $item->isFav() ),
-            $prefix . "_ISTOP"       => int( $item->isTop() ),
-            $prefix . "_ISCONTAINER" => int( $item->isContainer() ),
-            $prefix . "_TRACK_NUM"   => int( $item->originalTrackNumber() ),
-            $prefix . "_ARG"         => $mpath_arg,
+            $prefix . "_name"        => encode_entities( $item->title() ),
+            $prefix . "_desc"        => encode_entities( $item->description() ),
+            $prefix . "_artist"      => encode_entities( $item->creator() ),
+            $prefix . "_album"       => encode_entities( $item->album() ),
+            $prefix . "_class"       => encode_entities( $item->class  ),
+            $prefix . "_content"     => uri_escape_utf8( $item->content  ),
+            $prefix . "_parent"      => uri_escape_utf8( $item->parentID ),
+            $prefix . "_albumart"    => $item->albumArtURI,
+            $prefix . "_issong"      => int( $item->isSong() ),
+            $prefix . "_isradio"     => int( $item->isRadio() ),
+            $prefix . "_isalbum"     => int( $item->isAlbum() ),
+            $prefix . "_isfav"       => int( $item->isFav() ),
+            $prefix . "_istop"       => int( $item->isTop() ),
+            $prefix . "_iscontainer" => int( $item->isContainer() ),
+            $prefix . "_track_num"   => int( $item->originalTrackNumber() ),
+            $prefix . "_arg"         => $mpath_arg,
         );
     } else {
         %data = (
-            $prefix . "_NAME"        => "",
-            $prefix . "_DESC"        => "",
-            $prefix . "_ARTIST"      => "",
-            $prefix . "_ALBUM"       => "",
-            $prefix . "_CLASS"       => "",
-            $prefix . "_CONTENT"     => "",
-            $prefix . "_PARENT"      => "",
-            $prefix . "_ALBUMART"    => "",
-            $prefix . "_ISSONG"      => 0,
-            $prefix . "_ISRADIO"     => 0,
-            $prefix . "_ISALBUM"     => 0,
-            $prefix . "_ISFAV"       => 0,
-            $prefix . "_ISCONTAINER" => 0,
-            $prefix . "_TRACK_NUM"   => -1,
-            $prefix . "_ARG"         => "",
+            $prefix . "_name"        => "",
+            $prefix . "_desc"        => "",
+            $prefix . "_artist"      => "",
+            $prefix . "_album"       => "",
+            $prefix . "_class"       => "",
+            $prefix . "_content"     => "",
+            $prefix . "_parent"      => "",
+            $prefix . "_albumart"    => "",
+            $prefix . "_issong"      => 0,
+            $prefix . "_isradio"     => 0,
+            $prefix . "_isalbum"     => 0,
+            $prefix . "_isfav"       => 0,
+            $prefix . "_iscontainer" => 0,
+            $prefix . "_track_num"   => -1,
+            $prefix . "_arg"         => "",
         );
     }
 
@@ -131,7 +131,7 @@ sub build_none_data($self) {
 ###############################################################################
 sub build_zones_data($self) {
     my @zones = map { $self->build_zone_data( $_ ) } $self->players();
-    return { "ZONES_LOOP" => \@zones };
+    return { "zones_loop" => \@zones };
 }
 
 
@@ -156,47 +156,47 @@ sub build_zone_data($self, $player = undef) {
     my $zonetopology  = $player->zoneGroupTopology();
     my $num_linked = $zonetopology->numMembers() - 1;
 
-    $activedata{HAS_ACTIVE_ZONE}   = int( defined $active_player );
-    $activedata{ACTIVE_ZONE}       = encode_entities( $zonename );
-    $activedata{ACTIVE_ZONEID}     = uri_escape($player->UDN());
-    $activedata{ZONE_ACTIVE}       = int(defined $active_player && $player == $active_player );
+    $activedata{has_active_zone}   = int( defined $active_player );
+    $activedata{active_zone}       = encode_entities( $zonename );
+    $activedata{active_zoneid}     = uri_escape($player->UDN());
+    $activedata{zone_active}       = int(defined $active_player && $player == $active_player );
     $activedata{ACTIVE_LASTUPDATE} = $player->lastUpdate();
     $activedata{ACTIVE_UPDATED}    = int( $player->lastUpdate() > $updatenum );
 
-    $activedata{ACTIVE_VOLUME}   = $render->getVolume();
-    $activedata{ACTIVE_MUTED}    = $render->getMute();
+    $activedata{active_volume}   = $render->getVolume();
+    $activedata{active_muted}    = $render->getMute();
 
     %activedata = ( %activedata, $self->build_item_data("ACTIVE", $av->metaData(), $player) );
-    $activedata{ACTIVE_NAME} = $av->name();
+    $activedata{active_name} = $av->name();
 
-    $activedata{ACTIVE_LENGTH}   = $av->lengthInSeconds();
-    $activedata{ACTIVE_TRACK_NUM} = int($av->currentTrack());
+    $activedata{active_length}   = $av->lengthInSeconds();
+    $activedata{active_track_num} = int($av->currentTrack());
 
-    $activedata{ACTIVE_TRACK_TOT}      = int($number_of_tracks);
+    $activedata{active_track_tot}      = int($number_of_tracks);
     $activedata{ACTIVE_TRACK_TOT_0}    = int( $number_of_tracks == 0 );
     $activedata{ACTIVE_TRACK_TOT_1}    = int( $number_of_tracks == 1 );
-    $activedata{ACTIVE_TRACK_TOT_GT_1} = int( $number_of_tracks > 1 );
+    $activedata{active_track_tot_gt_1} = int( $number_of_tracks > 1 );
 
-    $activedata{"ACTIVE_MODE"} = $transport_states{$transportstate};
-    $activedata{"ACTIVE_$_"}   = int($transportstate eq $_) for (keys %transport_states);
+    $activedata{"active_mode"} = $transport_states{$transportstate};
+    $activedata{"active_$_"}   = int($transportstate eq $_) for (keys %transport_states);
 
-    $activedata{ACTIVE_REPEAT} = $av->isRepeat();
-    $activedata{ACTIVE_SHUFFLE} = $av->isShuffle();
+    $activedata{active_repeat} = $av->isRepeat();
+    $activedata{active_shuffle} = $av->isShuffle();
 
-    %activedata = ( %activedata, $self->build_item_data("NEXT", $nexttrack, $player) );
+    %activedata = ( %activedata, $self->build_item_data("next", $nexttrack, $player) );
 
-    $activedata{ZONE_MODE}   = $activedata{ACTIVE_MODE};
-    $activedata{ZONE_MUTED}  = $activedata{ACTIVE_MUTED};
-    $activedata{ZONE_ID}     = $activedata{ACTIVE_ZONEID};
-    $activedata{ZONE_NAME}   = $activedata{ACTIVE_ZONE};
-    $activedata{ZONE_VOLUME} = $activedata{ACTIVE_VOLUME};
-    $activedata{ZONE_ARG}    = "zone=$zonename&";
+    $activedata{zone_mode}   = $activedata{active_mode};
+    $activedata{zone_muted}  = $activedata{active_muted};
+    $activedata{zone_id}     = $activedata{active_zoneid};
+    $activedata{zone_name}   = $activedata{active_zone};
+    $activedata{zone_volume} = $activedata{active_volume};
+    $activedata{zone_arg}    = "zone=$zonename&";
 
-    $activedata{ZONE_ICON} = $zonetopology->icon();
-    $activedata{ZONE_IMG} =  "zone_icons" . $zonetopology->icon() . ".png";
-    $activedata{ZONE_LASTUPDATE} = $player->lastUpdate();
+    $activedata{zone_icon} = $zonetopology->icon();
+    $activedata{zone_img} =  "zone_icons" . $zonetopology->icon() . ".png";
+    $activedata{zone_lastupdate} = $player->lastUpdate();
     $activedata{ZONE_NUMLINKED} = $num_linked;
-    $activedata{ZONE_FANCYNAME} = $activedata{ZONE_NAME};
+    $activedata{ZONE_FANCYNAME} = $activedata{zone_name};
     $activedata{ZONE_FANCYNAME} .= " + " . $num_linked if $num_linked;
 
     my @members = $zonetopology->members();
@@ -204,17 +204,17 @@ sub build_zone_data($self, $player = undef) {
         map {
             my $uuid = $_->{UUID};
             {
-                "ZONE_NAME"   => $zonetopology->zoneName($uuid),
-                "ZONE_ID"     => $uuid,
-                "ZONE_LINKED" => int( ! $zonetopology->isCoordinator($uuid) ),
-                "ZONE_ICON"   => $zonetopology->icon($uuid),
-                "ZONE_IMG"    => "zone_icons" . $zonetopology->icon($uuid) . ".png",
+                "zone_name"   => $zonetopology->zoneName($uuid),
+                "zone_id"     => $uuid,
+                "zone_linked" => int( ! $zonetopology->isCoordinator($uuid) ),
+                "zone_icon"   => $zonetopology->icon($uuid),
+                "zone_img"    => "zone_icons" . $zonetopology->icon($uuid) . ".png",
             }
         } @members
     ];
 
-    $activedata{ZONE_LINKED}    = ! $zonetopology->isCoordinator();
-    $activedata{ZONE_LINK}      = $zonetopology->coordinator()->{UUID};
+    $activedata{zone_linked}    = ! $zonetopology->isCoordinator();
+    $activedata{zone_link}      = $zonetopology->coordinator()->{UUID};
     $activedata{ZONE_LINK_NAME} = $zonetopology->coordinator()->{ZoneName};
 
     return \%activedata;
@@ -236,8 +236,8 @@ sub build_queue_data($self) {
     $queuedata{QUEUE_LASTUPDATE} = $queue->lastUpdate();
     $queuedata{QUEUE_UPDATED}    = int( $queue->lastUpdate() > $updatenum );
 
-    my @loop_data = map { { $self->build_item_data("QUEUE", $_, $player) } } $queue->items();
-    $queuedata{QUEUE_LOOP} = \@loop_data;
+    my @loop_data = map { { $self->build_item_data("queue", $_, $player) } } $queue->items();
+    $queuedata{queue_loop} = \@loop_data;
 
     return \%queuedata;
 }
@@ -260,16 +260,16 @@ sub build_music_data($self) {
         @elements   = $music->children($parent);
     }
 
-    $musicdata{"MUSIC_ROOT"}       = int( $mpath eq "" );
-    $musicdata{"MUSIC_LASTUPDATE"} = $music->lastUpdate();
-    $musicdata{"MUSIC_UPDATED"}    = int( $music->lastUpdate() > $updatenum );
-    $musicdata{"MUSIC_PATH"}       = encode_entities($mpath);
+    $musicdata{"music_root"}       = int( $mpath eq "" );
+    $musicdata{"music_lastupdate"} = $music->lastUpdate();
+    $musicdata{"music_updated"}    = int( $music->lastUpdate() > $updatenum );
+    $musicdata{"music_path"}       = encode_entities($mpath);
 
-    %musicdata = (%musicdata, $self->build_item_data("MUSIC", $parent));
+    %musicdata = (%musicdata, $self->build_item_data("music", $parent));
 
-    my @music_loop_data = map { { $self->build_item_data("MUSIC", $_) } } @elements;
+    my @music_loop_data = map { { $self->build_item_data("music", $_) } } @elements;
 
-    $musicdata{"MUSIC_LOOP"} = \@music_loop_data;
+    $musicdata{"music_loop"} = \@music_loop_data;
 
     return \%musicdata;
 }
@@ -278,19 +278,19 @@ sub build_globals_data($self) {
     my $updatenum = $self->qf("updatenum", -1);
 
     my $globals = {};
-    $globals->{"VERSION"}              = $self->version();
-    $globals->{"LAST_UPDATE"}          = $self->lastUpdate();
-    $globals->{"LAST_UPDATE_READABLE"} = localtime $self->lastUpdate();
+    $globals->{"version"}              = $self->version();
+    $globals->{"last_update"}          = $self->lastUpdate();
+    $globals->{"last_update_readable"} = localtime $self->lastUpdate();
 
     my $qf = $self->qf();
     my @keys    = grep !/action|rand|mpath|msearch|link/, ( keys %$qf );
     my $all_arg = join "&", map { "$_=$qf->{$_}" } @keys;
     $all_arg .= "&" if $all_arg;
-    $globals->{"ALL_ARG"} = $all_arg;
+    $globals->{"all_arg"} = $all_arg;
 
-    $globals->{"MUSICDIR_AVAILABLE"} = 0;
-    $globals->{"ZONES_LASTUPDATE"}   = $self->lastUpdate(); # FIXME
-    $globals->{"ZONES_UPDATED"}      = int( $self->lastUpdate() > $updatenum );
+    $globals->{"musicdir_available"} = 0;
+    $globals->{"zones_lastupdate"}   = $self->lastUpdate(); # FIXME
+    $globals->{"zones_updated"}      = int( $self->lastUpdate() > $updatenum );
 
     return $globals;
 }

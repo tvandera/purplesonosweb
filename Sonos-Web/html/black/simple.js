@@ -35,20 +35,20 @@ function drawControl() {
     if (page() != "playing") return;
 
     var info = "";
-    if (zone_info.ACTIVE_NAME) info += zone_info.ACTIVE_NAME + '<br>';
-    if (zone_info.ACTIVE_ALBUM) {
-      if (zone_info.ACTIVE_ISRADIO) info += "&nbsp;<em>station:</em> ";
+    if (zone_info.active_name) info += zone_info.active_name + '<br>';
+    if (zone_info.active_album) {
+      if (zone_info.active_isradio) info += "&nbsp;<em>station:</em> ";
       else info += "&nbsp;<em>album:</em> ";
-      info += zone_info.ACTIVE_ALBUM + '<br>';
+      info += zone_info.active_album + '<br>';
     }
-    if (zone_info.ACTIVE_ARTIST) info += "&nbsp;<em>artist:</em> " + zone_info.ACTIVE_ARTIST + '<br>';
+    if (zone_info.active_artist) info += "&nbsp;<em>artist:</em> " + zone_info.active_artist + '<br>';
     if (!info) info = "<em>Not playing</em>";
     updateText('info', info);
 
-    updateToggle("pause", "play", zone_info.ACTIVE_MODE == 1);
-    updateToggle("muteoff", "muteon", zone_info.ACTIVE_MUTED);
-    updateText("volume", "" +  zone_info.ACTIVE_VOLUME + "%");
-    var image = zone_info.ACTIVE_ALBUMART;
+    updateToggle("pause", "play", zone_info.active_mode == 1);
+    updateToggle("muteoff", "muteon", zone_info.active_muted);
+    updateText("volume", "" +  zone_info.active_volume + "%");
+    var image = zone_info.active_albumart;
     if (!image) image = "tiles/missingaa_lite.svg";
     updateSrc('albumart', image);
 
@@ -102,16 +102,16 @@ function add(music_arg){ send("AddMusic&" + music_arg); goto("playing"); }
 
 function softer() {
    send('MuchSofter');
-   zone_info.ACTIVE_VOLUME -= 5;
-   if (zone_info.ACTIVE_VOLUME < 0) zone_info.ACTIVE_VOLUME = 0;
-   updateText("volume", "" +  zone_info.ACTIVE_VOLUME + "%");
+   zone_info.active_volume -= 5;
+   if (zone_info.active_volume < 0) zone_info.active_volume = 0;
+   updateText("volume", "" +  zone_info.active_volume + "%");
 }
 
 function louder() {
    send('MuchLouder');
-   zone_info.ACTIVE_VOLUME += 5;
-   if (zone_info.ACTIVE_VOLUME > 100) zone_info.ACTIVE_VOLUME = 100;
-   updateText("volume", "" +  zone_info.ACTIVE_VOLUME + "%");
+   zone_info.active_volume += 5;
+   if (zone_info.active_volume > 100) zone_info.active_volume = 100;
+   updateText("volume", "" +  zone_info.active_volume + "%");
 }
 
 

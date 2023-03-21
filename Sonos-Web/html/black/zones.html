@@ -1,48 +1,48 @@
 <TMPL_INCLUDE name="header.tmpl">
 
-<TMPL_IF NAME="HAS_ACTIVE_ZONE">
+<TMPL_IF NAME="has_active_zone">
   <div id="top-labels">
      <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
   </div>
 </TMPL_IF>
 
 <div id="zones">
-<TMPL_LOOP name="ZONES_LOOP">
+<TMPL_LOOP name="zones_loop">
  <div
-     <TMPL_IF name="ZONE_ACTIVE">
+     <TMPL_IF name="zone_active">
         class="active"
      <TMPL_ELSE>
         class="normal"
      </TMPL_IF>
  >
- <TMPL_UNLESS NAME=ZONE_LINKED>
-   <TMPL_IF name="HAS_ACTIVE_ZONE">
-   <TMPL_UNLESS NAME="ZONE_ACTIVE">
-       <img style='float: right;' onclick="goto('zones', '&action=Link&link=<TMPL_VAR name="ACTIVE_ZONEID">'); return true;" width="44" height="44" src="svg/link.svg">
+ <TMPL_UNLESS NAME=zone_linked>
+   <TMPL_IF name="has_active_zone">
+   <TMPL_UNLESS NAME="zone_active">
+       <img style='float: right;' onclick="goto('zones', '&action=Link&link=<TMPL_VAR name="active_zoneid">'); return true;" width="44" height="44" src="svg/link.svg">
    </TMPL_UNLESS>
    </TMPL_IF>
 
    <TMPL_IF NAME="ZONE_NUMLINKED">
-       <img style='float: right;' onclick="goto('zones', '&action=Unlink&link=<TMPL_VAR name="ZONE_ID">');" width="44" height="44" src="svg/unlink.svg">
+       <img style='float: right;' onclick="goto('zones', '&action=Unlink&link=<TMPL_VAR name="zone_id">');" width="44" height="44" src="svg/unlink.svg">
    </TMPL_IF>
 
    <ul
-       onclick="zone('<TMPL_VAR name="ZONE_ID">');">
+       onclick="zone('<TMPL_VAR name="zone_id">');">
     <TMPL_LOOP name="ZONE_MEMBERS">
-       <li style="background-image: url(zone_icons/<TMPL_VAR name="ZONE_ICON">.png);">
-         <TMPL_VAR name="ZONE_NAME" >
+       <li style="background-image: url(zone_icons/<TMPL_VAR name="zone_icon">.png);">
+         <TMPL_VAR name="zone_name" >
       </li>
     </TMPL_LOOP>
   </ul>
 
   <div class="zoneinfo">
     <span>
-        <TMPL_IF name="ACTIVE_PLAYING">
+        <TMPL_IF name="active_playing">
            <img width="22" height="22" src="svg/play.svg">
         <TMPL_ELSE>
            <img width="22" height="22" src="svg/pause.svg">
         </TMPL_IF>
-        <TMPL_VAR name="ACTIVE_ALBUM">
+        <TMPL_VAR name="active_album">
     </span>
   </div>
  </TMPL_UNLESS>
