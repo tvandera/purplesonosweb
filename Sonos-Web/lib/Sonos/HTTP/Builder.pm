@@ -83,6 +83,7 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
         $mpath_arg .= "zone=" . $player->friendlyName() . "&" if $player;
 
         %data = (
+            $prefix . "_id"          => uri_escape_utf8( $item->id() ),
             $prefix . "_name"        => encode_entities( $item->title() ),
             $prefix . "_desc"        => encode_entities( $item->description() ),
             $prefix . "_artist"      => encode_entities( $item->creator() ),
@@ -102,6 +103,7 @@ sub build_item_data($self, $prefix, $item, $player = undef) {
         );
     } else {
         %data = (
+            $prefix . "_id"          => "",
             $prefix . "_name"        => "",
             $prefix . "_desc"        => "",
             $prefix . "_artist"      => "",
