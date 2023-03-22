@@ -251,12 +251,11 @@ sub action {
             $av->removeAllTracksFromQueue();
         } ],
         "AddMusic"    => [ $av, sub { 
-            $av->removeAllTracksFromQueue();
-            $av->addURI($qf{mpath}, 1);
+            $av->addToQueue($qf{mpath}, 1);
          }, "mpath", ],
         "PlayMusic"   => [ $av, sub {
             $av->removeAllTracksFromQueue();
-            $av->addURI($qf{mpath});
+            $av->addToQueue($qf{mpath});
             $av->play();
         }, "mpath", ],
         "DeleteMusic" => [ $av, sub {

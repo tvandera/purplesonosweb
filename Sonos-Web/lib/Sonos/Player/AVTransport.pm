@@ -126,8 +126,15 @@ sub setQueue($self) {
     $self->setURI("x-rincon-queue:" . $id . "#0", "");
 }
 
-sub addURI( $self, $uri, $metadata, $queueSlot ) {
+sub addToQueue( $self, $mpath, $queueSlot = 0 ) {
+    my $item = $self->musicLibrary()->item($mpath);
+    my $uri = $item->content();
+    my $metadata = "";
     return $self->action( "AddURIToQueue", $uri, $metadata, $queueSlot );
+}
+
+sub addURI( $self, $uri, $metadata = "", $queueSlot = 0 ) {
+    $self->log("Add to queue: $uri");
 }
 
 sub standaloneCoordinator($self) {
