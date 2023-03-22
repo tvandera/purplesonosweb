@@ -12,15 +12,15 @@ To begin, select a zone:<BR>
 
 <TMPL_LOOP NAME=zones_loop>
     <TMPL_IF NAME=zone_active>
-        <B><A HREF="/mobile.html?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A></B>
+        <B><A HREF="?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A></B>
     <TMPL_ELSE>
-        <A HREF="/mobile.html?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A>
+        <A HREF="?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A>
     </TMPL_IF>
 </TMPL_LOOP>
 <P>
 
 <TMPL_IF NAME=has_active_zone>
-<FONT SIZE="0"><A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT><BR>
+<FONT SIZE="0"><A HREF="?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT><BR>
 
 <TMPL_VAR NAME=has_active_zone> Now Playing: <BR>
 &nbsp; <B>Song:</B> <TMPL_VAR NAME=active_name><BR>
@@ -34,46 +34,46 @@ To begin, select a zone:<BR>
 
 <HR>
 
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=Previous">Previous</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=Previous">Previous</A>
 <TMPL_IF NAME=active_playing>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=Pause">Pause</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=Pause">Pause</A>
 <TMPL_ELSE>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=Play">Play</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=Play">Play</A>
 </TMPL_IF>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=Next">Next</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=Next">Next</A>
 <BR>
 <TMPL_IF NAME=active_shuffle>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOff">Shuffle Off</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=ShuffleOff">Shuffle Off</A>
 <TMPL_ELSE>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOn">Shuffle On</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=ShuffleOn">Shuffle On</A>
 </TMPL_IF>
 <TMPL_IF NAME=active_repeat>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=RepeatOff">Repeat Off</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=RepeatOff">Repeat Off</A>
 <TMPL_ELSE>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=RepeatOn">Repeat On</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=RepeatOn">Repeat On</A>
 </TMPL_IF>
 <BR>
 <TMPL_IF NAME=active_muted>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=MuteOff">Mute Off</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=MuteOff">Mute Off</A>
 <TMPL_ELSE>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=MuteOn">Mute On</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=MuteOn">Mute On</A>
 </TMPL_IF>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=MuchSofter">--</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=Softer">-</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=MuchSofter">--</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=Softer">-</A>
 <TMPL_VAR NAME=active_volume>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=Louder">+</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&action=MuchLouder">++</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=Louder">+</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&action=MuchLouder">++</A>
 
 <HR>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=R:">Radio</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=SQ:">Playlists</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=A:ARTIST">Artists</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=A:ALBUM">Albums</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=A:GENRE">Genre</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=A:COMPOSER">Composers</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=S:">Folders</A>
-<A HREF="/mobile.html?<TMPL_VAR NAME=all_arg>&mpath=AI:">Line In</A>
-<FORM ACTION="/mobile.html?<TMPL_VAR NAME=all_arg>" METHOD="get">
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=R:">Radio</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=SQ:">Playlists</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=A:ARTIST">Artists</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=A:ALBUM">Albums</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=A:GENRE">Genre</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=A:COMPOSER">Composers</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=S:">Folders</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>&mpath=AI:">Line In</A>
+<FORM ACTION="?<TMPL_VAR NAME=all_arg>" METHOD="get">
 Regex:
 <INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
 <INPUT NAME=msearch VALUE="<TMPL_VAR NAME=music_search>" TYPE=text>
@@ -83,12 +83,12 @@ Regex:
 <TMPL_UNLESS NAME=music_root>
 <B><TMPL_VAR NAME=music_error></B>
 <TMPL_LOOP NAME=music_loop>
-    <A HREF="/mobile.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=AddMusic">+</A>
-    <A HREF="/mobile.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=PlayMusic">|&gt;</A>
+    <A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=AddMusic">+</A>
+    <A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=PlayMusic">|&gt;</A>
     <TMPL_IF NAME=music_issong>
     <TMPL_VAR NAME=music_name>
     <TMPL_ELSE>
-    <A HREF="/mobile.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=Browse"><TMPL_VAR NAME=music_name></A>
+    <A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=Browse"><TMPL_VAR NAME=music_name></A>
     </TMPL_IF>
     <BR>
 </TMPL_LOOP>
