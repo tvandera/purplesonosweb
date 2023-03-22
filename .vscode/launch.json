@@ -7,9 +7,18 @@
         {
             "type": "perl",
             "request": "launch",
-            "name": "Perl-Debug",
+            "name": "daemon",
             "program": "${workspaceFolder}/Sonos-Web/scripts/daemon.pl",
             "cwd": "${workspaceFolder}/Sonos-Web",
+            "stopOnEntry": false,
+            "reloadModules": true
+        },
+        {
+            "type": "perl",
+            "request": "launch",
+            "name": "old",
+            "program": "${workspaceFolder}/old/sonos.pl",
+            "cwd": "${workspaceFolder}/old",
             "stopOnEntry": false,
             "reloadModules": true
         },
