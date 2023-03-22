@@ -12,12 +12,12 @@ To begin, select a zone:<BR>
 </TMPL_UNLESS>
 <TMPL_LOOP NAME=zones_loop>
 	<TMPL_IF NAME=zone_active>
-		<A HREF="/pocketpc.html?<TMPL_VAR NAME=zone_arg>"><font size=+1 color=#000000><B><TMPL_VAR NAME=zone_name></font></B></A>
+		<A HREF="?<TMPL_VAR NAME=zone_arg>"><font size=+1 color=#000000><B><TMPL_VAR NAME=zone_name></font></B></A>
 	<TMPL_ELSE>
-		<A HREF="/pocketpc.html?<TMPL_VAR NAME=zone_arg>"><font size=-1><TMPL_VAR NAME=zone_name></font></A>
+		<A HREF="?<TMPL_VAR NAME=zone_arg>"><font size=-1><TMPL_VAR NAME=zone_name></font></A>
 	</TMPL_IF>
 </TMPL_LOOP>
-</td><td align=right><font size=-1><A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT>
+</td><td align=right><font size=-1><A HREF="?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT>
 </td></tr></table>
 <hr>
 <TMPL_IF NAME=has_active_zone>
@@ -45,51 +45,51 @@ To begin, select a zone:<BR>
 </table>
 <HR>
 <table width=100% cellspacing=0 cellpadding=0><tr align=center>
-<td><A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=Previous">Prev</A>
+<td><A HREF="?<TMPL_VAR NAME=all_arg>action=Previous">Prev</A>
 <TMPL_IF NAME=active_playing>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=Pause">Pause</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>
 <TMPL_ELSE>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=Play">Play</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Play">Play</A>
 </TMPL_IF>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=Next">Next</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
 <br>
 <TMPL_IF NAME=active_shuffle>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOff">Shuffle</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=ShuffleOff">Shuffle</A>
 <TMPL_ELSE>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOn">Shuffle-Off</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=ShuffleOn">Shuffle-Off</A>
 </TMPL_IF>
 <TMPL_IF NAME=active_repeat>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=RepeatOff">Rpt</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=RepeatOff">Rpt</A>
 <TMPL_ELSE>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=RepeatOn">Rpt-Off</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=RepeatOn">Rpt-Off</A>
 </TMPL_IF>
 </td>
 
 <td>
 <TMPL_IF NAME=active_muted>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=MuteOff">Mute</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOff">Mute</A>
 <TMPL_ELSE>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=MuteOn">No-Mute</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOn">No-Mute</A>
 </TMPL_IF>
 <br>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=MuchSofter">--</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=Softer">-</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchSofter">--</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Softer">-</A>
 <TMPL_VAR NAME=active_volume>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=Louder">+</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&action=MuchLouder">++</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Louder">+</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchLouder">++</A>
 </td>
 </tr></table>
 <HR>
 <font size=-1>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=R:">Radio</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=SQ:">Playlists</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=A:ARTIST">Artists</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=A:ALBUM">Albums</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=A:GENRE">Genre</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=A:COMPOSER">Composers</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=S:">Folders</A>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>&mpath=AI:">Line In</A>
-<FORM ACTION="/pocketpc.html?<TMPL_VAR NAME=all_arg>" METHOD="get">
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=R:">Radio</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=SQ:">Playlists</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:ARTIST">Artists</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:ALBUM">Albums</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:GENRE">Genre</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:COMPOSER">Composers</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=S:">Folders</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>mpath=AI:">Line In</A>
+<FORM ACTION="?<TMPL_VAR NAME=all_arg>" METHOD="get">
 <INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
 <INPUT NAME=msearch VALUE="<TMPL_VAR NAME=music_search>" TYPE=text>
 <INPUT VALUE="Search" TYPE=submit></FORM>
@@ -101,13 +101,13 @@ To begin, select a zone:<BR>
 <TMPL_LOOP NAME=music_loop>
 	<tr>
 	<td><font size=-1>
-<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=AddMusic">+</A></font></td>
-	<td><A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=PlayMusic"><font size=-1>|&gt;</font></A></td>
+<A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=AddMusic">+</A></font></td>
+	<td><A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=PlayMusic"><font size=-1>|&gt;</font></A></td>
     	<td>
 	<TMPL_IF NAME=music_issong>
     		<font size=-1><TMPL_VAR NAME=music_name></font>
 	<TMPL_ELSE>
-		<A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=Browse"><font size=-1><TMPL_VAR NAME=music_name></font></A>
+		<A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Browse"><font size=-1><TMPL_VAR NAME=music_name></font></A>
     	</TMPL_IF>
 	</td>
 	</tr>

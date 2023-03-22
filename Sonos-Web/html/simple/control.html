@@ -21,35 +21,35 @@
 
 <HR>
 
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>&action=Previous">Previous</A>
+<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Previous">Previous</A>
 <TMPL_IF NAME=active_playing>
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>&action=Pause">Pause</A>
+<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>
 <TMPL_ELSE>
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>&action=Play">Play</A>
+<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Play">Play</A>
 </TMPL_IF>
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>&action=Next">Next</A>
+<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
 <BR>
 <TMPL_IF NAME=active_shuffle>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOff">Shuffle Off</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=ShuffleOff">Shuffle Off</A>
 <TMPL_ELSE>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOn">Shuffle On</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=ShuffleOn">Shuffle On</A>
 </TMPL_IF>
 <TMPL_IF NAME=active_repeat>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=RepeatOff">Repeat Off</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=RepeatOff">Repeat Off</A>
 <TMPL_ELSE>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=RepeatOn">Repeat On</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=RepeatOn">Repeat On</A>
 </TMPL_IF>
 <BR>
 <TMPL_IF NAME=active_muted>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=MuteOff">Mute Off</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuteOff">Mute Off</A>
 <TMPL_ELSE>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=MuteOn">Mute On</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuteOn">Mute On</A>
 </TMPL_IF>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=MuchSofter">--</A>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=Softer">-</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuchSofter">--</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=Softer">-</A>
 <TMPL_VAR NAME=active_volume>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=Louder">+</A>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>&action=MuchLouder">++</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=Louder">+</A>
+<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuchLouder">++</A>
 
 </BODY>
 </HTML>

@@ -147,8 +147,8 @@
         <td width="8"><img src="shim.gif" height="8" width="8"></td>
         <td colspan="2" align="left" valign="top">
         <TMPL_LOOP NAME=queue_loop>
-          <A HREF="index.html?<TMPL_VAR NAME=queue_arg>&action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
-          <A HREF="index.html?<TMPL_VAR NAME=queue_arg>&action=Seek"><TMPL_VAR NAME=queue_name></A>
+          <A HREF="index.html?<TMPL_VAR NAME=queue_arg>action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
+          <A HREF="index.html?<TMPL_VAR NAME=queue_arg>action=Seek"><TMPL_VAR NAME=queue_name></A>
           <BR>
         </TMPL_LOOP>
         </td>
@@ -156,7 +156,7 @@
       </tr>
       <tr>
         <td>&nbsp;</td>
-        <td colspan="2" align="left" valign="top"><div align="center"><font color="#000000" size="1"><A HREF="index.html?<TMPL_VAR NAME=all_arg>&action=RemoveAll"><font face="Arial, Helvetica, sans-serif">Remove All</font></A></font></div></td>
+        <td colspan="2" align="left" valign="top"><div align="center"><font color="#000000" size="1"><A HREF="index.html?<TMPL_VAR NAME=all_arg>action=RemoveAll"><font face="Arial, Helvetica, sans-serif">Remove All</font></A></font></div></td>
         <td>&nbsp;</td>
       </tr>
       </table>
@@ -194,13 +194,13 @@
         <B><TMPL_VAR NAME=music_error></B>
         <TMPL_LOOP NAME=music_loop>
           <TMPL_UNLESS NAME=music_root>
-            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
           </TMPL_UNLESS>
           <TMPL_IF NAME=music_issong>
             <TMPL_VAR NAME=music_name>
           <TMPL_ELSE>
-            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>&action=Browse"><TMPL_VAR NAME=music_name></A>
+            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Browse"><TMPL_VAR NAME=music_name></A>
           </TMPL_IF>
           <BR>
         </TMPL_LOOP>
@@ -211,7 +211,7 @@
       <tr>
         <td>&nbsp;</td>
         <td colspan="2" align="left" valign="top"><div align="center"><FONT color="#000000" SIZE=0 face="Arial, Helvetica, sans-serif">
-        <A HREF="index.html?<TMPL_VAR NAME=all_arg>&action=ReIndex">Re-Index Music</A>
+        <A HREF="index.html?<TMPL_VAR NAME=all_arg>action=ReIndex">Re-Index Music</A>
         <A HREF="index.html?<TMPL_VAR NAME=all_arg>">Refresh</A>
         <A HREF="index.html?zone=<TMPL_VAR NAME=active_zoneid>&mpath=/">Top</A>
         <TMPL_UNLESS NAME=music_root>
@@ -235,26 +235,26 @@
 </tr>
 </table>
 <map name="Map">
-  <area shape="rect" coords="-8,1,32,41" href="index.html?<TMPL_VAR NAME=all_arg>&action=MuchSofter">
-  <area shape="rect" coords="31,1,68,39" href="index.html?<TMPL_VAR NAME=all_arg>&action=Softer">
+  <area shape="rect" coords="-8,1,32,41" href="index.html?<TMPL_VAR NAME=all_arg>action=MuchSofter">
+  <area shape="rect" coords="31,1,68,39" href="index.html?<TMPL_VAR NAME=all_arg>action=Softer">
 </map>
 <map name="Map2">
-  <area shape="rect" coords="30,1,70,44" href="index.html?<TMPL_VAR NAME=all_arg>&action=MuchLouder">
-  <area shape="rect" coords="-7,1,30,35" href="index.html?<TMPL_VAR NAME=all_arg>&action=Louder">
+  <area shape="rect" coords="30,1,70,44" href="index.html?<TMPL_VAR NAME=all_arg>action=MuchLouder">
+  <area shape="rect" coords="-7,1,30,35" href="index.html?<TMPL_VAR NAME=all_arg>action=Louder">
 </map>
 <map name="Map3">
-  <area shape="rect" coords="6,5,43,46" href="index.html?<TMPL_VAR NAME=all_arg>&action=Previous">
-  <area shape="rect" coords="52,4,93,22" href="index.html?<TMPL_VAR NAME=all_arg>&action=Play">
-  <area shape="rect" coords="52,30,94,48" href="index.html?<TMPL_VAR NAME=all_arg>&action=Pause">
-  <area shape="rect" coords="101,5,142,47" href="index.html?<TMPL_VAR NAME=all_arg>&action=Next">
+  <area shape="rect" coords="6,5,43,46" href="index.html?<TMPL_VAR NAME=all_arg>action=Previous">
+  <area shape="rect" coords="52,4,93,22" href="index.html?<TMPL_VAR NAME=all_arg>action=Play">
+  <area shape="rect" coords="52,30,94,48" href="index.html?<TMPL_VAR NAME=all_arg>action=Pause">
+  <area shape="rect" coords="101,5,142,47" href="index.html?<TMPL_VAR NAME=all_arg>action=Next">
 </map>
 <map name="Map4">
-  <area shape="rect" coords="7,6,47,22" href="index.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOn">
-  <area shape="rect" coords="50,7,88,22" href="index.html?<TMPL_VAR NAME=all_arg>&action=RepeatOn">
-  <area shape="rect" coords="97,4,117,22" href="index.html?<TMPL_VAR NAME=all_arg>&action=MuteOn">
-  <area shape="rect" coords="7,37,46,51" href="index.html?<TMPL_VAR NAME=all_arg>&action=ShuffleOff">
-  <area shape="rect" coords="50,35,89,52" href="index.html?<TMPL_VAR NAME=all_arg>&action=RepeatOff">
-  <area shape="rect" coords="97,33,117,51" href="index.html?<TMPL_VAR NAME=all_arg>&action=MuteOff">
+  <area shape="rect" coords="7,6,47,22" href="index.html?<TMPL_VAR NAME=all_arg>action=ShuffleOn">
+  <area shape="rect" coords="50,7,88,22" href="index.html?<TMPL_VAR NAME=all_arg>action=RepeatOn">
+  <area shape="rect" coords="97,4,117,22" href="index.html?<TMPL_VAR NAME=all_arg>action=MuteOn">
+  <area shape="rect" coords="7,37,46,51" href="index.html?<TMPL_VAR NAME=all_arg>action=ShuffleOff">
+  <area shape="rect" coords="50,35,89,52" href="index.html?<TMPL_VAR NAME=all_arg>action=RepeatOff">
+  <area shape="rect" coords="97,33,117,51" href="index.html?<TMPL_VAR NAME=all_arg>action=MuteOff">
 </map>
 </body>
 </html>

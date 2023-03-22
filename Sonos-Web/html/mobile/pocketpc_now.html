@@ -8,7 +8,7 @@
 
 <TMPL_IF NAME=has_active_zone>
 <table width=100% align=center cellspacing=0 cellpadding=0>
-<tr align=center><td><B><A HREF="/pocketpc.html?<TMPL_VAR NAME=all_arg>"><TMPL_VAR NAME=has_active_zone></b></A></td></tr>
+<tr align=center><td><B><A HREF="pocketpc.html?<TMPL_VAR NAME=all_arg>"><TMPL_VAR NAME=active_zone></b></A></td></tr>
 <tr align=center><td><a href=pocketpc.html?zone=<TMPL_VAR NAME=active_zoneid>><IMG WIDTH=160 HEIGHT=160 SRC="<TMPL_VAR NAME=active_albumart>"></a></td></tr>
 <tr align=center><td><font size=-1><TMPL_VAR NAME=active_name></font></td></tr>
 <TMPL_IF NAME=active_isradio>
@@ -21,26 +21,26 @@
 <HR>
 
 <table width=100% cellspacing=0 cellpadding=0><tr align=center>
-<td><font size=-1><A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=Previous">Prev</A>&nbsp
+<td><font size=-1><A HREF="?<TMPL_VAR NAME=all_arg>action=Previous">Prev</A>&nbsp
 <TMPL_IF NAME=active_playing>
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=Pause">Pause</A>&nbsp
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>&nbsp
 <TMPL_ELSE>
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=Play">Play</A>&nbsp
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Play">Play</A>&nbsp
 </TMPL_IF>
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=Next">Next</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
 </font></td>
 <td><font size=-1>
 <TMPL_IF NAME=active_muted>
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=MuteOff">Mute</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOff">Mute</A>
 <TMPL_ELSE>
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=MuteOn">No-Mute</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOn">No-Mute</A>
 </TMPL_IF>
 &nbsp
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=MuchSofter">--</A>&nbsp
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=Softer">-</A>&nbsp
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchSofter">--</A>&nbsp
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Softer">-</A>&nbsp
 <TMPL_VAR NAME=active_volume>
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=Louder">+</A>&nbsp
-<A HREF="/pocketpc_now.html?<TMPL_VAR NAME=all_arg>&action=MuchLouder">++</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Louder">+</A>&nbsp
+<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchLouder">++</A>
 </font></td>
 </tr></table>
 
