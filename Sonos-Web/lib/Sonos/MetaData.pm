@@ -5,6 +5,8 @@ use strict;
 use warnings;
 use Carp;
 
+use HTML::Entities;
+
 use List::MoreUtils qw(zip);
 
 use constant NO_PARENT_ID => "NO_PARENT";
@@ -230,6 +232,10 @@ sub classFrom($self, $from) {
     return $parts[-1];
 }
 
+sub fullClass($self) {
+    return $self->prop("upnp:class");
+}
+
 sub class($self) {
     return $self->classFrom("upnp:class");
 }
@@ -289,6 +295,57 @@ sub getAlbumArt($self) {
     # ask owner for caching
     return $self->owner()->albumArtHelper($self);
 }
+    
+    
+sub didl($self) {
+    my $id = $self->id();
+    my $parentid = $self->parentID();
+    my $class = $self->fullClass();
+    my $title = $self->title();
+
+    my $metadata = <<"EOT";
+<?xml version="1.0"?>
+<DIDL-Lite
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
+    xmlns:r="urn:schemas-rinconnetworks-com:metadata-1-0/"
+    xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"
+  >
+  <item id="$id" parentID="$parentid" restricted="true">
+    <dc:title>
+      $title
+    </dc:title>
+    <upnp:class>
+      $class
+    </upnp:class>
+    <desc id="cdudn" nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">
+      RINCON_AssociatedZPUDN
+    </desc>
+  </item>
+</DIDL-Lite> 
+EOT
+
+    require XML::LibXML;
+    require XML::LibXML::PrettyPrint;
+
+    print "\n";
+    print $metadata;
+    print "\n";
+
+    my $document = XML::LibXML->load_xml("string" => $metadata);
+    print $document->toString;
+    print "\n";
+    my $pp = XML::LibXML::PrettyPrint->new(indent_string => "  ");
+    $pp->pretty_print($document); # modified in-place
+    print "\n";
+    print $document->toString;
+    print "\n";
+    print $metadata;
+    print "\n";
+
+    return $metadata;
+}
+
 
 
 sub displayFields() {
@@ -299,6 +356,7 @@ sub displayFields() {
         "creator",
         "album",
         "streamContent",
+        "didl",
     );
 }
 

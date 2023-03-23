@@ -8,6 +8,7 @@ use v5.36;
 use strict;
 use warnings;
 
+
 # Global
 sub transportState($self)       { return $self->prop("TransportState"); }
 sub currentPlayMode($self)      { return $self->prop("CurrentPlayMode"); }
@@ -110,17 +111,6 @@ sub setURI( $self, $uri, $metadata ) {
     return $self->action( "SetAVTransportURI", $uri, $metadata );
 }
 
-sub setRadio( $self, $mpath) {
-    my $entry = $self->musicLibrary()->item($mpath);
-
-    die "Not radio: $mpath" unless $entry->isRadio();
-
-# So, I'm very lazy :-)
-    my $urimetadata = '&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;' . $entry->{id} . '&quot; parentID=&quot;' . $entry->{parentID} . '&quot; restricted=&quot;true&quot;&gt;&lt;dc:title&gt;'. $entry->{"dc:title"} .  '&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem.audioBroadcast&lt;/upnp:class&gt;&lt;desc id=&quot;cdudn&quot; nameSpace=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;&gt;RINCON_AssociatedZPUDN&lt;/desc&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;';
-
-    $self->setURI($entry->content(), decode_entities($urimetadata));
-}
-
 sub setQueue($self) {
     my $id = $self->player()->UDN();
     $self->setURI("x-rincon-queue:" . $id . "#0", "");
@@ -129,7 +119,7 @@ sub setQueue($self) {
 sub addToQueue( $self, $mpath, $queueSlot = 0 ) {
     my $item = $self->musicLibrary()->item($mpath);
     my $uri = $item->content();
-    my $metadata = "";
+    my $metadata = $item->didl();
     return $self->action( "AddURIToQueue", $uri, $metadata, $queueSlot );
 }
 
