@@ -356,7 +356,6 @@ sub displayFields() {
         "creator",
         "album",
         "streamContent",
-        "didl",
     );
 }
 
