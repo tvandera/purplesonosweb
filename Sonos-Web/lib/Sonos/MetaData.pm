@@ -6,6 +6,7 @@ use warnings;
 use Carp;
 
 use HTML::Entities;
+use URI::Escape;
 
 use List::MoreUtils qw(zip);
 
@@ -168,8 +169,16 @@ sub name($self)                {
 
 sub albumArtURI($self) {
     my $aa = $self->prop("upnp:albumArtURI");
-    return $aa unless ref $aa eq "ARRAY";
-    return $aa->[0];
+    
+    # return first album art
+    return $aa->[0] if ref $aa eq "ARRAY";
+
+    # return any $aa
+    return $aa if $aa;
+
+    return "/getaa?s=1&u=" . uri_escape_utf8($self->content()) if $self->content();
+
+    return undef;
 }
 
 sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber", "int", -1); }
