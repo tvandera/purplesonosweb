@@ -77,7 +77,7 @@ function update() {
         what = "zone",
         onload = function() {
             zone_info = JSON.parse(this.responseText);
-            last_update = zone_info.ACTIVE_LASTUPDATE;
+            last_update = zone_info.active_lastupdate;
             drawControl();
         }
     );
