@@ -106,9 +106,20 @@ sub next($self) {
     return $self->action("Next");
 }
 
+sub playMusic($self, $mpath) {
+    my $item = $self->musicLibrary()->item($mpath);
+    my $uri = $item->content();
+    my $metadata = $item->didl();
+    
+    if ($item->isRadio()) {
+        $self->action( "SetAVTransportURI", $uri, $metadata );
+    } else {
+        $self->removeAllTracksFromQueue();
+        $self->addToQueue($mpath);
+        $self->action("AddURIToQueue", $uri, $metadata);
+    }
 
-sub setURI( $self, $uri, $metadata ) {
-    return $self->action( "SetAVTransportURI", $uri, $metadata );
+    $self->play(); 
 }
 
 sub setQueue($self) {
@@ -116,8 +127,7 @@ sub setQueue($self) {
     $self->setURI("x-rincon-queue:" . $id . "#0", "");
 }
 
-sub addToQueue( $self, $mpath, $queueSlot = 0 ) {
-    my $item = $self->musicLibrary()->item($mpath);
+sub addToQueue( $self, $item, $queueSlot = 0 ) {
     my $uri = $item->content();
     my $metadata = $item->didl();
     return $self->action( "AddURIToQueue", $uri, $metadata, $queueSlot );
