@@ -14,6 +14,8 @@ use URI::Escape;
 use Encode qw(encode decode);
 use File::Spec::Functions 'catfile';
 use MIME::Types;
+use Scalar::Util::Numeric qw(isint);
+
 
 require Sonos::HTTP::Template;
 require Sonos::HTTP::Builder;
@@ -211,6 +213,7 @@ sub action {
     return $do_after->() unless $action;
 
     my $lastupdate = $qf{lastupdate};
+    $lastupdate = -1 unless isint($lastupdate);
 
     my $player = $self->player($qf{zone}) if $qf{zone};
     my $av = $player->avTransport() if $player;
