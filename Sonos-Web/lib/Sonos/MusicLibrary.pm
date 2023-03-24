@@ -111,7 +111,7 @@ sub children($self, $parent) {
 
     my @ids = @{$self->{_tree}->{$parentid}};
     my @items = map { $self->{_items}->{$_} } @ids;
-    @items = sort { $a->title() cmp $b->title() } @items;
+    @items = sort { lc($a->title()) cmp lc($b->title()) } @items;
     return @items;
 }
 
