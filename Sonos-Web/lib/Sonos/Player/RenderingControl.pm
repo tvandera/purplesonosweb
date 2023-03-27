@@ -40,11 +40,19 @@ sub changeVolume($self, $diff, $channel = "Master") {
     my $vol = $self->getVolume($channel) + $diff;
     $self->setVolume($vol, $channel);
 }
+sub MuchSofter($self) { $self->changeVolume(-5); }
+sub Softer    ($self) { $self->changeVolume(-1); }
+sub Louder    ($self) { $self->changeVolume(+1); }
+sub MuchLouder($self) { $self->changeVolume(+5); }
 
+# muting
 sub setMute($self, $on_or_off, $channel = "Master") {
     return if $on_or_off == $self->getMute($channel);
     return $self->action("SetMute", $channel, $on_or_off)
 }
+
+sub muteOn ($self) { $self->setMute(1); }
+sub muteOff($self) { $self->setMute(0); }
 
 
 
