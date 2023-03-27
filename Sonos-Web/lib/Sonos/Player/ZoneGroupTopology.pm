@@ -29,11 +29,18 @@ sub UDN($self) {
     return $self->player()->UDN();
 }
 
+sub player($self, $uuid = undef)
+{
+    return $self->SUPER::player() unless $uuid;
+    return $self->system()->player($uuid);
+}
+
 sub haveZoneInfo($self) {
     return defined $self->{_zonegroups};
 }
 
 # flattens values zonegroups
+# returns a map UDN => ZoneGroup
 sub allZones($self) {
     my @allzones = map { @$_ } (values %{$self->{_zonegroups}});
     return { map { $_->{UUID} => $_ } @allzones };
@@ -156,6 +163,37 @@ sub processThirdPartyMediaServers ( $self, $properties ) {
               if ( $item->{UDN} =~ $rincon );
         }
     }
+}
+
+# all zones in the same ZoneGroup
+# $self will be coordinator
+sub linkAllZones($self) {
+    my $ret = 0;
+    $ret ||= $self->linkZone($_) for $self->allZones();
+    return $ret;
+}
+
+# puts $self and $zone in the same ZoneGroup
+# $self will be coordinator
+sub linkZone($self, $zone) {
+    my $player = $self->player($zone);
+
+    # No need to do anything
+    return 0 if ($player->zoneGroupTopology()->coordinator() eq $self);
+
+    $zone->avTransport()->setURI("x-rincon:" . $self->UDN());
+    return 1;
+}
+
+# removes $zone from ZoneGroup
+# $self will be coordinator
+sub unlinkZone($self, $zone) {
+    return 0 unless $self->isInZoneGroup($zone);
+
+    my $av = $self->player($zone)->avTransport();
+    $av->standaleCoordinator();
+    $av->setQueue();
+    return 1;
 }
 
 1;
