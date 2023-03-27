@@ -193,9 +193,9 @@ sub build_zone_data($self, $player = undef) {
     $activedata{zone_icon} = $zonetopology->icon();
     $activedata{zone_img} =  "zone_icons" . $zonetopology->icon() . ".png";
     $activedata{zone_lastupdate} = $player->lastUpdate();
-    $activedata{ZONE_NUMLINKED} = $num_linked;
-    $activedata{ZONE_FANCYNAME} = $activedata{zone_name};
-    $activedata{ZONE_FANCYNAME} .= " + " . $num_linked if $num_linked;
+    $activedata{zone_numlinked} = $num_linked;
+    $activedata{zone_fancyname} = $activedata{zone_name};
+    $activedata{zone_fancyname} .= " + " . $num_linked if $num_linked;
 
     my @members = $zonetopology->members();
     $activedata{ZONE_MEMBERS} = [
