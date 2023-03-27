@@ -174,6 +174,9 @@ sub setRepeat($self, $on_or_off) {
     return 1;
 }
 
+sub repeatOff($self) { $self->setRepeat(0); }
+sub repeatOn($self) { $self->setRepeat(1); }
+
 # if called with $on_or_off, sets shuffle mode to this value
 # if called with $on_of_off == undef, switches shuffle mode
 sub setShuffle($self, $on_or_off) {
@@ -188,6 +191,9 @@ sub setShuffle($self, $on_or_off) {
 
     return 1;
 }
+
+sub shuffleOf($self) { $self->setShuffle(0); }
+sub shuffleOn($self) { $self-setShuffle(1); }
 
 # ---- queue ----
 
