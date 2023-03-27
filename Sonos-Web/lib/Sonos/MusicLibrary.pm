@@ -111,7 +111,10 @@ sub children($self, $parent) {
 
     my @ids = @{$self->{_tree}->{$parentid}};
     my @items = map { $self->{_items}->{$_} } @ids;
-    @items = sort { lc($a->title()) cmp lc($b->title()) } @items;
+    @items = sort {
+        $a->originalTrackNumber() <=> $b->originalTrackNumber() ||
+        fc($a->title()) cmp fc($b->title())
+    } @items;
     return @items;
 }
 
