@@ -133,10 +133,6 @@ sub addToQueue( $self, $item, $queueSlot = 0 ) {
     return $self->action( "AddURIToQueue", $uri, $metadata, $queueSlot );
 }
 
-sub addURI( $self, $uri, $metadata = "", $queueSlot = 0 ) {
-    $self->log("Add to queue: $uri");
-}
-
 sub standaloneCoordinator($self) {
     return $self->action( "BecomeCoordinatorOfStandaloneGroup",);
 }
