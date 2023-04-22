@@ -16,11 +16,17 @@ use HTML::Entities;
 
 sub info($self) {
     my $count = 0;
-    my @groups = values %{$self->{_zonegroups}};
+    my @groups = keys %{$self->{_zonegroups}};
 
     $self->log("Found " . scalar(@groups) . " zone groups at " . $self->lastUpdateReadable());
-    for my $group (@groups) {
-        $self->log("  $count: " . join(", ", map { $_->{ZoneName}  } @{$group}));
+    for my $coordinator (@groups) {
+        my @members = $self->members($coordinator);
+        $self->log("  $count: " . join(", ", map {
+            my $uuid = $_->{UUID};
+            my $name = $_->{ZoneName};
+            my $isCoordinator = $coordinator eq $uuid;
+            $name . ( $isCoordinator ? " [C]" : "" )
+        } @members));
         $count++;
     }
 }
@@ -47,7 +53,8 @@ sub allZones($self) {
 }
 
 sub coordinator($self) {
-    return $self->zoneInfo($self->{_mycoordinator});
+    return $self->player($self->{_mycoordinator});
+
 }
 
 sub isCoordinator($self, $uuid = undef) {
@@ -66,9 +73,6 @@ sub members($self, $uuid = undef) {
 }
 
 sub numMembers($self, $uuid = undef ) {
-    return unless $self->haveZoneInfo();
-    $uuid = $self->UDN() unless defined $uuid;
-
     return scalar $self->members($uuid);
 }
 
@@ -115,6 +119,10 @@ sub zoneInfo($self, $uuid = undef) {
     return unless $self->haveZoneInfo();
     $uuid = $self->player()->UDN() unless defined $uuid;
     return $self->allZones()->{$uuid};
+}
+
+sub numZoneGroups($self) {
+    return scalar keys %{$self->{_zonegroups}};
 }
 
 sub processUpdate {
