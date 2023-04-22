@@ -133,6 +133,11 @@ sub processZoneGroupState ( $self, $service, %properties ) {
     );
 
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
+
+    delete $self->{_zonegroups};
+    delete $self->{_myzoneinfo};
+    delete $self->{_mycoordinator}; 
+
     for (@groups) {
         my $coordinator = $_->{Coordinator};
         my $members = $_->{ZoneGroupMember};
