@@ -8,11 +8,11 @@
     <TMPL_IF NAME=zone_active><B></TMPL_IF>
     <TMPL_IF NAME=zone_linked>
        &nbsp; &nbsp;<TMPL_VAR NAME=zone_name>
-      <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zoneid>&action=Unlink"><font size=-2>[U]</font></a>
+      <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zone>&action=Unlink"><font size=-2>[U]</font></a>
     <TMPL_ELSE>
        <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A>
        <TMPL_UNLESS NAME=zone_active>
-          <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zoneid>&action=Link"><font size=-2>[L]</font></a>
+          <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zone>&action=Link"><font size=-2>[L]</font></a>
        </TMPL_UNLESS>
     </TMPL_IF>
     <TMPL_IF NAME=zone_active></B></TMPL_IF>

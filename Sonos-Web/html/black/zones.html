@@ -23,11 +23,11 @@
    </TMPL_IF>
 
    <TMPL_IF NAME="ZONE_NUMLINKED">
-       <img style='float: right;' onclick="goto('zones', '&action=Unlink&link=<TMPL_VAR name="zone_id">');" width="44" height="44" src="svg/unlink.svg">
+       <img style='float: right;' onclick="goto('zones', '&action=Unlink&=<TMPL_VAR name="zone_name">');" width="44" height="44" src="svg/unlink.svg">
    </TMPL_IF>
 
    <ul
-       onclick="zone('<TMPL_VAR name="zone_id">');">
+       onclick="zone('<TMPL_VAR name="zone_name">');">
     <TMPL_LOOP name="ZONE_MEMBERS">
        <li style="background-image: url(zone_icons/<TMPL_VAR name="zone_icon">.png);">
          <TMPL_VAR name="zone_name" >
