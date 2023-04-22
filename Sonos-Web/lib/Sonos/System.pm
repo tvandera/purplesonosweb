@@ -42,6 +42,7 @@ sub new {
         _musiclibrary => undef, # Sonos::MusicLibrary
         _aacache => undef, # Sonos::AlbumArtCache
         _loop => undef, # IO::Async::Loop::Select -> added by addToLoop
+        _callbacks => [ ],
     }, $class;
 
     $self->{_musiclibrary} = Sonos::MusicLibrary->new($self);
@@ -169,4 +170,13 @@ sub _discoveryCallback {
     else {
         WARNING( "Unknown action name:" . $action );
     }
+}
+
+sub onUpdate($self, $callback) {
+    push @{$self->{_callbacks}}, $callback;
+}
+
+sub doCallBacks($self) {
+    $_->($self) for @{$self->{_callbacks}};
+    $self->{_callbacks} = [];
 }

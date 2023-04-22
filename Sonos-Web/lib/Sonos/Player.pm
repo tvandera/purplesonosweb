@@ -122,4 +122,8 @@ sub onUpdate($self, $callback) {
 sub doCallBacks($self) {
     $_->($self) for @{$self->{_callbacks}};
     $self->{_callbacks} = [];
+
+    # we also have callbacks at system level
+    # whenever something in any of the services has changed
+    $self->system()->doCallBacks();
 }
