@@ -212,8 +212,8 @@ sub build_zone_data($self, $player = undef) {
     ];
 
     $activedata{zone_linked}    = ! $zonetopology->isCoordinator();
-    $activedata{zone_link}      = $zonetopology->coordinator()->{UUID};
-    $activedata{zone_link_name} = $zonetopology->coordinator()->{ZoneName};
+    $activedata{zone_link}      = $zonetopology->coordinator()->UDN();
+    $activedata{zone_link_name} = $zonetopology->coordinator()->friendlyName();
 
     return \%activedata;
 }
