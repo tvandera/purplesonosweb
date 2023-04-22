@@ -165,7 +165,7 @@ sub switchPlayMode($self, %switch_map) {
 # if called with $on_of_off == undef, switches repeat mode
 sub setRepeat($self, $on_or_off) {
     # nothing to do if equal
-    return 0 if $self->getRepeat() == $on_or_off;
+    return 0 if $self->isRepeat() == $on_or_off;
 
     my %switch_repeat = (
         "NORMAL"  => "REPEAT_ALL",
