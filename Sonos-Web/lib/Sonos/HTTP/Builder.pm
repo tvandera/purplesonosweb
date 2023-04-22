@@ -132,7 +132,22 @@ sub build_none_data($self) {
 
 ###############################################################################
 sub build_zones_data($self) {
-    my @zones = map { $self->build_zone_data( $_ ) } $self->players();
+    my @players = $self->players();
+     
+
+    @players = sort {
+        # sort by zoneGroup coordinator
+        fc($a->zoneGroupTopology()->coordinator()->friendlyName())
+            cmp 
+        fc($b->zoneGroupTopology()->coordinator()->friendlyName())
+        || 
+        # then put coordinator first
+            ($b->zoneGroupTopology()->isCoordinator())
+        || 
+        # then sort by zonename
+            fc($a->friendlyName()) cmp fc($b->friendlyName())
+    }  @players;
+    my @zones = map { $self->build_zone_data( $_ ) } @players;
     return { "zones_loop" => \@zones };
 }
 
