@@ -17,6 +17,8 @@ sub numberOfTracks($self)       { return $self->prop("NumberOfTracks"); }
 sub currentTrackDuration($self) { return $self->prop("CurrentTrackDuration"); }
 sub lengthInSeconds($self) {
     my $duration = $self->currentTrackDuration();
+    return -1 if $duration eq '';
+
     my ($hours, $minutes, $seconds) = split(":", $duration);
     return $hours*3600 + $minutes*60 + $seconds;
 }
