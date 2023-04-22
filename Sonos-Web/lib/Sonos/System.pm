@@ -69,6 +69,13 @@ sub players($self) {
     return values %{$self->{_players}};
 }
 
+sub linkAllZones($self, $coordinator) {
+    # take first as coordinator if no coordinator given
+    my @players = $self->players();
+    $coordinator = shift @players unless $coordinator;
+    return $coordinator->zoneGroupTopology()->linkAllZones();
+}
+
 sub lastUpdate($self) {
     my @values = map { $_->lastUpdate() } $self->players();
     return max @values;
