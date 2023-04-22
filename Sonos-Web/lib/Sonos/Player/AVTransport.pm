@@ -108,13 +108,17 @@ sub next($self) {
     return $self->action("Next");
 }
 
+sub setURI($self, $uri, $metadata = "") {
+    $self->action( "SetAVTransportURI", $uri, $metadata );
+}
+
 sub playMusic($self, $mpath) {
     my $item = $self->musicLibrary()->item($mpath);
     my $uri = $item->content();
     my $metadata = $item->didl();
     
     if ($item->isRadio()) {
-        $self->action( "SetAVTransportURI", $uri, $metadata );
+        $self->setURI( $uri, $metadata );
     } else {
         $self->removeAllTracksFromQueue();
         $self->addToQueue($mpath);
