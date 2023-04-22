@@ -181,22 +181,34 @@ sub linkAllZones($self) {
 # puts $self and $zone in the same ZoneGroup
 # $self will be coordinator
 sub linkZone($self, $zone) {
-    my $player = $self->player($zone);
+    my $player = $self->player();
 
     # No need to do anything
-    return 0 if ($player->zoneGroupTopology()->coordinator() eq $self);
+    return 0 if ($player->zoneGroupTopology()->coordinator() eq $zone);
 
-    $zone->avTransport()->setURI("x-rincon:" . $self->UDN());
+    $player->avTransport()->setURI("x-rincon:" . $zone);
     return 1;
 }
 
-# removes $zone from ZoneGroup
-# $self will be coordinator
-sub unlinkZone($self, $zone) {
-    return 0 unless $self->isInZoneGroup($zone);
+# puts $self and $zone in the same ZoneGroup
+# $zone will be coordinator
+sub linkToZone($self, $zone) {
+    my $player = $self->player();
+    my $coordinator = $self->player($zone);
 
-    my $av = $self->player($zone)->avTransport();
-    $av->standaleCoordinator();
+    # No need to do anything
+    return 0 if ($self->coordinator() eq $zone);
+
+    $player->avTransport()->setURI("x-rincon:" . $coordinator->UDN());
+    return 1;
+}
+
+# removes $self from any ZoneGroup
+sub unlink($self) {
+    return 0 if $self->numMembers() == 1;
+
+    my $av = $self->player()->avTransport();
+    $av->standaloneCoordinator();
     $av->setQueue();
     return 1;
 }
