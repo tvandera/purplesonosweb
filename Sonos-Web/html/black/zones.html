@@ -18,12 +18,12 @@
  <TMPL_UNLESS NAME=zone_linked>
    <TMPL_IF name="has_active_zone">
    <TMPL_UNLESS NAME="zone_active">
-       <img style='float: right;' onclick="goto('zones', '&action=Link&link=<TMPL_VAR name="active_zoneid">'); return true;" width="44" height="44" src="svg/link.svg">
+       <img style='float: right;' onclick="goto('zones', 'action=Link&link=<TMPL_VAR name="active_zoneid">'); return true;" width="44" height="44" src="svg/link.svg">
    </TMPL_UNLESS>
    </TMPL_IF>
 
    <TMPL_IF NAME="ZONE_NUMLINKED">
-       <img style='float: right;' onclick="goto('zones', '&action=Unlink&=<TMPL_VAR name="zone_name">');" width="44" height="44" src="svg/unlink.svg">
+       <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=<TMPL_VAR name="zone_name">');" width="44" height="44" src="svg/unlink.svg">
    </TMPL_IF>
 
    <ul
