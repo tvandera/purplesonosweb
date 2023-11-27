@@ -39,6 +39,7 @@ sub new {
     $self = bless {
         _controlpoint => $cp,
         _players => {}, # UDN => Sonos::Player
+        _topology => undef, # ZoneGroupTopology
         _musiclibrary => undef, # Sonos::MusicLibrary
         _aacache => undef, # Sonos::AlbumArtCache
         _loop => undef, # IO::Async::Loop::Select -> added by addToLoop
