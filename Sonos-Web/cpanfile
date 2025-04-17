@@ -13,6 +13,10 @@ requires 'HTML::Template::Compiled';
 requires 'HTTP::Daemon';
 requires 'Net::Async::HTTP::Server';
 
+requires 'UPnP::ControlPoint', '0.4',
+    # url => 'https://github.com/tvandera/perlupnp/releases/download/v0.4/UPnP-ControlPoint-0.4.tar.gz';
+    url => 'https://github.com/tvandera/perlupnp/archive/refs/heads/master.zip';
+
 requires 'Image::Resize';
 requires 'IO::Compress::Gzip';
 requires 'IO::Handle';
@@ -29,7 +33,6 @@ requires 'POSIX';
 requires 'SOAP::Lite';
 requires 'Socket';
 requires 'Time::HiRes';
-requires 'UPnP::ControlPoint';
 requires 'URI::Escape';
 
 requires 'XML::Simple';
