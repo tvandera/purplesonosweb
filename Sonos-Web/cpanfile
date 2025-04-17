@@ -2,14 +2,19 @@ requires 'Carp';
 requires 'Data::Dumper';
 requires 'Digest::SHA';
 requires 'Encode';
-requires 'File::Slurp';
+requires 'Log::Log4perl';
+requires 'List::MoreUtils';
+
 requires 'File::Slurp';
 requires 'HTML::Entities';
 requires 'HTML::Parser';
 requires 'HTML::Template';
 requires 'HTML::Template::Compiled';
 requires 'HTTP::Daemon';
+requires 'Net::Async::HTTP::Server';
+
 requires 'Image::Magick', '>= 6.0, < 7.000';
+requires 'Image::Resize';
 requires 'IO::Compress::Gzip';
 requires 'IO::Handle';
 requires 'IO::Select';
@@ -18,6 +23,8 @@ requires 'JSON';
 requires 'LWP::MediaTypes';
 requires 'LWP::UserAgent';
 requires 'MIME::Base64';
+requires 'MIME::Types';
+requires 'File::MimeInfo::Magic';
 requires 'POSIX';
 requires 'POSIX';
 requires 'SOAP::Lite';
@@ -29,3 +36,8 @@ requires 'URI::Escape';
 requires 'XML::Simple';
 requires 'XML::Liberal';
 requires 'XML::LibXML::Simple';
+
+requires 'JSON::XS';
+requires 'Text::Table';
+requires 'IO::Scalar';
+requires 'Scalar::Util::Numeric';
