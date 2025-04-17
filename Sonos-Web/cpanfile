@@ -13,7 +13,6 @@ requires 'HTML::Template::Compiled';
 requires 'HTTP::Daemon';
 requires 'Net::Async::HTTP::Server';
 
-requires 'Image::Magick', '>= 6.0, < 7.000';
 requires 'Image::Resize';
 requires 'IO::Compress::Gzip';
 requires 'IO::Handle';
