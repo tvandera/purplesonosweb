@@ -16,6 +16,8 @@ require Sonos::HTTP;
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init($DEBUG);
+binmode STDERR, ":encoding(UTF-8)";
+
 use Data::Dumper;
 
 
