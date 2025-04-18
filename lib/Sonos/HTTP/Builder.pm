@@ -133,17 +133,17 @@ sub build_none_data($self) {
 ###############################################################################
 sub build_zones_data($self) {
     my @players = $self->players();
-     
+
 
     @players = sort {
         # sort by zoneGroup coordinator
         fc($a->zoneGroupTopology()->coordinator()->friendlyName())
-            cmp 
+            cmp
         fc($b->zoneGroupTopology()->coordinator()->friendlyName())
-        || 
+        ||
         # then put coordinator first
             ($b->zoneGroupTopology()->isCoordinator())
-        || 
+        ||
         # then sort by zonename
             fc($a->friendlyName()) cmp fc($b->friendlyName())
     }  @players;
@@ -190,6 +190,7 @@ sub build_zone_data($self, $player = undef) {
     $activedata{active_track_num} = int($av->currentTrack());
     $activedata{active_track_tot} = int($number_of_tracks);
 
+    $activedata{"active_state"} = $transportstate;
     $activedata{"active_mode"} = $transport_states{$transportstate};
     $activedata{"active_$_"}   = int($transportstate eq $_) for (keys %transport_states);
 
