@@ -127,7 +127,7 @@ sub validateRequest($self, $r) {
 
         my $item = $player->queue()->item($path);
         return $self->send_error($r, 404, "No such queue item: $path") unless $item;
-    } 
+    }
 
     if (exists $qf{what}) {
         my $what = $qf{what};
@@ -231,61 +231,6 @@ sub action {
     my $qpath = decode( "UTF-8", $qf{queue} );
     my $qitem = $player->queue()->item($qpath) if $qpath and $player;
 
-    my $dispatch2 = {
-        "Play"       => [ "AVTransport" ],
-        "Pause"      => [ "AVTransport" ],
-        "Stop"       => [ "AVTransport" ],
-        "Next"       => [ "AVTransport" ],
-        "Previous"   => [ "AVTransport" ],
-        "RepeatOff"  => [ "AVTransport" ],
-        "RepeatOn"   => [ "AVTransport" ],
-        "ShuffleOff" => [ "AVTransport" ],
-        "ShuffleOn"  => [ "AVTransport" ],
-        "RemoveAll"  => [ "AVTransport" ],
-        "AddMusic"   => [ $av, sub { 
-            $av->addToQueue($qf{mpath}, 1);
-         }, "mpath", ],
-        "PlayMusic"   => [ $av, sub {
-        }, "mpath", ],
-        "DeleteMusic" => [ $av, sub {
-            $contentdir->destroyObject($qitem);
-        }, "mpath", ],
-        "Save"        => [ $av, sub { 
-            $av->saveQueue($qf{savename});
-        }, "savename", ],
-
-        "Remove"      => [ $av, sub {
-            $av->RemoveTrackFromQueue($qitem->id())
-        }, "queue", ],
-        "Seek"        => [ $av, sub {
-            $av->seekInQueue($qitem->id());
-            $av->setQueue();
-        }, "queue", ],
-
-        "MuteOn"     => [ $render, sub { $render->setMute(1) } ],
-        "MuteOff"    => [ $render, sub { $render->setMute(0) }  ],
-
-        "MuchSofter" => [ $render, sub { $render->changeVolume(-5); },],
-        "Softer"     => [ $render, sub { $render->changeVolume(-1); },],
-        "Louder"     => [ $render, sub { $render->changeVolume(+1); },],
-        "MuchLouder" => [ $render, sub { $render->changeVolume(+5); },],
-        "SetVolume"  => [ $render, sub { $render->setVolume($qf{volume}); }, "volume"],
-
-        # wait for update, unless already happened
-        "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; }, 'lastupdate' ],
-
-        # Browse/Search music data
-        "Browse"     => [ undef, sub { return 0; }, "nozone" ],
-        "Search"     => [ undef, sub { return 0; }, "nozone", "msearch" ],
-
-        # No-op
-        "None"     => [ undef, sub { return 0; }, "nozone" ],
-
-        "LinkAll"     => [ $topo, sub { $topo->linkAllZones(); }, ],
-        "Link"        => [ $topo, sub { $topo->linkZone($qf{link}); }, [ "zone", "link", ] ],
-        "Unlink"      => [ $topo, sub { $topo->unlinkZone($qf{link}); }, [ "zone", "link", ] ],
-    };
-
     my $dispatch = {
         "Play"       => [ $av, sub { $av->play() } ],
         "Pause"      => [ $av, sub { $av->pause() } ],
@@ -309,10 +254,10 @@ sub action {
         "ShuffleOn"   => [ $av, sub { $av-setShuffle(1); } ],
 
         # queue
-        "RemoveAll"   => [ $av, sub { 
+        "RemoveAll"   => [ $av, sub {
             $av->removeAllTracksFromQueue();
         } ],
-        "AddMusic"    => [ $av, sub { 
+        "AddMusic"    => [ $av, sub {
             $av->addToQueue($qf{mpath}, 1);
          }, "mpath", ],
         "PlayMusic"   => [ $av, sub {
@@ -320,7 +265,7 @@ sub action {
         "DeleteMusic" => [ $av, sub {
             $contentdir->destroyObject($qitem);
         }, "mpath", ],
-        "Save"        => [ $av, sub { 
+        "Save"        => [ $av, sub {
             $av->saveQueue($qf{savename});
         }, "savename", ],
 
