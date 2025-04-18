@@ -1,6 +1,5 @@
-Changes
 Makefile.PL
 MANIFEST
 README
-t/Sonos-Web.t
-lib/Sonos/Web.pm
+t/Sonos.t
+lib/Sonos.pm
