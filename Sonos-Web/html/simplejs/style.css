@@ -1,11 +1,108 @@
-#pause, #repeatoff, #shuffleoff, #muteoff {
-    display: none;
-}
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1e1e2f;
+    color: #f0f0f0;
+  }
 
-a.ulink {
-    font-size: x-small;
-}
+  b, label {
+    color: #ffffff;
+  }
 
-A IMG {
-    border: 0px;
-}
+  #zonescontainer, #control, #queue, #music {
+    background-color: #2a2a40;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    margin: 10px;
+  }
+
+  #zonescontainer {
+    position: absolute;
+    left: 1%;
+    top: 1%;
+    width: 18%;
+  }
+
+  #control {
+    position: absolute;
+    left: 20%;
+    top: 1%;
+    width: 33%;
+    height: auto;
+  }
+
+  #queue {
+    position: absolute;
+    left: 20%;
+    top: 230px;
+    width: 33%;
+  }
+
+  #music {
+    position: absolute;
+    left: 54%;
+    top: 1%;
+    width: 44%;
+  }
+
+  #art {
+    position: absolute;
+    left: 1%;
+    bottom: 1%;
+    width: 100px;
+  }
+
+  a {
+    color: #00bcd4;
+    text-decoration: none;
+    margin: 5px 8px;
+    display: inline-block;
+    transition: color 0.3s ease;
+  }
+
+  a:hover {
+    color: #80deea;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    background: #444;
+    margin: 10px 0;
+  }
+
+  input[type="text"], input[type="submit"] {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 5px;
+  }
+
+  input[type="text"] {
+    background-color: #3a3a50;
+    color: #ffffff;
+  }
+
+  input[type="submit"] {
+    background-color: #00bcd4;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  input[type="submit"]:hover {
+    background-color: #0097a7;
+  }
+
+  img#albumart, img#musicalbumart {
+    border-radius: 8px;
+    object-fit: cover;
+    margin-top: 10px;
+  }
+
+  #volume {
+    font-weight: bold;
+    margin: 0 10px;
+    color: #ffd54f;
+  }
