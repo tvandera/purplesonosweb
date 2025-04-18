@@ -11,8 +11,8 @@ require IO::Async::Loop;
 
 
 my @locations = (
-    'http://192.168.2.100:1400/xml/device_description.xml',
-    'http://192.168.2.198:1400/xml/device_description.xml',
+    'http://192.168.2.101:1400/xml/device_description.xml',
+    'http://192.168.2.199:1400/xml/device_description.xml',
 );
 
 #my $loop = IO::Async::Loop->new;
@@ -22,10 +22,10 @@ my @locations = (
 #my $player = shift @players;
 
 my @files = glob('
-    html/*.html 
-    html/*/*.html 
-    html/*.json 
-    html/*/*.json 
+    html/*.html
+    html/*/*.html
+    html/*.json
+    html/*/*.json
     html/*.js
     html/*/*.js
     html/*.xml
