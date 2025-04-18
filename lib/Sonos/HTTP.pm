@@ -131,7 +131,7 @@ sub validateRequest($self, $r) {
 
     if (exists $qf{what}) {
         my $what = $qf{what};
-        my @allowed_requests = qw(globals music zones zone queue none all);
+        my @allowed_requests = qw(globals music zones zone info queue none all);
         unless (grep { $what eq $_ } @allowed_requests) {
             return $self->send_error($r, 404, "Request \"$what\" unknown. Known: " . (join ", ", @allowed_requests));
         }

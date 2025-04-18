@@ -234,6 +234,10 @@ sub build_zone_data($self, $player = undef) {
     return \%activedata;
 }
 
+sub build_info_data {
+    return build_zone_data @_;
+}
+
 ###############################################################################
 sub build_queue_data($self) {
     my $player = $self->player();
@@ -311,7 +315,7 @@ sub build_globals_data($self) {
 
 ###############################################################################
 sub build_all_data($self) {
-    my @categories = ( "globals" , "zone", "queue", "music", "zones" ) ;
+    my @categories = ( "globals" , "zone", "info", "queue", "music", "zones" ) ;
     my @methods = map { "build_" . $_ . "_data" } @categories;
     my %data =  map { %{ $self->$_() } } @methods;
     return \%data;
