@@ -4,91 +4,130 @@ use warnings;
 use LWP::UserAgent;
 use JSON;
 use URI::Escape;
-use Getopt::Long;
+use HTML::Entities;
 use Text::Table;
 
-# --- Command-line options ---
-my %opt;
-GetOptions(
-    "zone=s"      => \$opt{zone},
-    "mpath=s"     => \$opt{mpath},
-    "queue=s"     => \$opt{queue},
-    "what=s"      => \$opt{what},
-    "action=s"    => \$opt{action},
-    "lastupdate=i"=> \$opt{lastupdate},
-    "link=s"      => \$opt{link},
-    "volume=i"    => \$opt{volume},
-    "savename=s"  => \$opt{savename},
-    "NoWait=i"    => \$opt{NoWait},
-    "help"        => sub { usage() },
-) or usage();
+binmode STDOUT, ":encoding(UTF-8)";
 
-sub usage {
-    print <<"EOF";
-Usage: $0 [--zone=Kitchen] [--what=queue] [--action=Play] ...
+my ($zone, $command, @args) = @ARGV;
 
-Options:
-  --zone        Zone name (e.g. Kitchen)
-  --mpath       Music path (e.g. /)
-  --queue       Queue ID
-  --what        Data to view: globals, music, zones, zone, queue, none, all
-  --action      Action to perform (e.g. Play, Pause, SetVolume)
-  --lastupdate  Last update timestamp
-  --link        Zone to link with
-  --volume      Set volume
-  --savename    Save current queue
-  --NoWait      Set to 1 to skip wait
-  --help        Show this help
-EOF
-    exit;
-}
-
-# --- API Query Construction ---
 my $base_url = "http://127.0.0.1:9999/api";
-my @params;
-
-foreach my $key (qw(zone mpath queue what action lastupdate link volume savename NoWait)) {
-    push @params, uri_escape($key) . "=" . uri_escape($opt{$key}) if defined $opt{$key};
-}
-
-my $url = "$base_url?" . join("&", @params);
-
-# --- HTTP GET Request ---
 my $ua = LWP::UserAgent->new;
-my $res = $ua->get($url);
+my %params;
 
-unless ($res->is_success) {
-    die "Request failed: " . $res->status_line;
+if (!$zone && !$command) {
+    $command = "zones";
+} elsif ($zone && $command) {
+    $params{zone} = $zone;
+} else {
+    usage();
 }
+
+# --- Command Mapping ---
+my @actions = qw(play pause stop next previous volume mute unmute);
+my @info = qw(queue info music all zones);
+
+if (grep { $_ eq $command } @actions) {
+    $params{action} = $command;
+} elsif (grep { $_ eq $command } @info) {
+    $params{what} = $command;
+} else {
+    usage("Unknown command: $command");
+}
+
+if ($command eq 'volume') {
+    usage("Missing volume level") unless defined $args[0];
+    $params{volume} = $args[0];
+}
+
+# --- Build query URL ---
+my $query = join '&', map { uri_escape($_) . '=' . uri_escape($params{$_}) } keys %params;
+my $url = "$base_url?$query";
+
+# --- Make the request ---
+my $res = $ua->get($url);
+die "Request failed: " . $res->status_line unless $res->is_success;
 
 my $json = decode_json($res->decoded_content);
 
-# --- Tabular Display Function ---
-sub display_table {
-    my ($title, $list) = @_;
-    return unless ref($list) eq 'ARRAY' && @$list;
+# --- Output formatting ---
+if ($command eq 'queue' && $json->{queue_loop}) {
+    my @fields = qw(queue_class queue_name queue_artist queue_album queue_streamContent);
+    print_table("Queue", $json->{queue_loop}, \@fields);
+}
+elsif ($command eq 'music' && $json->{music_loop}) {
+    print_table("Music", $json->{music_loop});
+}
+elsif ($command eq 'zones' && $json->{zones_loop}) {
+    my @fields = qw(zone_name active_state active_name);
+    print_table("Zones", $json->{zones_loop}, \@fields);
+}
+elsif ($command eq 'info') {
+    printf "Zone: %s | Volume: %d | Muted: %s | Status: %s | Track: %s\n",
+        $json->{zone_name},
+        $json->{zone_volume},
+        $json->{zone_muted} ? "yes" : "no",
+        ($json->{active_PLAYING} ? "playing" : $json->{active_STOPPED} ? "stopped" : "paused"),
+        $json->{active_name} || "-";
+}
+elsif ($command =~ /^(play|pause|stop|next|previous|volume|mute|unmute)$/) {
+    print "Action '$command' sent to zone '$zone'.\n";
+}
+else {
+    print to_json($json, { pretty => 1 });
+}
 
-    print "\n=== $title ===\n";
-    my @columns = sort keys %{ $list->[0] };
-    my $tb = Text::Table->new(@columns);
+# --- Helpers ---
 
-    for my $row (@$list) {
-        $tb->add(map { defined $row->{$_} ? $row->{$_} : '' } @columns);
+sub print_table {
+    my ($title, $data, $cols) = @_;
+    return unless @$data;
+
+    #all cols if none specificied
+    $cols = [ sort keys %{ $data->[0] } ] unless $cols;
+
+    my $separator =  \' | ';
+    my @headers = map { $separator, $_ } @$cols, $separator;
+
+    my $tb = Text::Table->new(@headers);
+    for my $row (@$data) {
+        print "row = ", %$row, "\n";
+        my @values = map { decode_entities( $row->{$_} ) // '' } @$cols;
+        print("values = ", @values, "\n");
+        $tb->add(@values);
     }
-
+    print "\n=== $title ===\n";
     print $tb;
 }
 
-# --- Print Tables ---
-display_table("Music Library", $json->{music_loop}) if $json->{music_loop};
-display_table("Queue", $json->{queue_loop}) if $json->{queue_loop};
-display_table("Zones", [ map { $_->{ZONE_MEMBERS}[0] } @{$json->{zones_loop}} ]) if $json->{zones_loop};
+sub usage {
+    my ($msg) = @_;
+    print "\n$msg\n" if $msg;
+    print <<'EOF';
 
-# --- Print remaining keys as JSON ---
-my %skip = map { $_ => 1 } qw(music_loop queue_loop zones_loop);
-my %other = map { $_ => $json->{$_} } grep { !$skip{$_} } keys %$json;
+Usage:
+  music
+  music <zone> <command> [args]
 
-if (%other) {
-    print "\n=== Other Data ===\n";
-    print to_json(\%other, { pretty => 1 });
+Commands:
+  play            Start playback
+  pause           Pause playback
+  stop            Stop playback
+  next            Next track
+  previous        Previous track
+  volume <level>  Set volume (0-100)
+  mute            Mute zone
+  unmute          Unmute zone
+  queue           Show current queue
+  info            Show zone info
+  music           Browse top-level music items
+  all             Dump all available data for the zone
+
+Examples:
+  music Kitchen play
+  music Kitchen volume 25
+  music "Living Room" info
+
+EOF
+    exit 1;
 }
