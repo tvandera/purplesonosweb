@@ -1,7 +1,7 @@
 {
-    "perl.perlCmd": "/home/vanderaa/perl5/perlbrew/perls/perl-5.36.0/bin/perl",
+    "perl.perlCmd": "/home/vanderaa/perl5/perlbrew/perls/perl-5.40.2/bin/perl",
     "perl.perlInc": [ "/home/vanderaa/Code/sonos/purplesonosweb/Sonos-Web/lib" ],
     "perl.env": {
-        "PATH": "${userHome}/perl5/perlbrew/bin:${userHome}/perl5/perlbrew/perls/perl-5.36.0/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+        "PATH": "${userHome}/perl5/perlbrew/bin:${userHome}/perl5/perlbrew/perls/perl-5.40.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
     },
 }
