@@ -10,31 +10,64 @@ queue:
 what:
     what variables to view, any of: globals music zones zone queue none all
 
-action:
+action: any of
+        "Play"
+        "Pause"
+        "Stop"
+
+        "MuteOn"
+        "MuteOff"
+
+        "MuchSofter"
+        "Softer"
+        "Louder"
+        "MuchLouder"
+        "SetVolume"
+
+        "Next"
+        "Previous"
+
+        "RepeatOff"
+        "RepeatOn"
+        "ShuffleOff"
+        "ShuffleOn"
+
+        # queue
+        "RemoveAll"
+        "AddMusic"
+        "PlayMusic"
+        "DeleteMusic"
+        "Save"
+
+        "Remove"
+        "Seek"
+
+        # wait for update, unless already happened
+        "Wait"
+
+        # Browse/Search music data
+        "Browse"
+        "Search"
+
+        # No-op
+        "None"
+
+        "LinkAll"
+        "Link"
+        "Unlink"
 
 lastupdate:
     - timestamp the client was last updated
     - used to know what update to send to the client
 
+link:
+    - Zone to link with given zone
 
-./Sonos/HTTP.pm:    if (exists $qf{zone}) {
-./Sonos/HTTP.pm:        my $zone   = $qf{zone};
-./Sonos/HTTP.pm:    if (exists $qf{mpath}) {
-./Sonos/HTTP.pm:        my $path = decode( "UTF-8", $qf{mpath} );
-./Sonos/HTTP.pm:    if (exists $qf{queue}) {
-./Sonos/HTTP.pm:        my $path = decode( "UTF-8", $qf{queue} );
-./Sonos/HTTP.pm:    if (exists $qf{what}) {
-./Sonos/HTTP.pm:        my $what = $qf{what};
-./Sonos/HTTP.pm:    my $action = $qf{action};
-./Sonos/HTTP.pm:    my $action = $qf{action};
-./Sonos/HTTP.pm:    my $lastupdate = $qf{lastupdate};
-./Sonos/HTTP.pm:    my $player = $self->player($qf{zone}) if $qf{zone};
-./Sonos/HTTP.pm:    my $link = $self->player($qf{link}) if $qf{link};
-./Sonos/HTTP.pm:    my $mpath = decode( "UTF-8", $qf{mpath} );
-./Sonos/HTTP.pm:    my $qpath = decode( "UTF-8", $qf{queue} );
-./Sonos/HTTP.pm:        "SetVolume"  => [ $render, sub { $render->setVolume($qf{volume}); }, "volume"],
-./Sonos/HTTP.pm:            $av->addToQueue($qf{mpath}, 1);
-./Sonos/HTTP.pm:            $av->saveQueue($qf{savename});
-./Sonos/HTTP.pm:        "Link"        => [ $topo, sub { $topo->linkToZone($qf{zone}); }, "link", ],
-./Sonos/HTTP.pm:    my $nowait = !$code->() || $qf{NoWait};
-./Sonos/HTTP.pm:        my $what = $qf{"what"} || "zones";
+volume:
+    - desired volume
+
+savename:
+    - save current queue with this name
+
+NoWait = 0|1:
+    - perform action, do not wait for update
