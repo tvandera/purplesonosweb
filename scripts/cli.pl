@@ -13,7 +13,7 @@ my ($zone, $command, @args) = @ARGV;
 
 my $base_url = "http://127.0.0.1:9999/api";
 my $ua = LWP::UserAgent->new;
-my %params;
+my %params = ( "nowait" => "1" );
 
 if (!$zone && !$command) {
     $command = "zones";
