@@ -5,7 +5,7 @@
  *    The available zones have changed.
  *    sonos.zones is an array of the zone ids
  *    sonos[zoneId] is an object with lots of info about the zone
- * 
+ *
  * drawControl(zoneId)
  *    The control data for a zone has changed
  *    sonos[zoneId] is an object with lots of info about the zone
@@ -17,11 +17,11 @@
  *
  * drawMusic(path)
  *    A Music query has returned, path is "*Search*" for searches.
- *    sonos.music[path].items is an array of objects with info about the 
+ *    sonos.music[path].items is an array of objects with info about the
  *    music at the path location
  *
  */
- 
+
 var sonos = {};
 
 sonos.start = function() {
@@ -35,7 +35,7 @@ sonos.start = function() {
 sonos.sendAction = function(zoneId, action, other) {
     if (!other) other = "";
     startspin();
-    sonos._loadData("/action.html?NoWait=1&action=" + action + "&zone=" + zoneId + other);
+    sonos._loadData("/action.html?nowait=1&action=" + action + "&zone=" + zoneId + other);
 }
 
 sonos.sendControlAction = function(zoneId, action) {
@@ -66,8 +66,8 @@ sonos.setVolume = function(zoneId, volume) {
 sonos._loadData = function(filename, afterFunc) {
     console.log("sonos load: " + filename);
     Http.get(filename, function (data) {
-        eval(data); 
-        if (afterFunc) eval(afterFunc); 
+        eval(data);
+        if (afterFunc) eval(afterFunc);
    });
 }
 

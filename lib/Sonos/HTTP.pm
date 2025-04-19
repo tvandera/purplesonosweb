@@ -146,7 +146,7 @@ sub validateRequest($self, $r) {
 }
 sub validateAction($self, $r, $dispatch) {
     my %qf     = $r->query_form;
-    my $action = $qf{action};
+    my $action = lc($qf{action});
 
     unless (exists $dispatch->{$action}) {
         return $self->send_error($r, $404, "Unknown action \"$action\"");
@@ -232,64 +232,65 @@ sub action {
     my $qitem = $player->queue()->item($qpath) if $qpath and $player;
 
     my $dispatch = {
-        "Play"       => [ $av, sub { $av->play() } ],
-        "Pause"      => [ $av, sub { $av->pause() } ],
-        "Stop"       => [ $av, sub { $av->stop() } ],
+        "play"       => [ $av, sub { $av->play() } ],
+        "pause"      => [ $av, sub { $av->pause() } ],
+        "stop"       => [ $av, sub { $av->stop() } ],
 
-        "MuteOn"     => [ $render, sub { $render->setMute(1) } ],
-        "MuteOff"    => [ $render, sub { $render->setMute(0) }  ],
+        "muteon"     => [ $render, sub { $render->setMute(1) } ],
+        "muteoff"    => [ $render, sub { $render->setMute(0) }  ],
 
-        "MuchSofter" => [ $render, sub { $render->changeVolume(-5); },],
-        "Softer"     => [ $render, sub { $render->changeVolume(-1); },],
-        "Louder"     => [ $render, sub { $render->changeVolume(+1); },],
-        "MuchLouder" => [ $render, sub { $render->changeVolume(+5); },],
-        "SetVolume"  => [ $render, sub { $render->setVolume($qf{volume}); }, "volume"],
+        "muchsofter" => [ $render, sub { $render->changeVolume(-5); },],
+        "softer"     => [ $render, sub { $render->changeVolume(-1); },],
+        "louder"     => [ $render, sub { $render->changeVolume(+1); },],
+        "muchlouder" => [ $render, sub { $render->changeVolume(+5); },],
+        "setvolume"  => [ $render, sub { $render->setVolume($qf{volume}); }, "volume"],
+        "volume"     => [ $render, sub { $render->setVolume($qf{volume}); }, "volume"],
 
-        "Next"        => [ $av, sub { $av->next() } ],
-        "Previous"    => [ $av, sub { $av->previous() } ],
+        "next"        => [ $av, sub { $av->next() } ],
+        "previous"    => [ $av, sub { $av->previous() } ],
 
-        "RepeatOff"   => [ $av, sub { $av->setRepeat(0) } ],
-        "RepeatOn"    => [ $av, sub { $av->setRepeat(1); } ],
-        "ShuffleOff"  => [ $av, sub { $av->setShuffle(0); } ],
-        "ShuffleOn"   => [ $av, sub { $av-setShuffle(1); } ],
+        "repeatoff"   => [ $av, sub { $av->setRepeat(0) } ],
+        "repeaton"    => [ $av, sub { $av->setRepeat(1); } ],
+        "shuffleoff"  => [ $av, sub { $av->setShuffle(0); } ],
+        "shuffleon"   => [ $av, sub { $av-setShuffle(1); } ],
 
         # queue
-        "RemoveAll"   => [ $av, sub {
+        "removeall"   => [ $av, sub {
             $av->removeAllTracksFromQueue();
         } ],
-        "AddMusic"    => [ $av, sub {
+        "addmusic"    => [ $av, sub {
             $av->addToQueue($qf{mpath}, 1);
          }, "mpath", ],
-        "PlayMusic"   => [ $av, sub {
+        "playmusic"   => [ $av, sub {
         }, "mpath", ],
-        "DeleteMusic" => [ $av, sub {
+        "deletemusic" => [ $av, sub {
             $contentdir->destroyObject($qitem);
         }, "mpath", ],
-        "Save"        => [ $av, sub {
+        "save"        => [ $av, sub {
             $av->saveQueue($qf{savename});
         }, "savename", ],
 
-        "Remove"      => [ $av, sub {
+        "remove"      => [ $av, sub {
             $av->RemoveTrackFromQueue($qitem->id())
         }, "queue", ],
-        "Seek"        => [ $av, sub {
+        "seek"        => [ $av, sub {
             $av->seekInQueue($qitem->id());
             $av->setQueue();
         }, "queue", ],
 
         # wait for update, unless already happened
-        "Wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; }, 'lastupdate' ],
+        "wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; }, 'lastupdate' ],
 
         # Browse/Search music data
-        "Browse"     => [ undef, sub { return 0; }, "nozone" ],
-        "Search"     => [ undef, sub { return 0; }, "nozone", "msearch" ],
+        "browse"     => [ undef, sub { return 0; }, "nozone" ],
+        "search"     => [ undef, sub { return 0; }, "nozone", "msearch" ],
 
         # No-op
-        "None"     => [ undef, sub { return 0; }, "nozone" ],
+        "none"     => [ undef, sub { return 0; }, "nozone" ],
 
-        "LinkAll"     => [ $system, sub { $system->linkAllZones($player); }, "nozone" ],
-        "Link"        => [ $topo, sub { $topo->linkToZone($qf{zone}); }, "link", ],
-        "Unlink"      => [ $topo, sub { $topo->unlink(); }, "nozone", "link", ],
+        "linkall"     => [ $system, sub { $system->linkAllZones($player); }, "nozone" ],
+        "link"        => [ $topo, sub { $topo->linkToZone($qf{zone}); }, "link", ],
+        "unlink"      => [ $topo, sub { $topo->unlink(); }, "nozone", "link", ],
     };
 
     $self->validateAction($r, $dispatch) && return 0;
@@ -297,7 +298,7 @@ sub action {
 
     my ($service, $code) = @{$dispatch->{$action}};
 
-    my $nowait = !$code->() || $qf{NoWait};
+    my $nowait = !$code->() || $qf{nowait};
 
     # delay send_tmpl, or do immediately
     return $do_after->() if ($nowait);

@@ -69,5 +69,5 @@ volume:
 savename:
     - save current queue with this name
 
-NoWait = 0|1:
+nowait = 0|1:
     - perform action, do not wait for update
