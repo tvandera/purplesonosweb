@@ -149,7 +149,7 @@ sub validateAction($self, $r, $dispatch) {
     my $action = lc $qf{action};
 
     unless (exists $dispatch->{$action}) {
-        return $self->send_error($r, $404, "Unknown action \"$action\"");
+        return $self->send_error($r, 404, "Unknown action \"$action\"");
     }
 
     my ($service, $code, @needs) = @{$dispatch->{$action}};
