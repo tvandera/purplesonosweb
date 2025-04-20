@@ -262,6 +262,7 @@ sub action {
             $av->addToQueue($qf{mpath}, 1);
          }, "mpath", ],
         "playmusic"   => [ $av, sub {
+            $av->playMusic($qf{mpath})
         }, "mpath", ],
         "deletemusic" => [ $av, sub {
             $contentdir->destroyObject($qitem);
