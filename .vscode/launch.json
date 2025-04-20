@@ -8,17 +8,8 @@
             "type": "perl",
             "request": "launch",
             "name": "daemon",
-            "program": "${workspaceFolder}/Sonos-Web/scripts/daemon.pl",
-            "cwd": "${workspaceFolder}/Sonos-Web",
-            "stopOnEntry": false,
-            "reloadModules": true
-        },
-        {
-            "type": "perl",
-            "request": "launch",
-            "name": "old",
-            "program": "${workspaceFolder}/old/sonos.pl",
-            "cwd": "${workspaceFolder}/old",
+            "program": "${workspaceFolder}/scripts/daemon.pl",
+            "cwd": "${workspaceFolder}",
             "stopOnEntry": false,
             "reloadModules": true
         },
