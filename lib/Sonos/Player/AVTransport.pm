@@ -116,16 +116,16 @@ sub playMusic($self, $mpath) {
     my $item = $self->musicLibrary()->item($mpath);
     my $uri = $item->content();
     my $metadata = $item->didl();
-    
+
     if ($item->isRadio()) {
         $self->setURI( $uri, $metadata );
     } else {
         $self->removeAllTracksFromQueue();
-        $self->addToQueue($mpath);
+        $self->addToQueue($item);
         $self->action("AddURIToQueue", $uri, $metadata);
     }
 
-    $self->play(); 
+    $self->play();
 }
 
 sub setQueue($self) {
