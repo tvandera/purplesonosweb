@@ -146,7 +146,7 @@ sub validateRequest($self, $r) {
 }
 sub validateAction($self, $r, $dispatch) {
     my %qf     = $r->query_form;
-    my $action = lc($qf{action});
+    my $action = lc $qf{action};
 
     unless (exists $dispatch->{$action}) {
         return $self->send_error($r, $404, "Unknown action \"$action\"");
@@ -295,8 +295,7 @@ sub action {
 
     $self->validateAction($r, $dispatch) && return 0;
 
-
-    my ($service, $code) = @{$dispatch->{$action}};
+    my ($service, $code) = @{$dispatch->{lc $action}};
 
     my $nowait = !$code->() || $qf{nowait};
 
