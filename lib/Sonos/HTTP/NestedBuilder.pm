@@ -300,8 +300,11 @@ sub build_globals_data($self) {
 
 ###############################################################################
 sub build_all_data($self) {
-    my @categories = ( "globals" , "zone", "info", "queue", "music", "zones" ) ;
-    my @methods = map { "build_" . $_ . "_data" } @categories;
-    my %data =  map { %{ $self->$_() } } @methods;
+    my @categories = ( "globals", "zone", "queue", "music", "zones" ) ;
+    my %methods = map { $_ => "build_" . $_ . "_data" } @categories;
+    my %data = ();
+    while (my ($key, $value) = each(%methods)) {
+        $data{$key} = $self->$value();
+    }
     return \%data;
 }
