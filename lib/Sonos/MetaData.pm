@@ -287,7 +287,7 @@ sub isOfClass($self, $class) {
 sub isRadio($self) { return $self->isOfClass("audioBroadcast"); }
 sub isSong($self)  { return $self->isOfClass("musicTrack"); }
 sub isAlbum($self) { return $self->isOfClass("musicAlbum"); }
-sub isFav($self)   { return $self->isOfClass("favorite"); }
+sub isFav($self)   { return $self->isOfClass("favorite") || return $self->isOfClass("sonos_favorite") ; }
 sub isTop($self)   { return $self->isOfClass("top"); }
 
 sub isContainer($self) {
