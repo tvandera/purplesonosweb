@@ -61,13 +61,13 @@ die "Request failed: " . $res->status_line unless $res->is_success;
 my $json = decode_json($res->decoded_content);
 
 # --- Output formatting ---
-if ($command eq 'queue' && $json->{loop}) {
+if ($command eq 'queue' && $json->{queue}) {
     my @fields = qw(class name artist album streamContent);
-    print_table("Queue", $json->{loop}, \@fields);
+    print_table("Queue", $json->{queue}, \@fields);
 }
-elsif ($command eq 'music' && $json->{loop}) {
-    my @fields = qw(music_id music_name);
-    print_table("Music", $json->{music_loop}, \@fields);
+elsif ($command eq 'music' && $json->{children}) {
+    my @fields = qw(id name);
+    print_table("Music", $json->{children}, \@fields);
 }
 elsif ($command eq 'zones' && $json->{loop}) {
     my @fields = qw(zone_name active_state active_name);

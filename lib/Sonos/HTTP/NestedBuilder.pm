@@ -273,7 +273,7 @@ sub build_music_data($self) {
         "updated"    => int( $music->lastUpdate() > $updatenum ),
         "path"       => encode_entities($mpath),
         "item"       => $self->build_item_data($parent),
-        "loop"       => [ map { $self->build_item_data($_) } @elements ]
+        "children"   => [ map { $self->build_item_data($_) } @elements ]
     }
 }
 
