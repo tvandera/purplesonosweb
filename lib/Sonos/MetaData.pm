@@ -242,7 +242,7 @@ sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 sub classFrom($self, $from) {
     my $full_classname = $self->prop($from);
     my @parts = split( /\./, $full_classname);
-    pop @parts if $parts[-1] =~ /#\w+/;
+    pop @parts if $parts[-1] && $parts[-1] =~ /#\w+/;
     return $parts[-1];
 }
 
@@ -281,11 +281,13 @@ sub isTopItem($self) {
 }
 
 sub isOfClass($self, $class) {
-    return bool($self->class() eq $class || $self->realClass() eq $class);
+    return '1' if ($self->class() eq $class);
+    return '1' if ($self->realClass() && $self->realClass() eq $class);
+    return '0';
 }
 
 sub isRadio($self)    { return $self->isOfClass("audioBroadcast"); }
-sub isSong($self)     {  return $self->isOfClass("musicTrack"); }
+sub isSong($self)     { return $self->isOfClass("musicTrack"); }
 sub isAlbum($self)    { return $self->isOfClass("musicAlbum"); }
 sub isPlaylist($self) { return $self->isOfClass("playlistContainer"); }
 sub isFav($self)      { return $self->isOfClass("sonos-favorite") ; }
