@@ -99,14 +99,14 @@ sub build_item_data($self, $item, $player = undef) {
 
         %data = (
             "id"          => $item->id(),
-            "id_uri"      => uri_escape_utf8( $item->id() ),
             "name"        => encode_entities( $item->title() ),
             "desc"        => encode_entities( $item->description() ),
             "artist"      => encode_entities( $item->creator() ),
             "album"       => encode_entities( $item->album() ),
             "class"       => encode_entities( $item->class  ),
-            "content"     => uri_escape_utf8( $item->content  ),
-            "parent"      => uri_escape_utf8( $item->parentID ),
+            "real_class"  => encode_entities( $item->realClass()  ),
+            "content"     => $item->content,
+            "parent"      => $item->parentID,
             "albumart"    => $item->albumArtURI,
             "issong"      => int( $item->isSong() ),
             "isradio"     => int( $item->isRadio() ),
@@ -114,6 +114,7 @@ sub build_item_data($self, $item, $player = undef) {
             "isfav"       => int( $item->isFav() ),
             "istop"       => int( $item->isTop() ),
             "iscontainer" => int( $item->isContainer() ),
+            "isplaylist"  => int( $item->isPlaylist() ),
             "track_num"   => int( $item->originalTrackNumber() ),
             "arg"         => $mpath_arg,
         );
