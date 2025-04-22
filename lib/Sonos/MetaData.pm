@@ -117,16 +117,20 @@ sub streamContentProp($self, $prop = undef) {
 sub prop($self, $path, $type = "string", $default = undef) {
     my @path = split "/", $path;
     my $value = $self->{_data};
+
     for (@path) {
+        while (ref $value eq 'ARRAY' and scalar @$value == 1) {
+            $value = $value->[0];
+        }
         $value = $value->{$_} if (ref $value eq 'HASH');
     }
 
-    my %defaults = ( 
+    my %defaults = (
         "string" => "",
         "int" => -1,
         "bool" => 0,
     );
-        
+
     $default = $defaults{$type} unless defined $default;
 
     $value = $default unless defined $value;
