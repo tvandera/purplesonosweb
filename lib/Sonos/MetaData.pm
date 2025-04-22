@@ -167,13 +167,13 @@ sub title($self)               { return $self->prop("dc:title"); }
 sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
 
-sub name($self)                { 
+sub name($self)                {
 
 }
 
 sub albumArtURI($self) {
     my $aa = $self->prop("upnp:albumArtURI");
-    
+
     # return first album art
     return $aa->[0] if ref $aa eq "ARRAY";
 
@@ -281,18 +281,20 @@ sub isTopItem($self) {
 }
 
 sub isOfClass($self, $class) {
-    return bool($self->class() eq $class);
+    return bool($self->class() eq $class || $self->realClass() eq $class);
 }
 
-sub isRadio($self) { return $self->isOfClass("audioBroadcast"); }
-sub isSong($self)  { return $self->isOfClass("musicTrack"); }
-sub isAlbum($self) { return $self->isOfClass("musicAlbum"); }
-sub isFav($self)   { return $self->isOfClass("favorite") || return $self->isOfClass("sonos_favorite") ; }
-sub isTop($self)   { return $self->isOfClass("top"); }
+sub isRadio($self)    { return $self->isOfClass("audioBroadcast"); }
+sub isSong($self)     {  return $self->isOfClass("musicTrack"); }
+sub isAlbum($self)    { return $self->isOfClass("musicAlbum"); }
+sub isPlaylist($self) { return $self->isOfClass("playlistContainer"); }
+sub isFav($self)      { return $self->isOfClass("sonos-favorite") ; }
+sub isTop($self)      { return $self->isOfClass("top"); }
 
 sub isContainer($self) {
     my $fullclass = $self->prop("upnp:class");
-    my $iscontainer = $fullclass =~ m/container/g;
+    my $realclass = $self->prop("r:resMD/upnp:class");
+    my $iscontainer = $fullclass =~ m/container/g || $realclass =~ m/container/g;
     return bool($iscontainer);
 }
 
@@ -309,8 +311,8 @@ sub getAlbumArt($self) {
     # ask owner for caching
     return $self->owner()->albumArtHelper($self);
 }
-    
-    
+
+
 sub didl($self) {
     my $id = $self->id();
     my $parentid = $self->parentID();
@@ -336,7 +338,7 @@ sub didl($self) {
       RINCON_AssociatedZPUDN
     </desc>
   </item>
-</DIDL-Lite> 
+</DIDL-Lite>
 EOT
 
     require XML::LibXML;
