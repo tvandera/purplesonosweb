@@ -14,6 +14,16 @@
             "reloadModules": true
         },
         {
+            "type": "perl",
+            "request": "launch",
+            "name": "cli",
+            "program": "${workspaceFolder}/scripts/cli.pl",
+            "cwd": "${workspaceFolder}",
+            "args": [ "Kitchen", "queue" ],
+            "stopOnEntry": false,
+            "reloadModules": true
+        },
+        {
             "name": "iSonos",
             "type": "node",
             "program": "${workspaceFolder}/Sonos-Web/html/iSonos.js",
