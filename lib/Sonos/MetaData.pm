@@ -242,6 +242,7 @@ sub radioShow($self)           { return $self->prop("r:radioShowMd"); }
 sub classFrom($self, $from) {
     my $full_classname = $self->prop($from);
     my @parts = split( /\./, $full_classname);
+    pop @parts if $parts[-1] =~ /#\w+/;
     return $parts[-1];
 }
 
