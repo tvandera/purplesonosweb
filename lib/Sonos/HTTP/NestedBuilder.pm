@@ -170,67 +170,64 @@ sub build_zone_data($self, $player = undef) {
     my $number_of_tracks = $av->numberOfTracks();
     my $transportstate = $av->transportState();
     my %transport_states = ( "TRANSITIONING" => 3, "PAUSED_PLAYBACK" => 2, "PLAYING" => 1, "STOPPED" => 0);
+    my %state_toggles = map { "is_" . $_ => int($transportstate eq $_) } keys %transport_states;
     my $nexttrack = $av->nextTrack();
 
     my $zonetopology  = $player->zoneGroupTopology();
     my $num_linked = $zonetopology->numMembers() - 1;
+    my $fancyname =  $zonename;
+    $fancyname .= " + " . $num_linked if $num_linked;
 
-    my %activedata;
-    $activedata{"has_active_zone"}   = int( defined $active_player );
+    return {
+        "has_active_zone"   => int( defined $active_player ),
 
-    $activedata{"zone"}       = encode_entities( $zonename );
-    $activedata{"zoneid"}     = uri_escape($player->UDN());
-    $activedata{"lastupdate"} = $player->lastUpdate();
-    $activedata{"updated"}    = int( $player->lastUpdate() > $updatenum );
+        "zonename"   => encode_entities( $zonename ),
+        "zoneid"     => uri_escape($player->UDN()),
+        "lastupdate" => $player->lastUpdate(),
+        "updated"    => int( $player->lastUpdate() > $updatenum ),
 
-    $activedata{"volume"}   = $render->getVolume();
-    $activedata{"muted"}    = $render->getMute();
+        "volume"     => $render->getVolume(),
+        "muted"      => $render->getMute(),
 
-    $activedata{"current"} = $self->build_item_data($av->metaData(), $player);
-    $activedata{"name"} = $av->name();
-    $activedata{"arg"}    = "zone=$zonename&";
+        "current_track" => $self->build_item_data($av->metaData(), $player),
+        "title"         => $av->name(),
+        "zone_arg"           => "zone=$zonename&",
 
-    $activedata{"length"}    = $av->lengthInSeconds();
-    $activedata{"track_num"} = int($av->currentTrack());
-    $activedata{"track_tot"} = int($number_of_tracks);
+        "length"    => $av->lengthInSeconds(),
+        "track_num" => int($av->currentTrack()),
+        "track_tot" => int($number_of_tracks),
 
-    $activedata{"state"} = $transportstate;
-    $activedata{"mode"} = $transport_states{$transportstate};
-    $activedata{"active_$_"}   = int($transportstate eq $_) for (keys %transport_states);
+        "state"     => $transportstate,
+        "mode"     => $transport_states{$transportstate},
 
-    $activedata{"repeat"} = $av->isRepeat();
-    $activedata{"shuffle"} = $av->isShuffle();
+        "repeat"  => $av->isRepeat(),
+        "shuffle" => $av->isShuffle(),
 
-    my $next = $self->build_item_data($nexttrack, $player);
-    $activedata{"next"} = $next;
+        "next" => $self->build_item_data($nexttrack, $player),
 
-    $activedata{"icon"} = $zonetopology->icon();
-    $activedata{"img"} =  "icons" . $zonetopology->icon() . ".png";
-    $activedata{"lastupdate"} = $player->lastUpdate();
-    $activedata{"numlinked"} = $num_linked;
-    $activedata{"fancyname"} = $activedata{"name"};
-    $activedata{"fancyname"} .= " + " . $num_linked if $num_linked;
+        "icon" => $zonetopology->icon(),
+        "img" =>  "icons" . $zonetopology->icon() . ".png",
+        "lastupdate" => $player->lastUpdate(),
+        "numlinked" => $num_linked,
+        "fancyname" => $fancyname,
 
-    $activedata{"linked"}    = ! $zonetopology->isCoordinator();
-    $activedata{"link"}      = $zonetopology->coordinator()->UDN();
-    $activedata{"link_name"} = $zonetopology->coordinator()->friendlyName();
+        "linked"    => ! $zonetopology->isCoordinator(),
+        "link"      => $zonetopology->coordinator()->UDN(),
+        "link_name" => $zonetopology->coordinator()->friendlyName(),
 
-    my @members = $zonetopology->members();
-    $activedata{"members"} = [
-        map {
-            my $uuid = $_->{"UUID"};
-            {
-                "name"   => $zonetopology->zoneName($uuid),
-                "id"     => $uuid,
-                "linked" => int( ! $zonetopology->isCoordinator($uuid) ),
-                "icon"   => $zonetopology->icon($uuid),
-                "img"    => "icons" . $zonetopology->icon($uuid) . ".png",
-            }
-        } @members
-    ];
-
-
-    return \%activedata;
+        "members" => [
+            map {
+                my $uuid = $_->{"UUID"};
+                {
+                    "name"   => $zonetopology->zoneName($uuid),
+                    "id"     => $uuid,
+                    "linked" => int( ! $zonetopology->isCoordinator($uuid) ),
+                    "icon"   => $zonetopology->icon($uuid),
+                    "img"    => "icons" . $zonetopology->icon($uuid) . ".png",
+                }
+            } $zonetopology->members()
+        ]
+    };
 }
 
 sub build_info_data {
@@ -243,20 +240,15 @@ sub build_queue_data($self) {
     return {} unless $player;
 
     my $queue = $player->queue();
-
-    my %queuedata;
-
-    $queuedata{"zone"}       = $player->zoneName;
-    $queuedata{"zoneid"}     = uri_escape_utf8($player->UDN);
-
     my $updatenum = $self->qf("updatenum", -1);
-    $queuedata{"lastupdate"} = $queue->lastUpdate();
-    $queuedata{"updated"}    = int( $queue->lastUpdate() > $updatenum );
 
-    my @loop_data = map { $self->build_item_data($_, $player) } $queue->items();
-    $queuedata{"loop"} = \@loop_data;
-
-    return \%queuedata;
+    return {
+        "zone"       => $player->zoneName,
+        "zoneid"     => uri_escape_utf8($player->UDN),
+        "lastupdate" => $queue->lastUpdate(),
+        "updated"    => int( $queue->lastUpdate() > $updatenum ),
+        "queue"      => [ map { $self->build_item_data($_, $player) } $queue->items() ],
+    };
 }
 
 sub build_music_data($self) {
