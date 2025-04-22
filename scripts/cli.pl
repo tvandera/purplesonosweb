@@ -13,7 +13,7 @@ my ($zone, $command, @args) = @ARGV;
 
 my $base_url = "http://127.0.0.1:9999/api";
 my $ua = LWP::UserAgent->new;
-my %params = ( "nowait" => "1" );
+my %params;
 
 if (!$zone && !$command) {
     $command = "zones";
@@ -29,6 +29,7 @@ my @info = qw(queue info music all zones);
 
 if (grep { $_ eq $command } @actions) {
     $params{action} = $command;
+    $params{nowait} = "1";
 } elsif (grep { $_ eq $command } @info) {
     $params{what} = $command;
 } else {
@@ -60,25 +61,25 @@ die "Request failed: " . $res->status_line unless $res->is_success;
 my $json = decode_json($res->decoded_content);
 
 # --- Output formatting ---
-if ($command eq 'queue' && $json->{queue_loop}) {
-    my @fields = qw(queue_class queue_name queue_artist queue_album queue_streamContent);
-    print_table("Queue", $json->{queue_loop}, \@fields);
+if ($command eq 'queue' && $json->{loop}) {
+    my @fields = qw(class name artist album streamContent);
+    print_table("Queue", $json->{loop}, \@fields);
 }
-elsif ($command eq 'music' && $json->{music_loop}) {
+elsif ($command eq 'music' && $json->{loop}) {
     my @fields = qw(music_id music_name);
     print_table("Music", $json->{music_loop}, \@fields);
 }
-elsif ($command eq 'zones' && $json->{zones_loop}) {
+elsif ($command eq 'zones' && $json->{loop}) {
     my @fields = qw(zone_name active_state active_name);
     print_table("Zones", $json->{zones_loop}, \@fields);
 }
 elsif ($command eq 'info') {
     printf "Zone: %s | Volume: %d | Muted: %s | Status: %s | Track: %s\n",
-        $json->{zone_name},
-        $json->{zone_volume},
-        $json->{zone_muted} ? "yes" : "no",
-        ($json->{active_PLAYING} ? "playing" : $json->{active_STOPPED} ? "stopped" : "paused"),
-        $json->{active_name} || "-";
+        $json->{name},
+        $json->{volume},
+        $json->{muted} ? "yes" : "no",
+        ($json->{PLAYING} ? "playing" : $json->{active_STOPPED} ? "stopped" : "paused"),
+        $json->{name} || "-";
 }
 elsif ($command =~ /^(play|pause|stop|next|previous|volume|mute|unmute)$/) {
     print "Action '$command' sent to zone '$zone'.\n";
