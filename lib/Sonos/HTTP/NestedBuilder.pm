@@ -185,7 +185,7 @@ sub build_zone_data($self, $player = undef) {
     $activedata{"volume"}   = $render->getVolume();
     $activedata{"muted"}    = $render->getMute();
 
-    $activedata{"current"} = $self->build_item_data("active", $av->metaData(), $player);
+    $activedata{"current"} = $self->build_item_data($av->metaData(), $player);
     $activedata{"name"} = $av->name();
     $activedata{"arg"}    = "zone=$zonename&";
 
@@ -200,7 +200,7 @@ sub build_zone_data($self, $player = undef) {
     $activedata{"repeat"} = $av->isRepeat();
     $activedata{"shuffle"} = $av->isShuffle();
 
-    my $next = $self->build_item_data("next", $nexttrack, $player);
+    my $next = $self->build_item_data($nexttrack, $player);
     $activedata{"next"} = $next;
 
     $activedata{"icon"} = $zonetopology->icon();
@@ -252,7 +252,7 @@ sub build_queue_data($self) {
     $queuedata{"lastupdate"} = $queue->lastUpdate();
     $queuedata{"updated"}    = int( $queue->lastUpdate() > $updatenum );
 
-    my @loop_data = map { { $self->build_item_data("queue", $_, $player) } } $queue->items();
+    my @loop_data = map { $self->build_item_data($_, $player) } $queue->items();
     $queuedata{"loop"} = \@loop_data;
 
     return \%queuedata;

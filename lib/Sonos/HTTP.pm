@@ -19,6 +19,7 @@ use Scalar::Util::Numeric qw(isint);
 
 require Sonos::HTTP::Template;
 require Sonos::HTTP::Builder;
+require Sonos::HTTP::NestedBuilder;
 
 ###############################################################################
 # HTTP
@@ -387,7 +388,7 @@ sub send_hello($self, $req) {
 sub rest_api($self, $r) {
     $self->action($r, sub {
         my %qf = $r->query_form;
-        my $builder = Sonos::HTTP::Builder->new($self->system(), \%qf);
+        my $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
 
         my $what = $qf{"what"} || "zones";
         my $method = "build_" . $what . "_data";
