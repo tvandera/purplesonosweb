@@ -24,7 +24,7 @@ if (!$zone && !$command) {
 }
 
 # --- Command Mapping ---
-my @actions = qw(play pause stop next previous volume mute unmute);
+my @actions = qw(play pause stop next previous volume mute unmute search);
 my @info = qw(queue info music all zones);
 
 if (grep { $_ eq $command } @actions) {
@@ -38,6 +38,15 @@ if (grep { $_ eq $command } @actions) {
 if ($command eq 'volume') {
     usage("Missing volume level") unless defined $args[0];
     $params{volume} = $args[0];
+}
+
+if ($command eq 'search') {
+    usage("Missing search term") unless defined $args[0];
+    $params{msearch} = $args[0];
+}
+
+if ($command eq 'music') {
+    $params{mpath} = $args[0] ? $args[0] : "";
 }
 
 # --- Build query URL ---
@@ -56,7 +65,8 @@ if ($command eq 'queue' && $json->{queue_loop}) {
     print_table("Queue", $json->{queue_loop}, \@fields);
 }
 elsif ($command eq 'music' && $json->{music_loop}) {
-    print_table("Music", $json->{music_loop});
+    my @fields = qw(music_id music_name);
+    print_table("Music", $json->{music_loop}, \@fields);
 }
 elsif ($command eq 'zones' && $json->{zones_loop}) {
     my @fields = qw(zone_name active_state active_name);
