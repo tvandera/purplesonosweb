@@ -84,6 +84,22 @@ sub zoneName($self) {
     return $self->zoneGroupTopology()->zoneName();
 }
 
+
+sub cmp($a, $b) {
+    return
+        # sort by zoneGroup coordinator
+        fc($a->zoneGroupTopology()->coordinator()->friendlyName())
+            cmp
+        fc($b->zoneGroupTopology()->coordinator()->friendlyName())
+        ||
+        # then put coordinator first
+            ($b->zoneGroupTopology()->isCoordinator())
+        ||
+        # then sort by zonename
+            fc($a->friendlyName()) cmp fc($b->friendlyName());
+}
+
+
 sub services($self) {
     return values %{$self->{_services}};
 }
