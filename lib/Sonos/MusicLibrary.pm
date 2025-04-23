@@ -144,7 +144,7 @@ sub toJSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
         @elements   = $self->children($parent);
     }
 
-    return map { $_->toJSON() } @elements;
+    return [ map { $_->toJSON() } @elements ];
 }
 
 
