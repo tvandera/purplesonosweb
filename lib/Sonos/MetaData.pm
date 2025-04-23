@@ -5,15 +5,12 @@ use strict;
 use warnings;
 use Carp;
 
-use HTML::Entities;
-use URI::Escape;
+require JSON;
 
 use List::MoreUtils qw(zip);
 
 use constant NO_PARENT_ID => "NO_PARENT";
 use constant ROOT_ID => "";
-
-sub bool($v) { $v ? '1' : '0'; }
 
 sub topItems() {
     my @table = (
@@ -278,7 +275,7 @@ sub class($self) {
 # it will have a "upnp:class": "object.itemobject.item.sonos-favorite",
 # and the `real` class will be in
 #  $item{"r:resMD"}->{"upnp:class"} "object.item.audioItem.audioBroadcast",
-sub realClass($self) {
+sub resClass($self) {
     return $self->classFrom("r:resMD/upnp:class");
 }
 
@@ -293,16 +290,16 @@ sub baseID($self) {
 
 
 sub isRootItem($self) {
-    return bool($self->parentID() eq NO_PARENT_ID);
+    return $self->parentID() eq NO_PARENT_ID;
 }
 
 sub isTopItem($self) {
-    return bool($self->parentID() eq ROOT_ID);
+    return $self->parentID() eq ROOT_ID;
 }
 
 sub isOfClass($self, $class) {
     return '1' if ($self->class() eq $class);
-    return '1' if ($self->realClass() && $self->realClass() eq $class);
+    return '1' if ($self->resClass() && $self->resClass() eq $class);
     return '0';
 }
 
@@ -316,17 +313,15 @@ sub isTop($self)      { return $self->isOfClass("top"); }
 sub isContainer($self) {
     my $fullclass = $self->prop("upnp:class");
     my $realclass = $self->prop("r:resMD/upnp:class");
-    my $iscontainer = $fullclass =~ m/container/g || $realclass =~ m/container/g;
-    return bool($iscontainer);
+    return $fullclass =~ m/container/g || $realclass =~ m/container/g;
 }
 
 sub isQueueItem($self) {
-    my $isq = $self->id() =~ /^Q:/;
-    return bool($isq);
+    return $self->id() =~ /^Q:/;
 }
 
 sub isPlayList($self) {
-    return bool($self->class() eq "playlist");
+    return $self->class() eq "playlist";
 }
 
 sub getAlbumArt($self) {

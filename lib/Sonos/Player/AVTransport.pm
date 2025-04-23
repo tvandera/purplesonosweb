@@ -35,8 +35,8 @@ sub metaData($self) {
 }
 
 sub isRadio($self) {
-    return Sonos::MetaData::bool($self->curTransport()->populated()
-        && $self->curTransport()->isRadio());
+    return $self->curTransport()->populated()
+        && $self->curTransport()->isRadio();
 }
 
 sub name($self) {
