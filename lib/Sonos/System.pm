@@ -65,8 +65,10 @@ sub numPlayers($self) {
     return scalar keys %{$self->{_players}};
 }
 
-sub players($self) {
-    return values %{$self->{_players}};
+sub players($self, $sorted = undef) {
+    my @players = values %{$self->{_players}};
+    @players = sort Sonos::Player::cmp @players unless !$sorted;
+    return @players;
 }
 
 sub linkAllZones($self, $coordinator) {
@@ -91,7 +93,7 @@ sub wait($self) {
     while (!$self->populated()) {
         $self->loop()->loop_once();
     }
-    
+
     return $self;
 }
 
