@@ -31,6 +31,39 @@ sub info($self) {
     }
 }
 
+sub toJSON($self) {
+    return {
+        "icon"       => $self->icon(),
+        "groupname"  => $self->friendlyName(),
+
+        "linked"      => ! $self->isCoordinator(),
+        "num_members" => $self->numMembers(),
+        "link"        => $self->coordinator()->UDN(),
+        "link_name"   => $self->coordinator()->friendlyName(),
+
+        "members" => [
+            map {
+                my $uuid = $_->{"UUID"};
+                {
+                    "name"   => $self->zoneName($uuid),
+                    "id"     => $uuid,
+                    "linked" => int( ! $self->isCoordinator($uuid) ),
+                    "icon"   => $self->icon($uuid),
+                    "img"    => "icons" . $self->icon($uuid) . ".png",
+                }
+            } $self->members()
+        ]
+    };
+}
+
+
+sub friendlyName($self) {
+    my $groupname = $self->coordinator()->friendlyName();
+    my $num_linked = $self->numMembers() - 1;
+    $groupname .= " + " . $num_linked if $num_linked;
+    return $groupname
+}
+
 sub UDN($self) {
     return $self->player()->UDN();
 }
@@ -144,7 +177,7 @@ sub processZoneGroupState ( $self, $service, %properties ) {
 
     delete $self->{_zonegroups};
     delete $self->{_myzoneinfo};
-    delete $self->{_mycoordinator}; 
+    delete $self->{_mycoordinator};
 
     for (@groups) {
         my $coordinator = $_->{Coordinator};

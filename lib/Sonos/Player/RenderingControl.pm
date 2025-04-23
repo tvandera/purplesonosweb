@@ -6,17 +6,21 @@ use v5.36;
 use strict;
 use warnings;
 
-
-
 sub info($self) {
     $self->log($self->shortName, ":");
     for my $channel ('Master', 'LF', 'RF') {
       my $muted = "";
       $muted = " (muted)" if $self->prop("Mute/$channel");
-      $self->log(" $channel: " . $self->prop("Volume/$channel") . $muted);
+      $self->log("  $channel volume: " . $self->prop("Volume/$channel") . $muted);
     }
 }
 
+sub toJSON($self) {
+    return {
+        "volume"     => $self->getVolume(),
+        "muted"      => $self->getMute(),
+    }
+}
 
 sub processUpdate {
     my $self = shift;
@@ -53,7 +57,5 @@ sub setMute($self, $on_or_off, $channel = "Master") {
 
 sub muteOn ($self) { $self->setMute(1); }
 sub muteOff($self) { $self->setMute(0); }
-
-
 
 1;

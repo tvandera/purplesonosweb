@@ -7,10 +7,9 @@ use warnings;
 require Sonos::MetaData;
 
 use List::Util qw(first reduce);
+use Scalar::Util qw(blessed);
 use JSON::XS;
 use File::Slurp;
-
-
 
 use constant JSON_BASENAME => "content_cache.json";
 
@@ -104,6 +103,8 @@ sub hasChildren($self, $parentid) {
 }
 
 sub children($self, $parent) {
+    $parent =  $self->item($parent) unless blessed($parent);
+
     return () unless $parent->isContainer();
     my $parentid = $parent->id();
 
@@ -131,6 +132,21 @@ sub search($self, $query) {
 sub topItem($self) {
     return $self->item("");
 }
+
+sub toJSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
+    my @elements;
+
+    if ($msearch) {
+        @elements   = $self->search($msearch);
+    } else {
+        $mpath = "" unless $mpath;
+        my $parent  = $self->item($mpath);
+        @elements   = $self->children($parent);
+    }
+
+    return map { $_->toJSON() } @elements;
+}
+
 
 
 # only items, no cache id or version info

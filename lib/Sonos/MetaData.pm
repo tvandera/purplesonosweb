@@ -167,8 +167,28 @@ sub title($self)               { return $self->prop("dc:title"); }
 sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
 
-sub name($self)                {
-
+sub toJSON($self, $player = undef) {
+    return undef unless ($self->populated());
+    return {
+        "id"          => $self->id(),
+        "name"        => $self->title(),
+        "desc"        => $self->description(),
+        "creator"     => $self->creator(),
+        "album"       => $self->album(),
+        "class"       => $self->class(),
+        "res_class"   => $self->resClass(),
+        "content"     => $self->content(),
+        "parent"      => $self->parentID(),
+        "albumart"    => $self->albumArtURI(),
+        "issong"      => JSON::bool( $self->isSong() ),
+        "isradio"     => JSON::bool( $self->isRadio() ),
+        "isalbum"     => JSON::bool( $self->isAlbum() ),
+        "isfav"       => JSON::bool( $self->isFav() ),
+        "istop"       => JSON::bool( $self->isTop() ),
+        "iscontainer" => JSON::bool( $self->isContainer() ),
+        "isplaylist"  => JSON::bool( $self->isPlaylist() ),
+        "track_num"   => int( $self->originalTrackNumber() ),
+    };
 }
 
 sub albumArtURI($self) {

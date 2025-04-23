@@ -12,8 +12,6 @@ use List::Util qw(first);
 use JSON::XS;
 use File::Slurp;
 
-
-
 sub contentDirectory($self) {
     return $self->player()->contentDirectory();
 }
@@ -43,6 +41,10 @@ sub info($self) {
     } else {
         $self->player()->log("Queue empty.");
     }
+}
+
+sub toJson($self) {
+    return map { $_->toJSON($self->player()) } $self->items();
 }
 
 
