@@ -131,6 +131,15 @@ sub contentDirectory($self)  { return $self->getService("ContentDirectory"); }
 sub queue($self)             { return $self->getService("Queue"); }
 
 
+sub toJSON($self) {
+    return {
+        "zones"  => $self->zoneGroupTopology()->toJSON(),
+        "av"     => $self->avTransport()->toJSON(),
+        "render" => $self->renderingControl()->toJSON(),
+        "queue"  => $self->queue()->toJSON()
+    }
+}
+
 sub onUpdate($self, $callback) {
     push @{$self->{_callbacks}}, $callback;
 }
