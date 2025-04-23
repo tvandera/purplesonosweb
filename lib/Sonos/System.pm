@@ -67,7 +67,7 @@ sub numPlayers($self) {
 
 sub players($self, $sorted = undef) {
     my @players = values %{$self->{_players}};
-    @players = sort Sonos::Player::cmp @players unless !$sorted;
+    @players = sort { $a->cmp($b) } @players unless !$sorted;
     return @players;
 }
 
