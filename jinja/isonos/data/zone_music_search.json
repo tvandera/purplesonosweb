@@ -1,0 +1,1 @@
+{"musiclib":{"error":"{{ music_error }}","query":"{{ music_search }}","path":"{{ music_path }}","song":[{% for _for_object_music_loop in music_loop %}{"type":"{% if music_issong %}song{% else %}container{% endif %}","arg":"{{ _for_object_music_loop.music_arg }}","name":"{{ _for_object_music_loop.music_name }}","path":"{{ _for_object_music_loop.music_path }}"},{% endfor %}]}}

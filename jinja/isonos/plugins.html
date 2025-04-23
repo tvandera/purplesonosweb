@@ -1,0 +1,17 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+	<head>
+		<title>iSONOS! Plugins</title>
+		<style type="text/css" media="all">
+			body { background: url("inc/sonosbg.jpg") center top no-repeat #fff; margin-top: 60px; font: 75% Verdana, Arial, Helvetica, sans-serif; }
+			p {padding-left:4em; margin-top:0;}
+			h2 {padding: 0; margin-bottom: 0;}
+		</style>
+	</head>
+	<body>
+		{% for _for_object_plugin_loop in plugin_loop %} 
+		<h2><a href="{{ _for_object_plugin_loop.plugin_link }}">{{ _for_object_plugin_loop.plugin_link }}</a></h2>
+		<p>{{ _for_object_plugin_loop.plugin_name }}</p>
+		{% endfor %}
+	</body>
+</html>

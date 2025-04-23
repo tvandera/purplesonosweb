@@ -1,0 +1,52 @@
+{% include "header.tmpl" %}
+
+<div id="top-labels">
+   <h4 id="currentzonename" onclick="goto('zones')">{{ ZONE_FANCYNAME }}</h4>
+   <h4 id="nowplayinglabel" onclick="goto('playing')">NOW PLAYING</h4>
+</div>
+
+<div id="music">
+    <ul id='musiclist'>
+        {% if music_path %}
+            <li class='header'>
+            <img onClick="browse('mpath={{ music_parent }}')" src='tiles/back.svg'>
+            <div>
+                <p id='musicpath'>{{ music_name }}</p>
+                <p class='artist'>{{ music_artist }}</p>
+                {% if music_isalbum %}
+                <p class='buttons'>
+                <a onclick="play('{{ music_arg }}');">Play</A> - 
+                <a onclick="add('{{ music_arg }}');">Add</A></p>
+                {% endif %}
+            </div>
+            </li>
+        {% endif %}
+        {% if music_isalbum %}
+            {% if music_albumart %}
+            <li class='albumart'><img width="200" height="200" src="{{ music_albumart }}"></li>
+            {% endif %}
+        {% endif %}
+    
+    {% for _for_object_music_loop in music_loop %} 
+        {% if music_isradio %}
+            <li onclick="play('{{ _for_object_music_loop.music_arg }}');">
+        {% else %}
+            <li onclick="browse('{{ _for_object_music_loop.music_arg }}');">
+        {% endif %}
+        {% if music_issong %}
+            <div class='trackno'>{{ _for_object_music_loop.MUSIC_TRACK_NUM }}</div>
+        {% else %}
+            <img width="44" height="44" src="{{ _for_object_music_loop.music_albumart }}">
+        {% endif %}
+        <div>
+            <p class='title'>{{ _for_object_music_loop.music_name }}</p>
+            <p class='artist'>{{ _for_object_music_loop.music_artist }}</p>
+            <p class='description'>{{ _for_object_music_loop.music_desc }}</p>
+        </div>
+    </li>
+    {% endfor %}
+
+</ul>
+</div>
+
+{% include "footer.tmpl" %}

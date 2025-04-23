@@ -1,0 +1,123 @@
+<HTML>
+<HEAD>
+<TITLE>Sonos PocketPC Control</TITLE>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+</HEAD>
+<BODY>
+
+<table width=100% cellspacing=0 cellpadding=0><tr><td>
+{% if not has_active_zone %}
+To begin, select a zone:<BR>
+{% endif %}
+{% for _for_object_zones_loop in zones_loop %}
+	{% if zone_active %}
+		<A HREF="?{{ _for_object_zones_loop.zone_arg }}"><font size=+1 color=#000000><B>{{ _for_object_zones_loop.zone_name }}</font></B></A>
+	{% else %}
+		<A HREF="?{{ _for_object_zones_loop.zone_arg }}"><font size=-1>{{ _for_object_zones_loop.zone_name }}</font></A>
+	{% endif %}
+{% endfor %}
+</td><td align=right><font size=-1><A HREF="?{{ all_arg }}">Refresh</A></FONT>
+</td></tr></table>
+<hr>
+{% if has_active_zone %}
+
+<table border=0 width=100%  cellspacing=0 cellpadding=0>
+{% if active_isradio %}
+<tr><td colspan=2><b>Radio</b></td></tr>
+<tr><td colspan=2>{{ active_name }}</td></tr>
+<tr><td colspan=2>{{ active_name }}</td></tr>
+{{ active_artist }}
+<tr><td colspan=2><font size=-1><i>Listening to: </i></font>{{ active_album }}</td></tr>
+{% else %}
+<tr>
+<tr><td colspan=2>{{ active_name }}</td>
+<td align=center valign=center rowspan=4><a href=pocketpc_now.html?zone={{ active_zoneid }}><IMG WIDTH=70 HEIGHT=70 SRC="{{ active_albumart }}"></a></td>
+</tr>
+<tr><td><font size=-1><i>by</i></font></td><td>{{ active_artist }}</td>
+</tr>
+<tr><td><font size=-1><i>from </i></font></td><td>{{ active_album }}</td></tr>
+
+{% if active_track_tot_gt_1 %}
+<tr><td></td><td><font size=-1><i>[track {{ active_track_num }} of {{ active_track_tot }}]</i></font></td></tr>
+{% endif %}
+{% endif %}
+</table>
+<HR>
+<table width=100% cellspacing=0 cellpadding=0><tr align=center>
+<td><A HREF="?{{ all_arg }}action=Previous">Prev</A>
+{% if active_playing %}
+<A HREF="?{{ all_arg }}action=Pause">Pause</A>
+{% else %}
+<A HREF="?{{ all_arg }}action=Play">Play</A>
+{% endif %}
+<A HREF="?{{ all_arg }}action=Next">Next</A>
+<br>
+{% if active_shuffle %}
+<A HREF="?{{ all_arg }}action=ShuffleOff">Shuffle</A>
+{% else %}
+<A HREF="?{{ all_arg }}action=ShuffleOn">Shuffle-Off</A>
+{% endif %}
+{% if active_repeat %}
+<A HREF="?{{ all_arg }}action=RepeatOff">Rpt</A>
+{% else %}
+<A HREF="?{{ all_arg }}action=RepeatOn">Rpt-Off</A>
+{% endif %}
+</td>
+
+<td>
+{% if active_muted %}
+<A HREF="?{{ all_arg }}action=MuteOff">Mute</A>
+{% else %}
+<A HREF="?{{ all_arg }}action=MuteOn">No-Mute</A>
+{% endif %}
+<br>
+<A HREF="?{{ all_arg }}action=MuchSofter">--</A>
+<A HREF="?{{ all_arg }}action=Softer">-</A>
+{{ active_volume }}
+<A HREF="?{{ all_arg }}action=Louder">+</A>
+<A HREF="?{{ all_arg }}action=MuchLouder">++</A>
+</td>
+</tr></table>
+<HR>
+<font size=-1>
+<A HREF="?{{ all_arg }}mpath=R:">Radio</A>
+<A HREF="?{{ all_arg }}mpath=SQ:">Playlists</A>
+<A HREF="?{{ all_arg }}mpath=A:ARTIST">Artists</A>
+<A HREF="?{{ all_arg }}mpath=A:ALBUM">Albums</A>
+<A HREF="?{{ all_arg }}mpath=A:GENRE">Genre</A>
+<A HREF="?{{ all_arg }}mpath=A:COMPOSER">Composers</A>
+<A HREF="?{{ all_arg }}mpath=S:">Folders</A>
+<A HREF="?{{ all_arg }}mpath=AI:">Line In</A>
+<FORM ACTION="?{{ all_arg }}" METHOD="get">
+<INPUT NAME=zone VALUE="{{ active_zoneid }}" TYPE=HIDDEN>
+<INPUT NAME=msearch VALUE="{{ music_search }}" TYPE=text>
+<INPUT VALUE="Search" TYPE=submit></FORM>
+</font><HR>
+{% if not music_root %}
+<B>{{ music_error }}</B>
+
+<table border=0 cellspacing=1 cellpadding=0>
+{% for _for_object_music_loop in music_loop %}
+	<tr>
+	<td><font size=-1>
+<A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=AddMusic">+</A></font></td>
+	<td><A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=PlayMusic"><font size=-1>|&gt;</font></A></td>
+    	<td>
+	{% if music_issong %}
+    		<font size=-1>{{ _for_object_music_loop.music_name }}</font>
+	{% else %}
+		<A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=Browse"><font size=-1>{{ _for_object_music_loop.music_name }}</font></A>
+    	{% endif %}
+	</td>
+	</tr>
+{% endfor %}
+</table>
+{% endif %}
+{% endif %}
+<a href=/><font size=-1>Home Page</font></A>
+<a href=/AlarmClock/index.html><font size=-1>Alarm Clock</font></A>
+<a href=/Podcasts/index.html><font size=-1>Podcasts</font></A>
+</BODY>
+</HTML>
+
