@@ -5,6 +5,8 @@ use strict;
 use warnings;
 use Carp;
 
+use URI::Escape;
+
 require JSON;
 require Types::Serialiser;
 
