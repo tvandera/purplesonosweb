@@ -168,6 +168,7 @@ sub album($self)               { return $self->prop("upnp:album"); }
 sub TO_JSON($self, $player = undef) {
     return undef unless ($self->populated());
     return {
+        "pos"         => $self->baseID(),
         "id"          => $self->id(),
         "name"        => $self->title(),
         "desc"        => $self->description(),
