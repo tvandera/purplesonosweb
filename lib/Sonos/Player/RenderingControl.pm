@@ -6,6 +6,8 @@ use v5.36;
 use strict;
 use warnings;
 
+require Types::Serialiser;
+
 sub info($self) {
     $self->log($self->shortName, ":");
     for my $channel ('Master', 'LF', 'RF') {
@@ -18,7 +20,7 @@ sub info($self) {
 sub toJSON($self) {
     return {
         "volume"     => $self->getVolume(),
-        "muted"      => $self->getMute(),
+        "muted"      => Types::Serialiser::as_bool($self->getMute()),
     }
 }
 

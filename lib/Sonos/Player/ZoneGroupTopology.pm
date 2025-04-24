@@ -6,13 +6,13 @@ use v5.36;
 use strict;
 use warnings;
 
-
 use XML::Liberal;
 use XML::LibXML::Simple qw(XMLin);
 XML::Liberal->globally_override('LibXML');
 
 use HTML::Entities;
 
+require Types::Serialiser;
 
 sub info($self) {
     my $count = 0;
@@ -33,26 +33,11 @@ sub info($self) {
 
 sub toJSON($self) {
     return {
-        "icon"       => $self->icon(),
-        "groupname"  => $self->friendlyName(),
-
-        "linked"      => ! $self->isCoordinator(),
-        "num_members" => $self->numMembers(),
-        "link"        => $self->coordinator()->UDN(),
-        "link_name"   => $self->coordinator()->friendlyName(),
-
-        "members" => [
-            map {
-                my $uuid = $_->{"UUID"};
-                {
-                    "name"   => $self->zoneName($uuid),
-                    "id"     => $uuid,
-                    "linked" => int( ! $self->isCoordinator($uuid) ),
-                    "icon"   => $self->icon($uuid),
-                    "img"    => "icons" . $self->icon($uuid) . ".png",
-                }
-            } $self->members()
-        ]
+        "icon"        => $self->icon(),
+        "name"        => $self->friendlyName(),
+        "coordinator" => $self->coordinator()->UDN(),
+        "is_coord"    => Types::Serialiser::as_bool($self->isCoordinator()),
+        "members"     => [ $self->memberUUIDs() ]
     };
 }
 
@@ -103,6 +88,10 @@ sub members($self, $uuid = undef) {
 
     my ($coordinator, $members) = $self->zoneGroupInfo($uuid);
     return @$members;
+}
+
+sub memberUUIDs($self, $uuid = undef) {
+    return map { $_->{"UUID"} } $self->members($uuid);
 }
 
 sub numMembers($self, $uuid = undef ) {
