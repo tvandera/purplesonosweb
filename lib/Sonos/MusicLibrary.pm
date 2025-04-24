@@ -133,7 +133,7 @@ sub topItem($self) {
     return $self->item("");
 }
 
-sub toJSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
+sub TO_JSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
     my @elements;
 
     if ($msearch) {
@@ -144,7 +144,7 @@ sub toJSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
         @elements   = $self->children($parent);
     }
 
-    return [ map { $_->toJSON() } @elements ];
+    return [ map { $_->TO_JSON() } @elements ];
 }
 
 

@@ -31,7 +31,7 @@ sub info($self) {
     }
 }
 
-sub toJSON($self) {
+sub TO_JSON($self) {
     return {
         "icon"        => $self->icon(),
         "name"        => $self->friendlyName(),

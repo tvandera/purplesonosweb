@@ -165,7 +165,7 @@ sub title($self)               { return $self->prop("dc:title"); }
 sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
 
-sub toJSON($self, $player = undef) {
+sub TO_JSON($self, $player = undef) {
     return undef unless ($self->populated());
     return {
         "id"          => $self->id(),

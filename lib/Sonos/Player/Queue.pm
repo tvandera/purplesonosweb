@@ -43,8 +43,8 @@ sub info($self) {
     }
 }
 
-sub toJSON($self) {
-    return [ map { $_->toJSON($self->player()) } $self->items() ];
+sub TO_JSON($self) {
+    return [ map { $_->TO_JSON($self->player()) } $self->items() ];
 }
 
 

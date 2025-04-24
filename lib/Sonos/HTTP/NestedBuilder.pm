@@ -75,7 +75,7 @@ sub to_json {
 
 
 sub build_item_data($self, $item, $player = undef) {
-    return $item->toJSON($player);
+    return $item->TO_JSON($player);
 }
 
 sub build_none_data($self) {
@@ -93,7 +93,7 @@ sub build_zones_data($self) {
 sub build_zone_data($self, $player = undef) {
     $player = $self->player() unless $player;
     return {} unless $player;
-    return $player->toJSON();
+    return $player->TO_JSON();
 }
 
 sub build_info_data {
@@ -104,14 +104,14 @@ sub build_info_data {
 sub build_queue_data($self) {
     my $player = $self->player();
     return {} unless $player;
-    return $player->queue()->toJSON();
+    return $player->queue()->TO_JSON();
 }
 
 sub build_music_data($self) {
     my $music   = $self->system()->musicLibrary();
     my $mpath   = $self->qf("mpath", "");
     my $msearch = $self->qf("msearch");
-    return $music->toJSON($mpath, $msearch);
+    return $music->TO_JSON($mpath, $msearch);
 }
 
 sub build_globals_data($self) {

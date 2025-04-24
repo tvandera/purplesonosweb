@@ -131,12 +131,12 @@ sub contentDirectory($self)  { return $self->getService("ContentDirectory"); }
 sub queue($self)             { return $self->getService("Queue"); }
 
 
-sub toJSON($self) {
+sub TO_JSON($self) {
     return {
-        "zones"  => $self->zoneGroupTopology()->toJSON(),
-        "av"     => $self->avTransport()->toJSON(),
-        "render" => $self->renderingControl()->toJSON(),
-        "queue"  => $self->queue()->toJSON()
+        "zones"  => $self->zoneGroupTopology()->TO_JSON(),
+        "av"     => $self->avTransport()->TO_JSON(),
+        "render" => $self->renderingControl()->TO_JSON(),
+        "queue"  => $self->queue()->TO_JSON()
     }
 }
 
