@@ -6,6 +6,7 @@ use warnings;
 use Carp;
 
 require JSON;
+require Types::Serialiser;
 
 use List::MoreUtils qw(zip);
 
@@ -177,13 +178,13 @@ sub toJSON($self, $player = undef) {
         "content"     => $self->content(),
         "parent"      => $self->parentID(),
         "albumart"    => $self->albumArtURI(),
-        "issong"      => JSON->boolean( $self->isSong() ),
-        "isradio"     => JSON->boolean( $self->isRadio() ),
-        "isalbum"     => JSON->boolean( $self->isAlbum() ),
-        "isfav"       => JSON->boolean( $self->isFav() ),
-        "istop"       => JSON->boolean( $self->isTop() ),
-        "iscontainer" => JSON->boolean( $self->isContainer() ),
-        "isplaylist"  => JSON->boolean( $self->isPlaylist() ),
+        "issong"      => Types::Serialiser::as_bool( $self->isSong() ),
+        "isradio"     => Types::Serialiser::as_bool( $self->isRadio() ),
+        "isalbum"     => Types::Serialiser::as_bool( $self->isAlbum() ),
+        "isfav"       => Types::Serialiser::as_bool( $self->isFav() ),
+        "istop"       => Types::Serialiser::as_bool( $self->isTop() ),
+        "iscontainer" => Types::Serialiser::as_bool( $self->isContainer() ),
+        "isplaylist"  => Types::Serialiser::as_bool( $self->isPlaylist() ),
         "track_num"   => int( $self->originalTrackNumber() ),
     };
 }
