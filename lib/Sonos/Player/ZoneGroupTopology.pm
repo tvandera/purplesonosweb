@@ -35,9 +35,9 @@ sub TO_JSON($self) {
     return {
         "icon"        => $self->icon(),
         "name"        => $self->friendlyName(),
-        "coordinator" => $self->coordinator()->UDN(),
+        "coordinator" => $self->coordinator()->zoneName(),
         "is_coord"    => Types::Serialiser::as_bool($self->isCoordinator()),
-        "members"     => [ $self->memberUUIDs() ]
+        "members"     => [ $self->memberNames() ]
     };
 }
 
@@ -72,7 +72,6 @@ sub allZones($self) {
 
 sub coordinator($self) {
     return $self->player($self->{_mycoordinator});
-
 }
 
 sub isCoordinator($self, $uuid = undef) {
@@ -90,8 +89,8 @@ sub members($self, $uuid = undef) {
     return @$members;
 }
 
-sub memberUUIDs($self, $uuid = undef) {
-    return map { $_->{"UUID"} } $self->members($uuid);
+sub memberNames($self, $uuid = undef) {
+    return map { $_->{ZoneName} } $self->members($uuid);
 }
 
 sub numMembers($self, $uuid = undef ) {

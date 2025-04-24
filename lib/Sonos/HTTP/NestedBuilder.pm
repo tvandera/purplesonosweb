@@ -31,7 +31,10 @@ sub new {
         _json => JSON->new(),
     }, $class;
 
-    $self->{"_json"}->pretty(1)->canonical(1);
+    $self->{"_json"}
+        ->pretty(1)
+        ->canonical(1)
+        ->convert_blessed(1);
 
     return $self;
 }
@@ -84,8 +87,7 @@ sub build_none_data($self) {
 
 ###############################################################################
 sub build_zones_data($self) {
-    my @zones = map { $self->build_zone_data( $_ ) } $self->players();
-    return { "zones" => \@zones };
+    return { map { $_->zoneName() => $self->build_zone_data( $_ ) } $self->players() };
 }
 
 
@@ -94,10 +96,6 @@ sub build_zone_data($self, $player = undef) {
     $player = $self->player() unless $player;
     return {} unless $player;
     return $player->TO_JSON();
-}
-
-sub build_info_data {
-    return build_zone_data @_;
 }
 
 ###############################################################################
