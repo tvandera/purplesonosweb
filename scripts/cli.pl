@@ -7,6 +7,7 @@ use JSON::Path;
 use URI::Escape;
 use HTML::Entities;
 use Text::Table;
+use Encode qw(decode encode);
 
 binmode STDOUT, ":encoding(UTF-8)";
 
@@ -18,14 +19,16 @@ sub dispatch {
     my @global = qw(music search all zones);
     my @per_zone = qw(queue zone);
 
-    global_info("zones") if !scalar @ARGV;
-    global_info(@ARGV) if (grep { $_ eq $ARGV[0] } @global);
+    return global_info("zones") if !scalar @ARGV;
+    return global_info(@ARGV) if (grep { $_ eq $ARGV[0] } @global);
 
     my ($zone, $command, @args) = @ARGV;
     usage() unless $zone && $command;
 
-    zone_info($zone, $command, @args) if (grep { $_ eq $command } @per_zone);
-    zone_command($zone, $command, @args) if (grep { $_ eq $command } @actions);
+    return zone_info($zone, $command, @args) if (grep { $_ eq $command } @per_zone);
+    return zone_command($zone, $command, @args) if (grep { $_ eq $command } @actions);
+
+    return usage();
 }
 
 sub global_info {
@@ -50,6 +53,7 @@ sub zone_info {
     my ( $zone, $what, @args ) = @_;
     my %params = ("zone" => $zone, "what" => $what);
     my $json = do_request(%params);
+    show_info($what, $json);
 }
 
 sub zone_command {
@@ -78,8 +82,15 @@ sub do_request {
     my $res = $ua->get($url);
     die "Request failed: " . $res->status_line unless $res->is_success;
 
-    my $json = decode_json($res->decoded_content);
-    return $json;
+    # my $raw = $res->decoded_content(charset => 'none');  # gets raw bytes, no decoding
+    # binmode(STDOUT, ":encoding(UTF-8)");
+    # use Data::Dumper;
+    # print Dumper(substr($raw, 0, 100));
+    # my $decoded = decode('Windows-1252', $raw, Encode::FB_CROAK);
+    # print Dumper(substr($decoded, 0, 100));
+
+    my $decoded = $res->decoded_content();
+    return decode_json($decoded);
 }
 
 # --- Output formatting ---
@@ -87,16 +98,23 @@ sub show_info {
     my ( $command, $json ) = @_;
 
     my %field_map = (
-        "queue" => [ qw(class name artist album streamContent) ],
-        "music" => [ '$..name' ],
-        "zones" => [ qw(zone/name active_state active_name)],
+        "queue" => [ qw(pos id name creator album class) ],
+        "music" => [ qw(id name) ],
+        "zones" => [ '$.*.zone.name', '$.*.av.transport_state'],
+    );
+
+    my %sort_functions = (
+        "queue" => sub { $a->[0] <=> $b->[0] },
+        "music" => sub { $a->[0] cmp $b->[0] },
+        "zones" => sub { $a->[0] cmp $b->[0] },
     );
 
     print $command, ":\n", to_json($json, { pretty => 1 });
 
-    my @fields = $field_map{$command};
-    if (@fields) {
-        print_table($command, $json, \@fields)
+    my $fields = $field_map{$command};
+    my $sorter = $sort_functions{$command};
+    if ($fields) {
+        print_table($command, $json, $fields, $sorter);
     } elsif ($command eq 'zone') {
         printf "Zone: %s | Volume: %d | Muted: %s | State: %s\n",
             $json->{zone}->{name},
@@ -110,22 +128,16 @@ sub show_info {
 }
 
 sub print_table {
-    my ($title, $data, $cols) = @_;
-    return unless @$data;
-
-    #all cols if none specificied
-    $cols = [ sort keys %{ $data->[0] } ] unless $cols;
-
+    my ($title, $json, $cols, $sorter) = @_;
+    my @paths = map { JSON::Path->new($_ =~ m/^\$/ ? $_  : '$.*.' . $_ ) } @$cols;
+    my @values = map { [ $_->values($json) ] } @paths;
+    my @transposed = map { my $i = $_; [ map $_->[$i], @values ] } 0..$#{$values[0]};
+    @transposed = sort $sorter @transposed;
     my $separator =  \' | ';
-    my @headers = map { $separator, $_ } @$cols, $separator;
+    my @headers = map { (split /\./)[-1] } @$cols;
+    @headers = map { $separator, $_ } @headers, $separator;
 
-    my $tb = Text::Table->new(@headers);
-    for my $row (@$data) {
-        print "row = ", %$row, "\n";
-        my @values = map { decode_entities( $row->{$_} ) // '' } @$cols;
-        print("values = ", @values, "\n");
-        $tb->add(@values);
-    }
+    my $tb = Text::Table->new(@headers)->load(@transposed);
     print "\n=== $title ===\n";
     print $tb;
 }
