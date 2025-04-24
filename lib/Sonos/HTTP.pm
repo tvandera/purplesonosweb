@@ -397,7 +397,7 @@ sub rest_api($self, $r) {
 
         my $response = HTTP::Response->new( 200 );
         $response->add_content( $json );
-        $response->content_type( "application/json" );
+        $response->content_type( "application/json; charset=UTF-8" );
         $response->content_length( length $response->content );
         $r->respond( $response );
     });

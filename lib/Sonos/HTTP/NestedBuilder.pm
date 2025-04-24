@@ -34,7 +34,8 @@ sub new {
     $self->{"_json"}
         ->pretty(1)
         ->canonical(1)
-        ->convert_blessed(1);
+        ->convert_blessed(1)
+        ->utf8(1);
 
     return $self;
 }
