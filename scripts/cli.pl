@@ -98,23 +98,16 @@ sub show_info {
     my ( $command, $json ) = @_;
 
     my %field_map = (
-        "queue" => [ qw(pos id name creator album class) ],
+        "queue" => [ qw(id name creator album class) ],
         "music" => [ qw(id name) ],
-        "zones" => [ '$.*.zone.name', '$.*.av.transport_state'],
-    );
-
-    my %sort_functions = (
-        "queue" => sub { $a->[0] <=> $b->[0] },
-        "music" => sub { $a->[0] cmp $b->[0] },
-        "zones" => sub { $a->[0] cmp $b->[0] },
+        "zones" => [ qw(zone.name av.transport_state) ],
     );
 
     print $command, ":\n", to_json($json, { pretty => 1 });
 
     my $fields = $field_map{$command};
-    my $sorter = $sort_functions{$command};
     if ($fields) {
-        print_table($command, $json, $fields, $sorter);
+        print_table($command, $json, $fields);
     } elsif ($command eq 'zone') {
         printf "Zone: %s | Volume: %d | Muted: %s | State: %s\n",
             $json->{zone}->{name},
@@ -127,17 +120,25 @@ sub show_info {
     }
 }
 
-sub print_table {
-    my ($title, $json, $cols, $sorter) = @_;
-    my @paths = map { JSON::Path->new($_ =~ m/^\$/ ? $_  : '$.*.' . $_ ) } @$cols;
-    my @values = map { [ $_->values($json) ] } @paths;
-    my @transposed = map { my $i = $_; [ map $_->[$i], @values ] } 0..$#{$values[0]};
-    @transposed = sort $sorter @transposed;
-    my $separator =  \' | ';
-    my @headers = map { (split /\./)[-1] } @$cols;
-    @headers = map { $separator, $_ } @headers, $separator;
+sub multi_select_jsonpath {
+    my ($data, $base_path, $fields) = @_;
+    my @rows = JSON::Path->new($base_path)->values($data);
+    return [
+        map {
+            my $row = $_;
+            my @values = map { JSON::Path->new($_)->value($row) } @$fields;
+            [ @values ];
+        } @rows
+    ];
+}
 
-    my $tb = Text::Table->new(@headers)->load(@transposed);
+sub print_table {
+    my ($title, $json, $cols) = @_;
+    my $rows = multi_select_jsonpath($json, '$.*', $cols);
+    my $separator =  \' | ';
+    my @headers = map { $separator, $_ } @$cols, $separator;
+
+    my $tb = Text::Table->new(@headers)->load(@$rows);
     print "\n=== $title ===\n";
     print $tb;
 }
