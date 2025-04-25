@@ -38,9 +38,8 @@ sub global_info {
     if ($what eq 'search') {
         usage("Missing search term") unless defined $args[0];
         $params{msearch} = $args[0];
-    }
-
-    if ($what eq 'music') {
+        $params{what} = "music";
+    } elsif ($what eq 'music') {
         $params{mpath} = $args[0] ? $args[0] : "";
     }
 
@@ -99,7 +98,8 @@ sub show_info {
 
     my %field_map = (
         "queue" => [ qw(id name creator album class) ],
-        "music" => [ qw(id name) ],
+        "music" => [ qw(name class creator album) ],
+        "search"=> [ qw(name class creator album) ],
         "zones" => [ qw(zone.name av.transport_state) ],
     );
 
@@ -139,7 +139,7 @@ sub print_table {
     my @headers = map { $separator, $_ } @$cols, $separator;
 
     my $tb = Text::Table->new(@headers)->load(@$rows);
-    print "\n=== $title ===\n";
+    print "\n   === $title ===\n";
     print $tb;
 }
 
