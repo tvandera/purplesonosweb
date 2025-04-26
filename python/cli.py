@@ -3,6 +3,7 @@ import sys
 import requests
 import urllib.parse
 from tabulate import tabulate
+from glom import glom
 
 BASE_URL = "http://127.0.0.1:9999/api"
 
@@ -29,12 +30,19 @@ def do_request(**params):
 
 
 def show_info(what, data):
-    if isinstance(data, list) and data and isinstance(data[0], dict):
-        keys = sorted(set().union(*(d.keys() for d in data)))
-        table = [[str(row.get(k, "")) for k in keys] for row in data]
-        print(tabulate(table, headers=keys, tablefmt="grid"))
-    else:
-        print(data)
+    specs = {
+        "queue" : ([{
+            'pos' : 'pos',
+            'title' : 'name',
+            'album' : 'album',
+            'artist' : 'creator'
+        }]),
+    }
+
+    from pprint import pprint
+    if what in specs:
+        rows = glom(data, specs[what])
+        print(tabulate(rows, headers="keys"))
 
 
 def global_info(what, *args):
@@ -65,7 +73,7 @@ def zone_command(zone, command, *args):
     do_request(**params)
 
 
-def dispatch():
+def main():
     actions = {"play", "pause", "stop", "next", "previous", "volume", "mute", "unmute"}
     global_cmds = {"music", "search", "all", "zones"}
     per_zone = {"queue", "zone"}
@@ -90,8 +98,4 @@ def dispatch():
 
 
 if __name__ == "__main__":
-    try:
-        dispatch()
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    main()

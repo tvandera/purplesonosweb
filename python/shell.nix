@@ -5,6 +5,7 @@ in pkgs.mkShell {
     (pkgs.python3.withPackages (python-pkgs: [
       python-pkgs.requests
       python-pkgs.tabulate
+      python-pkgs.glom
     ]))
   ];
 }
