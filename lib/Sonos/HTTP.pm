@@ -40,12 +40,12 @@ sub new {
 
 
     # HTTP Handlers
-    $self->register_handler("/getaa", sub { $self->send_albumart_response(@_) });
-    $self->register_handler("/hello", sub { $self->send_hello(@_) });
-    $self->register_handler("/api", sub { $self->rest_api(@_) });
+    $self->registerHandler("/getaa", sub { $self->sendAlbumartResponse(@_) });
+    $self->registerHandler("/hello", sub { $self->sendHello(@_) });
+    $self->registerHandler("/api", sub { $self->restAPI(@_) });
 
     my $httpserver = Net::Async::HTTP::Server->new(
-        on_request => sub { $self->handle_request(@_); }
+        on_request => sub { $self->handleRequest(@_); }
     );
 
     $loop->add( $httpserver );
@@ -97,13 +97,13 @@ sub log($self, @args) {
 }
 
 
-sub register_handler($self, $path, $callback) {
+sub registerHandler($self, $path, $callback) {
     $self->{_handlers}->{$path} = $callback;
 }
 
 sub validateRequest($self, $r) {
    unless ($self->system() and $self->system()->populated()) {
-        return $self->send_error($r, 501, "Waiting for discovery");
+        return $self->sendError($r, 501, "Waiting for discovery");
     }
 
     my %qf     = $r->query_form;
@@ -112,34 +112,34 @@ sub validateRequest($self, $r) {
     if (exists $qf{zone}) {
         my $zone   = $qf{zone};
         $player = $self->player($zone);
-        return $self->send_error($r, 404, "No such player: $zone") unless $player;
+        return $self->sendError($r, 404, "No such player: $zone") unless $player;
     }
 
     if (exists $qf{mpath}) {
         my $path = decode( "UTF-8", $qf{mpath} );
         my $item = $self->system()->musicLibrary()->item($path);
-        return $self->send_error($r, 404, "No such music item: $path") unless $item;
+        return $self->sendError($r, 404, "No such music item: $path") unless $item;
     }
 
 
     if (exists $qf{queue}) {
         my $path = decode( "UTF-8", $qf{queue} );
-        return $self->send_error($r, 404, "queue=$path requires a zone=") unless $player;
+        return $self->sendError($r, 404, "queue=$path requires a zone=") unless $player;
 
         my $item = $player->queue()->item($path);
-        return $self->send_error($r, 404, "No such queue item: $path") unless $item;
+        return $self->sendError($r, 404, "No such queue item: $path") unless $item;
     }
 
     if (exists $qf{what}) {
         my $what = $qf{what};
         my @allowed_requests = qw(globals music zones zone info queue none all);
         unless (grep { $what eq $_ } @allowed_requests) {
-            return $self->send_error($r, 404, "Request \"$what\" unknown. Known: " . (join ", ", @allowed_requests));
+            return $self->sendError($r, 404, "Request \"$what\" unknown. Known: " . (join ", ", @allowed_requests));
         }
 
         my @requires_zone = qw(zone queue);
         if ((grep { $what eq $_ } @requires_zone) && !$player) {
-            return $self->send_error($r, 404, "Request \"$what\" requires a zone= argument");
+            return $self->sendError($r, 404, "Request \"$what\" requires a zone= argument");
         }
     }
 
@@ -150,7 +150,7 @@ sub validateAction($self, $r, $dispatch) {
     my $action = lc $qf{action};
 
     unless (exists $dispatch->{$action}) {
-        return $self->send_error($r, 404, "Unknown action \"$action\"");
+        return $self->sendError($r, 404, "Unknown action \"$action\"");
     }
 
     my ($service, $code, @needs) = @{$dispatch->{$action}};
@@ -159,14 +159,14 @@ sub validateAction($self, $r, $dispatch) {
     @needs = grep { $_ ne "nozone" } @needs;
 
     for (@needs) {
-        return $self->send_error($r, 404, "Action \"$action\" requires a $_= argument")
+        return $self->sendError($r, 404, "Action \"$action\" requires a $_= argument")
             unless (exists $qf{$_});
     }
 
     return 0;
 }
 
-sub handle_request($self, $server, $r) {
+sub handleRequest($self, $server, $r) {
     my $path  = $r->path;
     my %qf   = $r->query_form;
 
@@ -182,26 +182,26 @@ sub handle_request($self, $server, $r) {
 
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         my $redirect = $self->defaultPage;
-        return $self->send_redirect($r, $redirect);
+        return $self->sendRedirect($r, $redirect);
     }
 
     # Find where on disk
     my $diskpath = $self->diskpath($path);
-    return $self->send_error($r, HTTP::Status::RC_NOT_FOUND, "Could not find $diskpath") unless -e $diskpath;
+    return $self->sendError($r, HTTP::Status::RC_NOT_FOUND, "Could not find $diskpath") unless -e $diskpath;
 
     # File is a directory, redirect for the browser
     if ( -d $diskpath ) {
         my $redirect = catfile($path, "index.html");
-        return $self->send_redirect($r, $redirect);
+        return $self->sendRedirect($r, $redirect);
     }
 
     # File isn't HTML/XML/JSON/JS, just send it back raw
     if (  $path !~ /\.(html|xml|js|json)$/ )
     {
-        return $self->send_file_response($r, $diskpath);
+        return $self->sendFileResponse($r, $diskpath);
     }
 
-    $self->action($r, sub { $self->send_tmpl_response($r, $diskpath) });
+    $self->action($r, sub { $self->sendTemplateResponse($r, $diskpath) });
 }
 
 ###############################################################################
@@ -308,7 +308,7 @@ sub action {
 }
 
 ###############################################################################
-sub send_tmpl_response($self, $r, $diskpath) {
+sub sendTemplateResponse($self, $r, $diskpath) {
     my %qf = $r->query_form;
 
     # One of our templates, now fill in the parts we know
@@ -327,11 +327,11 @@ sub send_tmpl_response($self, $r, $diskpath) {
     $r->respond($response);
 }
 
-sub send_albumart_response($self, $r) {
+sub sendAlbumartResponse($self, $r) {
     my $uri =  $r->as_http_request()->uri();
     my ($sha, $mime_type, $blob, $filename) = $self->system()->albumArtCache()->get($uri);
 
-    return $self->send_error($r, 404, "Album art not found")
+    return $self->sendError($r, 404, "Album art not found")
         unless defined($blob);
 
     my $content_length = length $blob;
@@ -345,7 +345,7 @@ sub send_albumart_response($self, $r) {
     return 1;
 }
 
-sub send_file_response($self, $r, $diskpath) {
+sub sendFileResponse($self, $r, $diskpath) {
     my $blob = read_file($diskpath);
     my $content_length = length $blob;
     my $mime_type = $self->mimeTypeOf($diskpath);
@@ -359,7 +359,7 @@ sub send_file_response($self, $r, $diskpath) {
     return 1;
 }
 
-sub send_redirect($self, $r, $to) {
+sub sendRedirect($self, $r, $to) {
     my $response = HTTP::Response->new(301, undef, ["Location" => $to,"Content-Length" => 0]);
     $r->respond( $response );
     $self->log("  redirect to $to");
@@ -367,7 +367,7 @@ sub send_redirect($self, $r, $to) {
     return 1;
 }
 
-sub send_error($self, $r, $code, $message = undef) {
+sub sendError($self, $r, $code, $message = undef) {
     my $response = HTTP::Response->new($code, $message, ["Content-Length" => 0]);
     $r->respond( $response );
     $self->log("  error: $code ($message)");
@@ -375,7 +375,7 @@ sub send_error($self, $r, $code, $message = undef) {
     return 1;
 }
 
-sub send_hello($self, $req) {
+sub sendHello($self, $req) {
     my $response = HTTP::Response->new( 200 );
     $response->add_content( "Hello, world!\n" );
     $response->content_type( "text/plain" );
@@ -385,7 +385,7 @@ sub send_hello($self, $req) {
     return 1;
 }
 
-sub rest_api($self, $r) {
+sub restAPI($self, $r) {
     $self->action($r, sub {
         my %qf = $r->query_form;
         my $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
