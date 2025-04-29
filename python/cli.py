@@ -3,7 +3,7 @@ import sys
 import requests
 import urllib.parse
 from tabulate import tabulate
-from glom import glom
+from glom import glom, T
 
 BASE_URL = "http://127.0.0.1:9999/api"
 
@@ -31,18 +31,31 @@ def do_request(**params):
 
 def show_info(what, data):
     specs = {
-        "queue" : ([{
+        "search" : ( T.values(), [{
+            'id' : 'id',
+            'title' : 'name',
+            'class' : 'class',
+            'album' : 'album',
+            'artist' : 'creator'
+        }]),
+        "queue" : [{
             'pos' : 'pos',
             'title' : 'name',
             'album' : 'album',
             'artist' : 'creator'
-        }]),
+        }],
+        "zones" : (T.values(), [
+            { 'name' : 'zone.name',
+              'state' : 'av.transport_state',
+              'volume' : 'render.volume',
+            },
+        ]),
     }
 
     from pprint import pprint
-    if what in specs:
-        rows = glom(data, specs[what])
-        print(tabulate(rows, headers="keys"))
+    pprint(data)
+    rows = glom(data, specs[what])
+    print(tabulate(rows, headers="keys"))
 
 
 def global_info(what, *args):
@@ -50,7 +63,7 @@ def global_info(what, *args):
     if what == "search":
         if not args:
             usage("Missing search term")
-        params["search"] = args[0]
+        params["msearch"] = args[0]
         params["what"] = "music"
     elif what == "music":
         params["mpath"] = args[0] if args else ""
