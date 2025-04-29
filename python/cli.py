@@ -32,7 +32,7 @@ def do_request(**params):
 def show_info(what, data):
     specs = {
         "search" : ( T.values(), [{
-            'id' : 'id',
+            'id' : ( 'id', T[0:20] ),
             'title' : 'name',
             'class' : 'class',
             'album' : 'album',
