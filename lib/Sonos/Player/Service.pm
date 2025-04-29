@@ -55,7 +55,10 @@ sub renewSubscription($self) {
     my $sub = $self->getSubscription();
     if (defined $sub) {
         $sub->renew();
-    } else {
+    }
+
+    # if the above failed, try to subscribe again
+    if (!$sub || $sub->expired()) {
         my $service = $self->getUPnP();
         $self->{_subscription} = $service->subscribe( sub { $self->processUpdate(@_); }  ) or
             carp("Could not subscribe to \"" . $self->fullName() . "\"");
