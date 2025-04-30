@@ -287,7 +287,7 @@ sub resClass($self) {
 # used for sorting and indexing Queue items
 sub baseID($self) {
     my $full_id = $self->prop("id");
-    return unless $full_id;
+    return "" unless $full_id;
     my @parts = split( /\//, $full_id);
     return $parts[-1];
 }
