@@ -300,9 +300,11 @@ sub action {
 
     my $nowait = !$code->() || $qf{nowait};
 
-    # delay send_tmpl, or do immediately
+    # do immediately if $nowait
     return $do_after->() if ($nowait);
 
+    # delay the response until the action
+    # has taken effect
     $service->onUpdate($do_after);
 }
 
