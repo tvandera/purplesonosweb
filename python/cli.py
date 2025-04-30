@@ -4,6 +4,7 @@ import requests
 import urllib.parse
 from tabulate import tabulate
 from glom import glom, T
+from pprint import pprint
 
 BASE_URL = "http://127.0.0.1:9999/api"
 
@@ -32,7 +33,7 @@ def do_request(**params):
 def show_info(what, data):
     specs = {
         "search" : ( T.values(), [{
-            'id' : ( 'id', T[0:20] ),
+            'id' : 'id',
             'title' : 'name',
             'class' : 'class',
             'album' : 'album',
@@ -53,7 +54,11 @@ def show_info(what, data):
     }
 
     rows = glom(data, specs[what])
-    print(tabulate(rows, headers="keys"))
+    if len(rows) == 1:
+        pprint(rows[0])
+    else:
+        for r in rows: r["id"] = r["id"][0:20]
+        print(tabulate(rows, headers="keys"))
 
 
 def global_info(what, *args):
@@ -76,7 +81,7 @@ def zone_info(zone, what, *args):
 
 
 def zone_command(zone, command, *args):
-    params = {"zone": zone, "action": command}
+    params = {"zone": zone, "action": command, "nowait": "1"}
     if command == "volume":
         if not args:
             usage("Missing volume level")
