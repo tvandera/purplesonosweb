@@ -17,7 +17,7 @@ def usage(msg=None):
     print("  cli.py zones")
     print("  cli.py <zone> queue")
     print("  cli.py <zone> zone")
-    print("  cli.py <zone> play|pause|stop|next|previous|volume <val>|mute|unmute")
+    print("  cli.py <zone> start|pause|stop|next|previous|volume <val>|mute|unmute")
     sys.exit(1)
 
 
@@ -52,8 +52,6 @@ def show_info(what, data):
         ]),
     }
 
-    from pprint import pprint
-    pprint(data)
     rows = glom(data, specs[what])
     print(tabulate(rows, headers="keys"))
 
@@ -87,7 +85,7 @@ def zone_command(zone, command, *args):
 
 
 def main():
-    actions = {"play", "pause", "stop", "next", "previous", "volume", "mute", "unmute"}
+    actions = {"start", "pause", "stop", "next", "previous", "volume", "mute", "unmute"}
     global_cmds = {"music", "search", "all", "zones"}
     per_zone = {"queue", "zone"}
 

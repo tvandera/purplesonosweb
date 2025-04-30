@@ -100,7 +100,7 @@ sub isPlaying($self) { return $self->stateIs("PLAYING"); }
 sub isPaused($self) { return $self->stateIs("PAUSED_PLAYBACK"); }
 sub isStopped($self) { return $self->stateIs("STOPPED"); }
 
-sub play($self) {
+sub start($self) {
     return 0 if $self->isPlaying();
     return $self->action("Play", "1");
 }

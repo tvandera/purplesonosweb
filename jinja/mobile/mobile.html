@@ -83,7 +83,7 @@ Regex:
 {% if not music_root %}
 <B>{{ music_error }}</B>
 {% for _for_object_music_loop in music_loop %}
-    <A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=AddMusic">+</A>
+    <A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=add">+</A>
     <A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=PlayMusic">|&gt;</A>
     {% if music_issong %}
     {{ _for_object_music_loop.music_name }}

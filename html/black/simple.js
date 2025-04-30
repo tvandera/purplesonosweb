@@ -98,7 +98,7 @@ function send(cmd, what = "none", onload = null) {
 function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
 function seek(to) { window.location.href = "queue.html?" + zone_arg + "action=Seek&" + music_arg + to; }
 function play(music_arg){ send("PlayMusic&" + music_arg); goto("playing"); }
-function add(music_arg){ send("AddMusic&" + music_arg); goto("playing"); }
+function add(music_arg){ send("add&" + music_arg); goto("playing"); }
 
 function softer() {
    send('MuchSofter');

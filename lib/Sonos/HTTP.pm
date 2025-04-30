@@ -233,7 +233,7 @@ sub action {
     my $qitem = $player->queue()->item($qpath) if $qpath and $player;
 
     my $dispatch = {
-        "play"       => [ $av, sub { $av->play() } ],
+        "start"      => [ $av, sub { $av->start() } ],
         "pause"      => [ $av, sub { $av->pause() } ],
         "stop"       => [ $av, sub { $av->stop() } ],
 
@@ -259,7 +259,7 @@ sub action {
         "removeall"   => [ $av, sub {
             $av->removeAllTracksFromQueue();
         } ],
-        "addmusic"    => [ $av, sub {
+        "add"    => [ $av, sub {
             $av->addToQueue($qf{mpath}, 1);
          }, "mpath", ],
         "playmusic"   => [ $av, sub {

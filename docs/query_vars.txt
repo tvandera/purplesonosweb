@@ -34,7 +34,7 @@ action: any of
 
         # queue
         "RemoveAll"
-        "AddMusic"
+        "add"
         "PlayMusic"
         "DeleteMusic"
         "Save"

@@ -1,4 +1,4 @@
-/* Sample Sonos JS App. 
+/* Sample Sonos JS App.
  * sonos.js must be included before this file
  *
  * It makes some big assumptions how things will be done.
@@ -166,7 +166,7 @@ function drawZones() {
         if (app.currentZoneId == zone.zone_id) str += "<b>";
 
         str += "<li style='background-image: url(zone_icons/" + zone.zone_icon + ".png);'>" + zone.zone_name;
-        
+
         if (zone.zone_linked) {
             str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone.zone_id+"')\">[U]</a>";
         } else if (app.currentZoneId && app.currentZoneId != zone.zone_id) {
@@ -216,7 +216,7 @@ function drawControl(zoneId) {
 function drawQueue(zoneId) {
     if (zoneId != app.currentZoneId) return;
     if (!sonos.queues[zoneId]) return;
-    var queue = sonos.queues[zoneId]; 
+    var queue = sonos.queues[zoneId];
     var cur_track = curZoneInfo().active_track_num;
     var zone_paused = curZoneInfo().active_paused_playback;
     var zone_playing = curZoneInfo().active_playing;
@@ -268,8 +268,8 @@ function drawMusic(path) {
         str.push("<img onClick='browseBack()' src='tiles/back.svg'>");
         str.push("<div><p id='musicpath'>" + info.music_name + "</p>");
         if (info.MUSIC_ARTIST) str.push("<p class='artist'>" + info.MUSIC_ARTIST + "</p>");
-        if (info.MUSIC_CLASS == "object.container.album.musicAlbum") { 
-            str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"AddMusic\", \"" + path + "\");'>Add</A></p>");
+        if (info.MUSIC_CLASS == "object.container.album.musicAlbum") {
+            str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"add\", \"" + path + "\");'>Add</A></p>");
         }
         str.push("</div></li>");
 
@@ -277,18 +277,18 @@ function drawMusic(path) {
             str.push("<li class='albumart'><img onerror='this.src=\"tiles/missingaa_lite.svg\";' src='" + info.music_albumart + "'></li>");
         }
     }
-  
+
     // container items
     for (i=0; i < info.music_loop.length; i++) {
         var item = info.music_loop[i];
-        path = decodeURIComponent(item.MUSIC_REALPATH); 
+        path = decodeURIComponent(item.MUSIC_REALPATH);
         str.push("<li");
         if (item.MUSIC_REALCLASS == "object.item.audioItem.audioBroadcast")
             str.push(" onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>");
-        else 
+        else
             str.push(" onClick='browseTo(\"" + path + "\")'>");
 
-        if (item.music_albumart && ! (info.music_albumart && info.MUSIC_CLASS == "object.container.album.musicAlbum")) { 
+        if (item.music_albumart && ! (info.music_albumart && info.MUSIC_CLASS == "object.container.album.musicAlbum")) {
             str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.music_albumart) + "'>");
         } else {
             str.push("<div class='trackno'>" + i + "</div>");
@@ -306,5 +306,5 @@ function drawMusic(path) {
     str.push("</ul>");
     updateText("music", str.join(""));
     // $( '#musiclist' ).listview( 'refresh' ).alphascroll();
-    
+
 }

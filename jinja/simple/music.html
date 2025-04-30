@@ -24,7 +24,7 @@ Perl Expression:
 {% for _for_object_music_loop in music_loop %}
     <IMG BORDER=0 SRC={{ _for_object_music_loop.music_albumart }}>
     {% if not music_root %}
-        <A TARGET=middle HREF="middle.html?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+        <A TARGET=middle HREF="middle.html?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
         <A TARGET=middle HREF="middle.html?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
     {% endif %}
     {% if not music_iscontainer %}

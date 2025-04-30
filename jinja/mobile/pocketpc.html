@@ -101,7 +101,7 @@ To begin, select a zone:<BR>
 {% for _for_object_music_loop in music_loop %}
 	<tr>
 	<td><font size=-1>
-<A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=AddMusic">+</A></font></td>
+<A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=add">+</A></font></td>
 	<td><A HREF="?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=PlayMusic"><font size=-1>|&gt;</font></A></td>
     	<td>
 	{% if music_issong %}

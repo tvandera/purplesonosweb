@@ -194,7 +194,7 @@
         <B><TMPL_VAR NAME=music_error></B>
         <TMPL_LOOP NAME=music_loop>
           <TMPL_UNLESS NAME=music_root>
-            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=AddMusic"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
             <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
           </TMPL_UNLESS>
           <TMPL_IF NAME=music_issong>
