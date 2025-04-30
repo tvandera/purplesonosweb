@@ -80,12 +80,20 @@ def zone_command(zone, command, *args):
     if command == "volume":
         if not args:
             usage("Missing volume level")
-        params["volume"] = args[0]
+        params["volume"], = args
+    if command == "play":
+        if not args:
+            usage("Missing music path")
+        params["mpath"], = args
+    if command == "seek":
+        if not args:
+            usage("Missing queue index")
+        params["queue"], = args
     do_request(**params)
 
 
 def main():
-    actions = {"start", "pause", "stop", "next", "previous", "volume", "mute", "unmute"}
+    actions = {"start", "pause", "stop", "next", "previous", "volume", "mute", "unmute", "play", "seek"}
     global_cmds = {"music", "search", "all", "zones"}
     per_zone = {"queue", "zone"}
 
