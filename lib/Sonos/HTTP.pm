@@ -277,7 +277,6 @@ sub action {
         }, "queue", ],
         "seek"        => [ $av, sub {
             $av->seekInQueue($qitem->id());
-            $av->setQueue();
         }, "queue", ],
 
         # wait for update, unless already happened
