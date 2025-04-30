@@ -262,7 +262,7 @@ sub action {
         "add"    => [ $av, sub {
             $av->addToQueue($qf{mpath}, 1);
          }, "mpath", ],
-        "playmusic"   => [ $av, sub {
+        "play"   => [ $av, sub {
             $av->playMusic($qf{mpath})
         }, "mpath", ],
         "deletemusic" => [ $av, sub {
