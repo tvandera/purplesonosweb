@@ -6,6 +6,9 @@ in pkgs.mkShell {
       python-pkgs.requests
       python-pkgs.tabulate
       python-pkgs.glom
+      python-pkgs.textual
+      python-pkgs.textual-dev
+      python-pkgs.httpx
     ]))
   ];
 }
