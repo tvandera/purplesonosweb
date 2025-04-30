@@ -140,12 +140,13 @@ sub playMusic($self, $mpath) {
         $self->action("AddURIToQueue", $uri, $metadata);
     }
 
-    $self->play();
+    $self->start();
 }
 
 sub setQueue($self) {
     my $id = $self->player()->UDN();
     $self->setURI("x-rincon-queue:" . $id . "#0", "");
+    $self->start();
 }
 
 sub addToQueue( $self, $item, $queueSlot = 0 ) {
