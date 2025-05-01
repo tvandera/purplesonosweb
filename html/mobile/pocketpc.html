@@ -49,7 +49,7 @@ To begin, select a zone:<BR>
 <TMPL_IF NAME=active_playing>
 <A HREF="?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>
 <TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Play">Play</A>
+<A HREF="?<TMPL_VAR NAME=all_arg>action=Start">Play</A>
 </TMPL_IF>
 <A HREF="?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
 <br>
@@ -102,7 +102,7 @@ To begin, select a zone:<BR>
 	<tr>
 	<td><font size=-1>
 <A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=add">+</A></font></td>
-	<td><A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=PlayMusic"><font size=-1>|&gt;</font></A></td>
+	<td><A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Play"><font size=-1>|&gt;</font></A></td>
     	<td>
 	<TMPL_IF NAME=music_issong>
     		<font size=-1><TMPL_VAR NAME=music_name></font>

@@ -33,7 +33,7 @@ def do_request(**params):
 def show_info(what, data):
     specs = {
         "search" : ( T.values(), [{
-            'id' : 'id',
+            'pos' : 'pos',
             'title' : 'name',
             'class' : 'class',
             'album' : 'album',
@@ -57,7 +57,6 @@ def show_info(what, data):
     if len(rows) == 1:
         pprint(rows[0])
     else:
-        for r in rows: r["id"] = r["id"][0:20]
         print(tabulate(rows, headers="keys"))
 
 

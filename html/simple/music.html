@@ -25,7 +25,7 @@ Perl Expression:
     <IMG BORDER=0 SRC=<TMPL_VAR NAME=music_albumart>>
     <TMPL_UNLESS NAME=music_root>
         <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
     </TMPL_UNLESS>
     <TMPL_UNLESS NAME=music_iscontainer>
         <TMPL_VAR NAME=music_name>

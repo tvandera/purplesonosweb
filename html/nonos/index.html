@@ -195,7 +195,7 @@
         <TMPL_LOOP NAME=music_loop>
           <TMPL_UNLESS NAME=music_root>
             <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+            <A HREF="index.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
           </TMPL_UNLESS>
           <TMPL_IF NAME=music_issong>
             <TMPL_VAR NAME=music_name>
@@ -244,7 +244,7 @@
 </map>
 <map name="Map3">
   <area shape="rect" coords="6,5,43,46" href="index.html?<TMPL_VAR NAME=all_arg>action=Previous">
-  <area shape="rect" coords="52,4,93,22" href="index.html?<TMPL_VAR NAME=all_arg>action=Play">
+  <area shape="rect" coords="52,4,93,22" href="index.html?<TMPL_VAR NAME=all_arg>action=Start">
   <area shape="rect" coords="52,30,94,48" href="index.html?<TMPL_VAR NAME=all_arg>action=Pause">
   <area shape="rect" coords="101,5,142,47" href="index.html?<TMPL_VAR NAME=all_arg>action=Next">
 </map>

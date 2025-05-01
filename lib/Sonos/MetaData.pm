@@ -9,11 +9,13 @@ use URI::Escape;
 
 require JSON;
 require Types::Serialiser;
-
+use Digest::SHA qw(sha256_hex);
 use List::MoreUtils qw(zip);
 
 use constant NO_PARENT_ID => "NO_PARENT";
 use constant ROOT_ID => "";
+
+$::counter = 0;
 
 sub topItems() {
     my @table = (
@@ -40,7 +42,7 @@ sub topItems() {
 }
 
 sub new {
-    my($self, $data, $owner, $alt) = @_;
+    my($self, $data, $owner) = @_;
 	my $class = ref($self) || $self;
 
     if ($data) {
@@ -54,12 +56,11 @@ sub new {
 
     $self = bless {
         _owner => $owner,
+        _pos => $::counter++,
         _data => $data,
         _alt => {},
     }, $class;
 
-
-    $self->{_alt} = $class->new($alt, $self) if ($alt);
 
     return $self;
 }
@@ -76,10 +77,6 @@ sub owner($self) {
     }
 
     return $owner;
-}
-
-sub alt($self) {
-    return $self->{_alt};
 }
 
 sub player($self) {
@@ -160,6 +157,7 @@ sub prop($self, $path, $type = "string", $default = undef) {
 #    "upnp:originalTrackNumber" : "7"
 # },
 
+sub pos($self)                 { return $self->{_pos}; }
 sub id($self)                  { return $self->prop("id"); }
 sub parentID($self)            { return $self->prop("parentID"); }
 sub content($self)             { return $self->prop("res/content"); }
@@ -170,7 +168,7 @@ sub album($self)               { return $self->prop("upnp:album"); }
 sub TO_JSON($self, $player = undef) {
     return undef unless ($self->populated());
     return {
-        "pos"         => $self->baseID(),
+        "pos"         => $self->pos(),
         "id"          => $self->id(),
         "name"        => $self->title(),
         "desc"        => $self->description(),
@@ -291,7 +289,6 @@ sub baseID($self) {
     my @parts = split( /\//, $full_id);
     return $parts[-1];
 }
-
 
 sub isRootItem($self) {
     return $self->parentID() eq NO_PARENT_ID;

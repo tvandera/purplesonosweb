@@ -195,7 +195,7 @@
         {% for _for_object_music_loop in music_loop %}
           {% if not music_root %}
             <A HREF="index.html?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-            <A HREF="index.html?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=PlayMusic"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+            <A HREF="index.html?{{ _for_object_music_loop.all_arg }}{{ _for_object_music_loop.music_arg }}action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
           {% endif %}
           {% if music_issong %}
             {{ _for_object_music_loop.music_name }}
@@ -244,7 +244,7 @@
 </map>
 <map name="Map3">
   <area shape="rect" coords="6,5,43,46" href="index.html?{{ all_arg }}action=Previous">
-  <area shape="rect" coords="52,4,93,22" href="index.html?{{ all_arg }}action=Play">
+  <area shape="rect" coords="52,4,93,22" href="index.html?{{ all_arg }}action=Start">
   <area shape="rect" coords="52,30,94,48" href="index.html?{{ all_arg }}action=Pause">
   <area shape="rect" coords="101,5,142,47" href="index.html?{{ all_arg }}action=Next">
 </map>

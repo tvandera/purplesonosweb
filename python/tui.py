@@ -1,8 +1,12 @@
+from textual.logging import TextualHandler
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Button, Input, Static, ListView, ListItem, Label
+from textual.widgets import Button, Input, Static, ListView, ListItem, Label, Header, Footer
 from textual.reactive import reactive
 import httpx
+
+import logging
+logging.basicConfig(level="NOTSET", handlers=[TextualHandler()])
 
 
 API_BASE = "http://localhost:9999/api"
@@ -13,6 +17,7 @@ class MusicCLIApp(App):
     search_term = reactive("")
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Vertical(
             Horizontal(
                 Input(placeholder="Search for music...", id="search_box"),
@@ -51,42 +56,37 @@ class MusicCLIApp(App):
                 )
             )
         )
+        yield Footer()
 
     async def on_mount(self) -> None:
+        logging.info("Starting up...")
         await self.load_zones()
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id
         if button_id == "search_button":
             self.search_term = self.query_one("#search_box", Input).value
-            self.call_from_worker(self.do_search, self.search_term)
+            self.do_search(self.search_term)
         else:
-            self.call_from_worker(self.perform_action, button_id)
+            self.perform_action(button_id)
 
     async def load_zones(self):
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(API_BASE, params={"what": "zone"})
-                zones = resp.json()
-                zone_list = self.query_one("#zones", ListView)
-                zone_list.clear()
-                for z in zones:
-                    zone_list.append(ListItem(Label(z.get("name", "Unknown Zone"))))
-        except Exception as e:
-            self.query_one("#results", ListView).append(ListItem(Label(f"Error loading zones: {e}")))
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(API_BASE, params={"what": "zones"})
+            zones = self.query_one("#zones", ListView)
+            zones.clear()
+            for z in resp.json().keys():
+                zones.append(ListItem(Label(z)))
 
     async def do_search(self, term: str):
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(API_BASE, params={"what": "music", "search": term})
-                results = resp.json()
-                results_panel = self.query_one("#results", ListView)
-                results_panel.clear()
-                for r in results:
-                    label = r.get("title") or str(r)
-                    results_panel.append(ListItem(Label(label)))
-        except Exception as e:
-            self.query_one("#results", ListView).append(ListItem(Label(f"Search error: {e}")))
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(API_BASE, params={"what": "music", "search": term})
+            results = resp.json()
+            results_panel = self.query_one("#results", ListView)
+            results_panel.clear()
+            for r in results:
+                label = r.get("title") or str(r)
+                results_panel.append(ListItem(Label(label)))
 
     async def perform_action(self, action: str):
         action_map = {
@@ -99,11 +99,18 @@ class MusicCLIApp(App):
         }
         act = action_map.get(action, action)
         try:
-            async with httpx.AsyncClient() as client:
+            with httpx.AsyncClient() as client:
                 await client.get(API_BASE, params={"action": act})
                 self.query_one("#results", ListView).append(ListItem(Label(f"Action: {act}")))
         except Exception as e:
             self.query_one("#results", ListView).append(ListItem(Label(f"Action error: {e}")))
+
+
+
+    BINDINGS = [
+        ("d", "toggle_dark", "Toggle dark mode"),
+    ]
+
 
 
 if __name__ == "__main__":
