@@ -26,18 +26,18 @@ iSonos.pause = function () {
     sonos.sendControlAction(iSonos.zoneId, "Pause");
 }
 iSonos.play = function () {
-    sonos.sendControlAction(iSonos.zoneId, "Play");
+    sonos.sendControlAction(iSonos.zoneId, "Start");
 }
 iSonos.playPause = function () {
     var zone = sonos[iSonos.zoneId];
     if (zone.mode == 1) {
         sonos.sendControlAction(iSonos.zoneId, "Pause");
     } else {
-        sonos.sendControlAction(iSonos.zoneId, "Play");
+        sonos.sendControlAction(iSonos.zoneId, "Start");
     }
 }
 iSonos.resume = function () {
-    sonos.sendControlAction(iSonos.zoneId, "Play");
+    sonos.sendControlAction(iSonos.zoneId, "Start");
 }
 iSonos.rewind = function () {
     log("rewind");

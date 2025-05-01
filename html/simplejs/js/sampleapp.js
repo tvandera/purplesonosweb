@@ -238,9 +238,9 @@ function drawQueue(zoneId) {
         var paused = (cur_track == item.QUEUE_TRACK_NUM) && zone_paused;
         var playing = (cur_track == item.QUEUE_TRACK_NUM) && zone_playing;
 
-        if (paused)       action = "doAction('Play');";
+        if (paused)       action = "doAction('Start');";
         else if (playing) action = "doAction('Pause');"
-        else              action = "doQAction('Seek', '" + item.queue_id + "'); doAction('Play');";
+        else              action = "doQAction('Seek', '" + item.queue_id + "'); doAction('Start');";
         str.push("<li onClick=\"" + action + "\">");
 
         if (paused) img = 'svg/pause.svg';
@@ -269,7 +269,7 @@ function drawMusic(path) {
         str.push("<div><p id='musicpath'>" + info.music_name + "</p>");
         if (info.MUSIC_ARTIST) str.push("<p class='artist'>" + info.MUSIC_ARTIST + "</p>");
         if (info.MUSIC_CLASS == "object.container.album.musicAlbum") {
-            str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"add\", \"" + path + "\");'>Add</A></p>");
+            str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"Play\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"add\", \"" + path + "\");'>Add</A></p>");
         }
         str.push("</div></li>");
 
@@ -284,7 +284,7 @@ function drawMusic(path) {
         path = decodeURIComponent(item.MUSIC_REALPATH);
         str.push("<li");
         if (item.MUSIC_REALCLASS == "object.item.audioItem.audioBroadcast")
-            str.push(" onClick='doMAction(\"PlayMusic\", \"" + path + "\");'>");
+            str.push(" onClick='doMAction(\"Play\", \"" + path + "\");'>");
         else
             str.push(" onClick='browseTo(\"" + path + "\")'>");
 
