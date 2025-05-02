@@ -142,6 +142,10 @@ sub TO_JSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
         $mpath = "" unless $mpath;
         my $parent  = $self->item($mpath);
         @elements   = $self->children($parent);
+
+        if (! @elements) {
+            @elements   = ( $parent );
+        }
     }
 
     return { map { $_->id() => $_->TO_JSON() } @elements };
