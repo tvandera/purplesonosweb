@@ -75,6 +75,7 @@ sub TO_JSON($self) {
     my $player = $self->player();
 
     return {
+        "last_update"     => $self->lastUpdate(),
         "title"           => $self->name(),
         "current_track"   => $self->metaData()->TO_JSON($player),
         "length"          => $self->lengthInSeconds(),

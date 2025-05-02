@@ -19,8 +19,9 @@ sub info($self) {
 
 sub TO_JSON($self) {
     return {
-        "volume"     => $self->getVolume(),
-        "muted"      => Types::Serialiser::as_bool($self->getMute()),
+        "last_update" => $self->lastUpdate(),
+        "volume"      => $self->getVolume(),
+        "muted"       => Types::Serialiser::as_bool($self->getMute()),
     }
 }
 

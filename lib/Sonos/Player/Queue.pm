@@ -44,7 +44,10 @@ sub info($self) {
 }
 
 sub TO_JSON($self) {
-    return [ map { $_->TO_JSON($self->player()) } $self->items() ];
+    return {
+        "last_update" => $self->lastUpdate(),
+        "items" => [ map { $_->TO_JSON($self->player()) } $self->items() ]
+    };
 }
 
 

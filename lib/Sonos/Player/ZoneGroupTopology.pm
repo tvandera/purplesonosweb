@@ -33,6 +33,7 @@ sub info($self) {
 
 sub TO_JSON($self) {
     return {
+        "last_update" => $self->lastUpdate(),
         "icon"        => $self->icon(),
         "name"        => $self->friendlyName(),
         "coordinator" => $self->coordinator()->zoneName(),
