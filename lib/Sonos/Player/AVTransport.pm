@@ -75,15 +75,16 @@ sub TO_JSON($self) {
     my $player = $self->player();
 
     return {
-        "last_update"     => $self->lastUpdate(),
-        "title"           => $self->name(),
-        "current_track"   => $self->metaData()->TO_JSON($player),
-        "length"          => $self->lengthInSeconds(),
-        "track_num"       => int($self->currentTrack()),
-        "track_tot"       => int($self->numberOfTracks()),
-        "transport_state" => $self->transportState(),
-        "play_mode"       => $self->currentPlayMode(),
-        "next_track"      => $self->nextTrack()->TO_JSON($player)
+        "last_update"       => $self->lastUpdate(),
+        "title"             => $self->name(),
+        "current_track"     => $self->curTrack()->TO_JSON($player),
+        "current_transport" => $self->curTransport()->TO_JSON($player),
+        "next_track"        => $self->nextTrack()->TO_JSON($player),
+        "length"            => $self->lengthInSeconds(),
+        "track_num"         => int($self->currentTrack()),
+        "track_tot"         => int($self->numberOfTracks()),
+        "transport_state"   => $self->transportState(),
+        "play_mode"         => $self->currentPlayMode()
     }
 }
 
