@@ -27,28 +27,41 @@ function updateSrc(name, src) {
 }
 
 function updateToggle(first, second, doFirst) {
-    document.getElementById(first).style.display = (doFirst?"inline":"none");
-    document.getElementById(second).style.display  = (doFirst?"none":"inline");
+    document.getElementById(first).style.display = (doFirst ? "inline" : "none");
+    document.getElementById(second).style.display = (doFirst ? "none" : "inline");
 }
 
 function drawControl() {
     if (page() != "playing") return;
 
     var info = "";
-    if (zone_info.active_name) info += zone_info.active_name + '<br>';
-    if (zone_info.active_album) {
-      if (zone_info.active_isradio) info += "&nbsp;<em>station:</em> ";
-      else info += "&nbsp;<em>album:</em> ";
-      info += zone_info.active_album + '<br>';
+
+    if (zone_info.av.title) {
+        info += zone_info.av.title + '<br>';
     }
-    if (zone_info.active_artist) info += "&nbsp;<em>artist:</em> " + zone_info.active_artist + '<br>';
-    if (!info) info = "<em>Not playing</em>";
+
+    if (zone_info.av.current_transport.isradio) {
+         info += "&nbsp;<em>station:</em> ";
+         info += zone_info.av.current_track.stream_content + '<br>';
+    }
+    if (zone_info.av.current_track.album) {
+        info += "&nbsp;<em>album:</em> ";
+        info += zone_info.av.current_track.album + '<br>';
+    }
+    if (zone_info.av.current_track.artist) {
+        info += "&nbsp;<em>artist:</em> " + zone_info.av.current_track.artist + '<br>';
+    }
+
+    if (!info) {
+        info = "<em>Not playing</em>";
+    }
+
     updateText('info', info);
 
-    updateToggle("pause", "play", zone_info.active_mode == 1);
-    updateToggle("muteoff", "muteon", zone_info.active_muted);
-    updateText("volume", "" +  zone_info.active_volume + "%");
-    var image = zone_info.active_albumart;
+    updateToggle("pause", "play", zone_info.av.transport_state == "PLAYING");
+    updateToggle("muteoff", "muteon", zone_info.render.muted);
+    updateText("volume", "" + zone_info.render.volume + "%");
+    var image = zone_info.av.current_track.albumart;
     if (!image) image = "tiles/missingaa_lite.svg";
     updateSrc('albumart', image);
 
@@ -63,8 +76,8 @@ function goto(base, extra) {
 }
 
 
-function browse(music_arg) {window.location.href = 'music.html?' + zone_arg + music_arg + "&action=Browse"; }
-function zone(name)   { window.location.href = 'playing.html?zone=' + name + "&" + music_arg; }
+function browse(music_arg) { window.location.href = 'music.html?' + zone_arg + music_arg + "&action=Browse"; }
+function zone(name) { window.location.href = 'playing.html?zone=' + name + "&" + music_arg; }
 
 var zone_info = null;
 
@@ -75,7 +88,7 @@ function update() {
     r = send(
         cmd = cmd,
         what = "zone",
-        onload = function() {
+        onload = function () {
             zone_info = JSON.parse(this.responseText);
             last_update = zone_info.active_lastupdate;
             drawControl();
@@ -97,21 +110,21 @@ function send(cmd, what = "none", onload = null) {
 
 function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
 function seek(to) { window.location.href = "queue.html?" + zone_arg + "action=Seek&" + music_arg + to; }
-function play(music_arg){ send("Play&" + music_arg); goto("playing"); }
-function add(music_arg){ send("add&" + music_arg); goto("playing"); }
+function play(music_arg) { send("Play&" + music_arg); goto("playing"); }
+function add(music_arg) { send("add&" + music_arg); goto("playing"); }
 
 function softer() {
-   send('MuchSofter');
-   zone_info.active_volume -= 5;
-   if (zone_info.active_volume < 0) zone_info.active_volume = 0;
-   updateText("volume", "" +  zone_info.active_volume + "%");
+    send('MuchSofter');
+    zone_info.active_volume -= 5;
+    if (zone_info.active_volume < 0) zone_info.active_volume = 0;
+    updateText("volume", "" + zone_info.active_volume + "%");
 }
 
 function louder() {
-   send('MuchLouder');
-   zone_info.active_volume += 5;
-   if (zone_info.active_volume > 100) zone_info.active_volume = 100;
-   updateText("volume", "" +  zone_info.active_volume + "%");
+    send('MuchLouder');
+    zone_info.active_volume += 5;
+    if (zone_info.active_volume > 100) zone_info.active_volume = 100;
+    updateText("volume", "" + zone_info.active_volume + "%");
 }
 
 
