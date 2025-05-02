@@ -103,18 +103,18 @@ sub isPaused($self) { return $self->stateIs("PAUSED_PLAYBACK"); }
 sub isStopped($self) { return $self->stateIs("STOPPED"); }
 
 sub start($self) {
-    return 0 if $self->isPlaying();
-    return $self->action("Play", "1");
+    $self->action("Play", "1");
+    return !$self->isPlaying();
 }
 
 sub pause($self) {
-    return 0 if $self->isPaused();
-    return $self->action("Pause");
+    $self->action("Pause");
+    return !$self->isPaused();
 }
 
 sub stop($self) {
-    return 0 if $self->isStopped();
-    return $self->action("Stop");
+    $self->action("Stop");
+    return !$self->isStopped();
 }
 
 sub previous($self) {
@@ -148,7 +148,6 @@ sub playMusic($self, $mpath) {
 sub setQueue($self) {
     my $id = $self->player()->UDN();
     $self->setURI("x-rincon-queue:" . $id . "#0", "");
-    $self->start();
 }
 
 sub addToQueue( $self, $item, $queueSlot = 0 ) {
@@ -176,14 +175,14 @@ sub isShuffle($self) {
 sub switchPlayMode($self, %switch_map) {
     my %map = (%switch_map, reverse %switch_map);
     my $new_playmode = $map{$self->currentPlayMode()};
-    $self->action("SetPlayMode", $new_playmode)
+    $self->action("SetPlayMode", $new_playmode);
+    return 1;
 }
 
 # if called with $on_or_off, sets repeat mode to this value
 # if called with $on_of_off == undef, switches repeat mode
 sub setRepeat($self, $on_or_off) {
     # nothing to do if equal
-    return 0 if $self->isRepeat() == $on_or_off;
 
     my %switch_repeat = (
         "NORMAL"  => "REPEAT_ALL",
@@ -191,7 +190,7 @@ sub setRepeat($self, $on_or_off) {
     );
     $self->switchPlayMode(%switch_repeat);
 
-    return 1;
+    return $self->isRepeat() != $on_or_off;
 }
 
 sub repeatOff($self) { $self->setRepeat(0); }
@@ -200,16 +199,13 @@ sub repeatOn($self) { $self->setRepeat(1); }
 # if called with $on_or_off, sets shuffle mode to this value
 # if called with $on_of_off == undef, switches shuffle mode
 sub setShuffle($self, $on_or_off) {
-    # nothing to do
-    return 0 if $self->getShuffle() == $on_or_off;
-
     my %switch_shuffle = (
         "NORMAL"     => "SHUFFLE_NOREPEAT",
         "REPEAT_ALL" => "SHUFFLE",
     );
     $self->switchPlayMode(%switch_shuffle);
 
-    return 1;
+    return !$self->getShuffle() == $on_or_off;
 }
 
 sub shuffleOf($self) { $self->setShuffle(0); }
