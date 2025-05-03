@@ -32,19 +32,26 @@ def do_request(**params):
 
 def show_info(what, data):
     specs = {
-        "search" : ( T.values(), [{
-            'pos' : 'pos',
+        "music" : ( T.values(), [{
+            'id' : 'id',
             'title' : 'name',
             'class' : 'class',
             'album' : 'album',
             'artist' : 'creator'
         }]),
-        "queue" : [{
+        "search" : ( T.values(), [{
+            'id' : 'id',
+            'title' : 'name',
+            'class' : 'class',
+            'album' : 'album',
+            'artist' : 'creator'
+        }]),
+        "queue" : ('items', [{
             'pos' : 'pos',
             'title' : 'name',
             'album' : 'album',
             'artist' : 'creator'
-        }],
+        }]),
         "zones" : (T.values(), [
             { 'name' : 'zone.name',
               'state' : 'av.transport_state',
@@ -54,6 +61,7 @@ def show_info(what, data):
     }
 
     rows = glom(data, specs[what])
+    assert rows, f"No fields found in {data}"
     if len(rows) == 1:
         pprint(rows[0])
     else:
@@ -107,9 +115,6 @@ def main():
     arg1 = sys.argv[1]
     if arg1 in global_cmds:
         return global_info(*sys.argv[1:])
-
-    if len(sys.argv) < 3:
-        usage()
 
     zone, command, *args = sys.argv[1:]
     if command in per_zone:
