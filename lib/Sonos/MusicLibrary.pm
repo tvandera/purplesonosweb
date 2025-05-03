@@ -87,7 +87,9 @@ sub playerForID($self, $id) {
 
 sub fetchChildren($self, $parentID) {
     # already fetched
-    return if defined $self->{_tree}->{$parentID};
+    if (defined $self->{_tree}->{$parentID}) {
+        return @{$self->{_tree}->{$parentID}};
+    }
 
     my $player = $self->playerForID($parentID);
 
@@ -140,12 +142,13 @@ sub TO_JSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
         @elements   = $self->search($msearch);
     } else {
         $mpath = "" unless $mpath;
-        my $parent  = $self->item($mpath);
-        @elements   = $self->children($parent);
+        my $item  = $self->item($mpath);
 
-        if (! @elements) {
-            @elements   = ( $parent );
-        }
+        # get the linked item if this is a Favorite
+        $item = $item->res() if $item->isFav();
+
+        @elements   = $self->children($item);
+        @elements   = ( $item ) unless @elements;
     }
 
     return { map { $_->id() => $_->TO_JSON() } @elements };
