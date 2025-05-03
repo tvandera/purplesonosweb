@@ -271,13 +271,18 @@ sub build_music_data($self) {
 
 
     my $music      = $self->system()->musicLibrary();
-    my $parent     = $music->item($mpath);
+    my $item     = $music->item($mpath);
 
     my @elements;
     if (my $msearch = $self->qf("msearch")) {
         @elements   = $music->search($msearch);
     } else {
-        @elements   = $music->children($parent);
+        # get the linked item if this is a Favorite
+        $item = $item->res() if $item->isFav();
+
+        @elements   = $music->children($item);
+        @elements   = ( $item ) unless @elements;
+
     }
 
     $musicdata{"music_root"}       = int( $mpath eq "" );
@@ -285,7 +290,7 @@ sub build_music_data($self) {
     $musicdata{"music_updated"}    = int( $music->lastUpdate() > $updatenum );
     $musicdata{"music_path"}       = encode_entities($mpath);
 
-    %musicdata = (%musicdata, $self->build_item_data("music", $parent));
+    %musicdata = (%musicdata, $self->build_item_data("music", $item));
 
     my @music_loop_data = map { { $self->build_item_data("music", $_) } } @elements;
 
