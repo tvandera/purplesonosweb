@@ -164,7 +164,7 @@ sub TO_JSON($self, $player = undef) {
     return undef unless ($self->populated());
     return {
         "id"             => $self->id(),
-        "name"           => $self->title(),
+        "title"          => $self->title(),
         "desc"           => $self->description(),
         "creator"        => $self->creator(),
         "album"          => $self->album(),

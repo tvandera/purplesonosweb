@@ -39,7 +39,7 @@ sub isRadio($self) {
         && $self->curTransport()->isRadio();
 }
 
-sub name($self) {
+sub title($self) {
     return $self->isRadio()
         ? $self->curTransport()->title()
         : $self->curTrack()->title();
@@ -76,7 +76,7 @@ sub TO_JSON($self) {
 
     return {
         "last_update"       => $self->lastUpdate(),
-        "title"             => $self->name(),
+        "title"             => $self->title(),
         "current_track"     => $self->curTrack()->TO_JSON($player),
         "current_transport" => $self->curTransport()->TO_JSON($player),
         "next_track"        => $self->nextTrack()->TO_JSON($player),
