@@ -15,8 +15,6 @@ use List::MoreUtils qw(zip);
 use constant NO_PARENT_ID => "NO_PARENT";
 use constant ROOT_ID => "";
 
-$::counter = 0;
-
 sub topItems() {
     my @table = (
         [ "update_id",             "dc:title",          "parentID", "id",   "upnp:class", "upnp:albumArtURI"  ],
@@ -56,9 +54,7 @@ sub new {
 
     $self = bless {
         _owner => $owner,
-        _pos => $::counter++,
         _data => $data,
-        _alt => {},
     }, $class;
 
 
@@ -157,7 +153,6 @@ sub prop($self, $path, $type = "string", $default = undef) {
 #    "upnp:originalTrackNumber" : "7"
 # },
 
-sub pos($self)                 { return $self->{_pos}; }
 sub id($self)                  { return $self->prop("id"); }
 sub parentID($self)            { return $self->prop("parentID"); }
 sub content($self)             { return $self->prop("res/content"); }
@@ -168,7 +163,6 @@ sub album($self)               { return $self->prop("upnp:album"); }
 sub TO_JSON($self, $player = undef) {
     return undef unless ($self->populated());
     return {
-        "pos"            => $self->pos(),
         "id"             => $self->id(),
         "name"           => $self->title(),
         "desc"           => $self->description(),
