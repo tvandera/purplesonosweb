@@ -34,21 +34,21 @@ def show_info(what, data):
     specs = {
         "music" : ( T.values(), [{
             'id' : 'id',
-            'title' : 'name',
+            'title' : 'title',
             'class' : 'class',
             'album' : 'album',
             'artist' : 'creator'
         }]),
         "search" : ( T.values(), [{
             'id' : 'id',
-            'title' : 'name',
+            'title' : 'title',
             'class' : 'class',
             'album' : 'album',
             'artist' : 'creator'
         }]),
         "queue" : ('items', [{
             'pos' : 'pos',
-            'title' : 'name',
+            'title' : 'title',
             'album' : 'album',
             'artist' : 'creator'
         }]),
