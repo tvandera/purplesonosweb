@@ -77,6 +77,8 @@ sub TO_JSON($self) {
     return {
         "last_update"       => $self->lastUpdate(),
         "title"             => $self->title(),
+        "description"       => $self->description(),
+        "isradio"           => $self->isRadio(),
         "current_track"     => $self->curTrack()->TO_JSON($player),
         "current_transport" => $self->curTransport()->TO_JSON($player),
         "next_track"        => $self->nextTrack()->TO_JSON($player),
