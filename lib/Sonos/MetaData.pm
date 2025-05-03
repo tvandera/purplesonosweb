@@ -268,12 +268,24 @@ sub class($self) {
     return $self->classFrom("upnp:class");
 }
 
+# if this is a FV:0 item, the linked metadata will be in r:resMD
+# r:resMD always seems to be an array of size 1
+sub res($self)      {
+    my $resMD = $self->{_data}->{"r:resMD"}->[0];
+    carp("Missing r:resMD on Favorite: " . $self->id()) if $self->isFav() and !$resMD;
+    return undef unless $resMD;
+    carp("Unexpected r:resMD on non-Favorite: " . $self->id()) if !$self->isFav();
+    return Sonos::MetaData->new($resMD);
+}
+
+
 # if this is a FV:0 item
 # it will have a "upnp:class": "object.itemobject.item.sonos-favorite",
 # and the `real` class will be in
 #  $item{"r:resMD"}->{"upnp:class"} "object.item.audioItem.audioBroadcast",
 sub resClass($self) {
-    return $self->classFrom("r:resMD/upnp:class");
+    return undef unless $self->isFav();
+    return $self->res()->class();
 }
 
 # split using "/", take" the last part
@@ -303,7 +315,7 @@ sub isRadio($self)    { return $self->isOfClass("audioBroadcast"); }
 sub isSong($self)     { return $self->isOfClass("musicTrack"); }
 sub isAlbum($self)    { return $self->isOfClass("musicAlbum"); }
 sub isPlaylist($self) { return $self->isOfClass("playlistContainer"); }
-sub isFav($self)      { return $self->isOfClass("sonos-favorite") ; }
+sub isFav($self)      { return $self->class() eq "sonos-favorite"; }
 sub isTop($self)      { return $self->isOfClass("top"); }
 
 sub isContainer($self) {
