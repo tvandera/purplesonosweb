@@ -40,16 +40,16 @@ function drawControl() {
         info += zone_info.av.title + '<br>';
     }
 
-    if (zone_info.av.current_transport.isradio) {
-         info += "&nbsp;<em>station:</em> ";
+    if (zone_info.av.isradio) {
          info += zone_info.av.current_track.stream_content + '<br>';
-    }
-    if (zone_info.av.current_track.album) {
-        info += "&nbsp;<em>album:</em> ";
-        info += zone_info.av.current_track.album + '<br>';
-    }
-    if (zone_info.av.current_track.artist) {
-        info += "&nbsp;<em>artist:</em> " + zone_info.av.current_track.artist + '<br>';
+    } else if (zone_info.av.current_track) {
+        if (zone_info.av.current_track.album) {
+            info += "&nbsp;<em>album:</em> ";
+            info += zone_info.av.current_track.album + '<br>';
+        }
+        if (zone_info.av.current_track.artist) {
+            info += "&nbsp;<em>artist:</em> " + zone_info.av.current_track.artist + '<br>';
+        }
     }
 
     if (!info) {
@@ -90,7 +90,7 @@ function update() {
         what = "zone",
         onload = function () {
             zone_info = JSON.parse(this.responseText);
-            last_update = zone_info.active_lastupdate;
+            last_update = zone_info.last_update;
             drawControl();
         }
     );
@@ -102,29 +102,35 @@ function send(cmd, what = "none", onload = null) {
     var url = '/api?what=' + what + '&nowait=' + nowait + '&' + zone_arg + 'action=' + cmd + '&lastupdate=' + last_update;
     var r = new XMLHttpRequest();
     r.open("GET", url, true);
-    if (onload) r.onload = onload;
-    r.send();
+    if (onload) {
+        r.onload = onload;
+    }
 
+    r.send();
     return r;
+}
+
+function sendAndGo(cmd, next) {
+    r = send(cmd, "none", function() { goto(next); });
 }
 
 function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
 function seek(to) { window.location.href = "queue.html?" + zone_arg + "action=Seek&" + music_arg + to; }
-function play(music_arg) { send("Play&" + music_arg); goto("playing"); }
-function add(music_arg) { send("add&" + music_arg); goto("playing"); }
+function play(music_arg) { sendAndGo("play&" + music_arg, "playing");  }
+function add(music_arg) { sendAndGo("add&" + music_arg, "playing"); }
 
 function softer() {
     send('MuchSofter');
-    zone_info.active_volume -= 5;
-    if (zone_info.active_volume < 0) zone_info.active_volume = 0;
-    updateText("volume", "" + zone_info.active_volume + "%");
+    zone_info.render.volume -= 5;
+    if (zone_info.render.volume < 0) zone_info.render.volume = 0;
+    updateText("volume", "" + zone_info.render.volume + "%");
 }
 
 function louder() {
     send('MuchLouder');
-    zone_info.active_volume += 5;
-    if (zone_info.active_volume > 100) zone_info.active_volume = 100;
-    updateText("volume", "" + zone_info.active_volume + "%");
+    zone_info.render.volume += 5;
+    if (zone_info.render.volume > 100) zone_info.render.volume = 100;
+    updateText("volume", "" + zone_info.render.volume + "%");
 }
 
 
