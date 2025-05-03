@@ -13,9 +13,9 @@
             <div>
                 <p id='musicpath'><TMPL_VAR name="music_name"></p>
                 <p class='artist'><TMPL_VAR name="music_artist"></p>
-                <TMPL_IF name="music_isalbum">
+                <TMPL_IF name="music_iscontainer">
                 <p class='buttons'>
-                <a onclick="play('<TMPL_VAR NAME=music_arg>');">Play</A> - 
+                <a onclick="play('<TMPL_VAR NAME=music_arg>');">Play</A> -
                 <a onclick="add('<TMPL_VAR NAME=music_arg>');">Add</A></p>
                 </TMPL_IF>
             </div>
@@ -26,8 +26,8 @@
             <li class='albumart'><img width="200" height="200" src="<TMPL_VAR name="music_albumart">"></li>
             </TMPL_IF>
         </TMPL_IF>
-    
-    <TMPL_LOOP name="music_loop"> 
+
+    <TMPL_LOOP name="music_loop">
         <TMPL_IF name="music_isradio">
             <li onclick="play('<TMPL_VAR NAME=music_arg>');">
         <TMPL_ELSE>
