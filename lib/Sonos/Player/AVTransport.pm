@@ -48,7 +48,7 @@ sub title($self) {
 sub description($self) {
     return $self->isRadio()
         ? $self->curTransport()->streamContent()
-        : $self->curTrack()->()->creator() . " / " . $self->curTrack()->album();
+        : $self->curTrack()->creator() . " / " . $self->curTrack()->album();
 }
 
 sub info($self) {
