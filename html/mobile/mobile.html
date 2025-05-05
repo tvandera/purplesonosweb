@@ -6,98 +6,98 @@
 </HEAD>
 <BODY>
 
-<TMPL_UNLESS NAME=has_active_zone>
+[% UNLESS has_active_zone %]
 To begin, select a zone:<BR>
-</TMPL_UNLESS>
+[% END %]
 
-<TMPL_LOOP NAME=zones_loop>
-    <TMPL_IF NAME=zone_active>
-        <B><A HREF="?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A></B>
-    <TMPL_ELSE>
-        <A HREF="?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A>
-    </TMPL_IF>
-</TMPL_LOOP>
+[% FOREACH item IN zones_loop %]
+    [% IF zone_active %]
+        <B><A HREF="?[% zone_arg %]">[% zone_name %]</A></B>
+    [% ELSE %]
+        <A HREF="?[% zone_arg %]">[% zone_name %]</A>
+    [% END %]
+[% END %]
 <P>
 
-<TMPL_IF NAME=has_active_zone>
-<FONT SIZE="0"><A HREF="?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT><BR>
+[% IF has_active_zone %]
+<FONT SIZE="0"><A HREF="?[% all_arg %]">Refresh</A></FONT><BR>
 
-<TMPL_VAR NAME=has_active_zone> Now Playing: <BR>
-&nbsp; <B>Song:</B> <TMPL_VAR NAME=active_name><BR>
-<TMPL_IF NAME=active_isradio>
-&nbsp; <B>Station:</B> <TMPL_VAR NAME=active_album><BR>
-<TMPL_ELSE>
-&nbsp; <B>Artist:</B> <TMPL_VAR NAME=active_artist><BR>
-&nbsp; <B>Album:</B> <TMPL_VAR NAME=active_album><BR>
-&nbsp; <B>Track:</B> <TMPL_VAR NAME=active_track_num>/<TMPL_VAR NAME=active_track_tot><BR>
-</TMPL_IF>
-
-<HR>
-
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Previous">Previous</A>
-<TMPL_IF NAME=active_playing>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Start">Play</A>
-</TMPL_IF>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
-<BR>
-<TMPL_IF NAME=active_shuffle>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=ShuffleOff">Shuffle Off</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=ShuffleOn">Shuffle On</A>
-</TMPL_IF>
-<TMPL_IF NAME=active_repeat>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=RepeatOff">Repeat Off</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=RepeatOn">Repeat On</A>
-</TMPL_IF>
-<BR>
-<TMPL_IF NAME=active_muted>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOff">Mute Off</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOn">Mute On</A>
-</TMPL_IF>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchSofter">--</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Softer">-</A>
-<TMPL_VAR NAME=active_volume>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Louder">+</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchLouder">++</A>
+[% has_active_zone %] Now Playing: <BR>
+&nbsp; <B>Song:</B> [% active_name %]<BR>
+[% IF active_isradio %]
+&nbsp; <B>Station:</B> [% active_album %]<BR>
+[% ELSE %]
+&nbsp; <B>Artist:</B> [% active_artist %]<BR>
+&nbsp; <B>Album:</B> [% active_album %]<BR>
+&nbsp; <B>Track:</B> [% active_track_num %]/[% active_track_tot %]<BR>
+[% END %]
 
 <HR>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=R:">Radio</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=SQ:">Playlists</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:ARTIST">Artists</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:ALBUM">Albums</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:GENRE">Genre</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:COMPOSER">Composers</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=S:">Folders</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=AI:">Line In</A>
-<FORM ACTION="?<TMPL_VAR NAME=all_arg>" METHOD="get">
+
+<A HREF="?[% all_arg %]action=Previous">Previous</A>
+[% IF active_playing %]
+<A HREF="?[% all_arg %]action=Pause">Pause</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=Start">Play</A>
+[% END %]
+<A HREF="?[% all_arg %]action=Next">Next</A>
+<BR>
+[% IF active_shuffle %]
+<A HREF="?[% all_arg %]action=ShuffleOff">Shuffle Off</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=ShuffleOn">Shuffle On</A>
+[% END %]
+[% IF active_repeat %]
+<A HREF="?[% all_arg %]action=RepeatOff">Repeat Off</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=RepeatOn">Repeat On</A>
+[% END %]
+<BR>
+[% IF active_muted %]
+<A HREF="?[% all_arg %]action=MuteOff">Mute Off</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=MuteOn">Mute On</A>
+[% END %]
+<A HREF="?[% all_arg %]action=MuchSofter">--</A>
+<A HREF="?[% all_arg %]action=Softer">-</A>
+[% active_volume %]
+<A HREF="?[% all_arg %]action=Louder">+</A>
+<A HREF="?[% all_arg %]action=MuchLouder">++</A>
+
+<HR>
+<A HREF="?[% all_arg %]mpath=R:">Radio</A>
+<A HREF="?[% all_arg %]mpath=SQ:">Playlists</A>
+<A HREF="?[% all_arg %]mpath=A:ARTIST">Artists</A>
+<A HREF="?[% all_arg %]mpath=A:ALBUM">Albums</A>
+<A HREF="?[% all_arg %]mpath=A:GENRE">Genre</A>
+<A HREF="?[% all_arg %]mpath=A:COMPOSER">Composers</A>
+<A HREF="?[% all_arg %]mpath=S:">Folders</A>
+<A HREF="?[% all_arg %]mpath=AI:">Line In</A>
+<FORM ACTION="?[% all_arg %]" METHOD="get">
 Regex:
-<INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
-<INPUT NAME=msearch VALUE="<TMPL_VAR NAME=music_search>" TYPE=text>
+<INPUT NAME=zone VALUE="[% active_zoneid %]" TYPE=HIDDEN>
+<INPUT NAME=msearch VALUE="[% music_search %]" TYPE=text>
 <INPUT VALUE="Search" TYPE=submit>
 </FORM>
 <HR>
-<TMPL_UNLESS NAME=music_root>
-<B><TMPL_VAR NAME=music_error></B>
-<TMPL_LOOP NAME=music_loop>
-    <A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=add">+</A>
-    <A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Play">|&gt;</A>
-    <TMPL_IF NAME=music_issong>
-    <TMPL_VAR NAME=music_name>
-    <TMPL_ELSE>
-    <A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Browse"><TMPL_VAR NAME=music_name></A>
-    </TMPL_IF>
+[% UNLESS music_root %]
+<B>[% music_error %]</B>
+[% FOREACH item IN music_loop %]
+    <A HREF="?[% all_arg %][% music_arg %]action=add">+</A>
+    <A HREF="?[% all_arg %][% music_arg %]action=Play">|&gt;</A>
+    [% IF music_issong %]
+    [% music_name %]
+    [% ELSE %]
+    <A HREF="?[% all_arg %][% music_arg %]action=Browse">[% music_name %]</A>
+    [% END %]
     <BR>
-</TMPL_LOOP>
-<TMPL_ELSE>
+[% END %]
+[% ELSE %]
 <B>Please do a search for music to show.</B>
-</TMPL_UNLESS>
+[% END %]
 
 
-</TMPL_IF>
+[% END %]
 
 </BODY>
 </HTML>

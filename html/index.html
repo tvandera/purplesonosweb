@@ -1,7 +1,7 @@
 <HTML>
     <HEAD>
         <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-        <TITLE>Sonos Web Control - <TMPL_VAR NAME=version></TITLE>
+        <TITLE>Sonos Web Control - [% version %]</TITLE>
     </HEAD>
     <BODY>
         <h2>Latest UI</h2>
@@ -37,10 +37,10 @@
         <P>
         <B>PLUGINs:</B>
         <TABLE COLUMNS=2>
-            <TMPL_LOOP NAME=plugin_loop> 
-            <TR><TD><A HREF="<TMPL_VAR NAME=plugin_link>"><TMPL_VAR NAME=plugin_link></A></TD>
-            <TD><TMPL_VAR NAME=plugin_name></TD></TR>
-            </TMPL_LOOP>
+            [% FOREACH item IN plugin_loop %] 
+            <TR><TD><A HREF="[% plugin_link %]">[% plugin_link %]</A></TD>
+            <TD>[% plugin_name %]</TD></TR>
+            [% END %]
         </TABLE>
         <HR>
         <A HREF="http://www.purple.org/sonos">Sonos Web Controller Home Page</A>

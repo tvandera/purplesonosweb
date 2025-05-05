@@ -8,15 +8,15 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable = no" />
 <style>
-   <TMPL_INCLUDE NAME="style.css">
+   [% INCLUDE style.css %]
 </style>
 <script>
-var zone_arg = "<TMPL_VAR name="zone_arg">";
-var music_arg = "<TMPL_VAR name="music_arg">";
-var last_update = "<TMPL_VAR name="last_update">";
+var zone_arg = "[% zone_arg %]";
+var music_arg = "[% music_arg %]";
+var last_update = "[% last_update %]";
 </script>
 <script language="javascript">
-   <TMPL_INCLUDE NAME="simple.js">
+   [% INCLUDE simple.js %]
 </script>
 </head>
 <body onload='update();'>

@@ -3,27 +3,27 @@
 <TITLE>Zones</TITLE>
 </HEAD>
 <BODY>
-<FONT SIZE=0><A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT><P>
-<TMPL_LOOP NAME=zones_loop>
-    <TMPL_IF NAME=zone_active><B></TMPL_IF>
-    <TMPL_IF NAME=zone_linked>
-       &nbsp; &nbsp;<TMPL_VAR NAME=zone_name>
-      <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zone>&action=Unlink"><font size=-2>[U]</font></a>
-    <TMPL_ELSE>
-       <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A>
-       <TMPL_UNLESS NAME=zone_active>
-          <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zone>&action=Link"><font size=-2>[L]</font></a>
-       </TMPL_UNLESS>
-    </TMPL_IF>
-    <TMPL_IF NAME=zone_active></B></TMPL_IF>
+<FONT SIZE=0><A TARGET=_top HREF="index.html?[% all_arg %]">Refresh</A></FONT><P>
+[% FOREACH item IN zones_loop %]
+    [% IF zone_active %]<B>[% END %]
+    [% IF zone_linked %]
+       &nbsp; &nbsp;[% zone_name %]
+      <A TARGET=_top HREF="index.html?[% all_arg %]link=[% active_zone %]&action=Unlink"><font size=-2>[U]</font></a>
+    [% ELSE %]
+       <A TARGET=_top HREF="index.html?[% zone_arg %]">[% zone_name %]</A>
+       [% UNLESS zone_active %]
+          <A TARGET=_top HREF="index.html?[% all_arg %]link=[% active_zone %]&action=Link"><font size=-2>[L]</font></a>
+       [% END %]
+    [% END %]
+    [% IF zone_active %]</B>[% END %]
     <BR>
-</TMPL_LOOP>
+[% END %]
 <P>
-<TMPL_IF NAME=has_active_zone>
-    <A TARGET=_top HREF="index.html?zone=<TMPL_VAR NAME=active_zoneid>&action=LinkAll">Party Mode</A>
-<TMPL_ELSE>
+[% IF has_active_zone %]
+    <A TARGET=_top HREF="index.html?zone=[% active_zoneid %]&action=LinkAll">Party Mode</A>
+[% ELSE %]
     <B>Select a zone to start</B>
-</TMPL_IF>
+[% END %]
 <hr>
 <A TARGET =_top HREF="/">Home Page</A>
 </BODY>

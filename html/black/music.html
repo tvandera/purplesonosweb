@@ -1,52 +1,52 @@
-<TMPL_INCLUDE name="header.tmpl">
+[% INCLUDE header.tmpl %]
 
 <div id="top-labels">
-   <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
+   <h4 id="currentzonename" onclick="goto('zones')">[% ZONE_FANCYNAME %]</h4>
    <h4 id="nowplayinglabel" onclick="goto('playing')">NOW PLAYING</h4>
 </div>
 
 <div id="music">
     <ul id='musiclist'>
-        <TMPL_IF name="music_path">
+        [% IF music_path %]
             <li class='header'>
-            <img onClick="browse('mpath=<TMPL_VAR NAME=music_parent>')" src='tiles/back.svg'>
+            <img onClick="browse('mpath=[% music_parent %]')" src='tiles/back.svg'>
             <div>
-                <p id='musicpath'><TMPL_VAR name="music_name"></p>
-                <p class='artist'><TMPL_VAR name="music_artist"></p>
-                <TMPL_IF name="music_iscontainer">
+                <p id='musicpath'>[% music_name %]</p>
+                <p class='artist'>[% music_artist %]</p>
+                [% IF music_iscontainer %]
                 <p class='buttons'>
-                <a onclick="play('<TMPL_VAR NAME=music_arg>');">Play</A> -
-                <a onclick="add('<TMPL_VAR NAME=music_arg>');">Add</A></p>
-                </TMPL_IF>
+                <a onclick="play('[% music_arg %]');">Play</A> -
+                <a onclick="add('[% music_arg %]');">Add</A></p>
+                [% END %]
             </div>
             </li>
-        </TMPL_IF>
-        <TMPL_IF name="music_isalbum">
-            <TMPL_IF name="music_albumart">
-            <li class='albumart'><img width="200" height="200" src="<TMPL_VAR name="music_albumart">"></li>
-            </TMPL_IF>
-        </TMPL_IF>
+        [% END %]
+        [% IF music_isalbum %]
+            [% IF music_albumart %]
+            <li class='albumart'><img width="200" height="200" src="[% music_albumart %]"></li>
+            [% END %]
+        [% END %]
 
-    <TMPL_LOOP name="music_loop">
-        <TMPL_IF name="music_isradio">
-            <li onclick="play('<TMPL_VAR NAME=music_arg>');">
-        <TMPL_ELSE>
-            <li onclick="browse('<TMPL_VAR NAME=music_arg>');">
-        </TMPL_IF>
-        <TMPL_IF name="music_issong">
-            <div class='trackno'><TMPL_VAR name="MUSIC_TRACK_NUM"></div>
-        <TMPL_ELSE>
-            <img width="44" height="44" src="<TMPL_VAR name="music_albumart">">
-        </TMPL_IF>
+    [% FOREACH item IN music_loop %]
+        [% IF music_isradio %]
+            <li onclick="play('[% music_arg %]');">
+        [% ELSE %]
+            <li onclick="browse('[% music_arg %]');">
+        [% END %]
+        [% IF music_issong %]
+            <div class='trackno'>[% MUSIC_TRACK_NUM %]</div>
+        [% ELSE %]
+            <img width="44" height="44" src="[% music_albumart %]">
+        [% END %]
         <div>
-            <p class='title'><TMPL_VAR name="music_name"></p>
-            <p class='artist'><TMPL_VAR name="music_artist"></p>
-            <p class='description'><TMPL_VAR name="music_desc"></p>
+            <p class='title'>[% music_name %]</p>
+            <p class='artist'>[% music_artist %]</p>
+            <p class='description'>[% music_desc %]</p>
         </div>
     </li>
-    </TMPL_LOOP>
+    [% END %]
 
 </ul>
 </div>
 
-<TMPL_INCLUDE name="footer.tmpl">
+[% INCLUDE footer.tmpl %]

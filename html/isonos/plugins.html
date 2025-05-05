@@ -9,9 +9,9 @@
 		</style>
 	</head>
 	<body>
-		<TMPL_LOOP NAME=plugin_loop> 
-		<h2><a href="<TMPL_VAR NAME=plugin_link>"><TMPL_VAR NAME=plugin_link></a></h2>
-		<p><TMPL_VAR NAME=plugin_name></p>
-		</TMPL_LOOP>
+		[% FOREACH item IN plugin_loop %] 
+		<h2><a href="[% plugin_link %]">[% plugin_link %]</a></h2>
+		<p>[% plugin_name %]</p>
+		[% END %]
 	</body>
 </html>

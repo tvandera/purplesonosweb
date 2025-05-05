@@ -1,55 +1,55 @@
 <HTML>
 <HEAD>
-<meta http-equiv="refresh" content="5;URL=control.html?<TMPL_VAR NAME=all_arg>">
+<meta http-equiv="refresh" content="5;URL=control.html?[% all_arg %]">
 <TITLE>Control</TITLE>
 </HEAD>
 <BODY>
 
-<TMPL_VAR NAME=has_active_zone> Now Playing: <FONT SIZE=0><A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT><BR>
+[% has_active_zone %] Now Playing: <FONT SIZE=0><A TARGET=control HREF="control.html?[% all_arg %]">Refresh</A></FONT><BR>
 
-&nbsp; <B>Song:</B> <TMPL_VAR NAME=active_name><BR>
-<TMPL_IF NAME=active_isradio>
-&nbsp; <B>Station:</B> <TMPL_VAR NAME=active_album><BR>
-<TMPL_ELSE>
-&nbsp; <B>Artist:</B> <TMPL_VAR NAME=active_artist><BR>
-&nbsp; <B>Album:</B> <TMPL_VAR NAME=active_album><BR>
-&nbsp; <B>Track:</B> <TMPL_VAR NAME=active_track_num>/<TMPL_VAR NAME=active_track_tot><BR>
-<TMPL_IF NAME=active_albumart>
-<IMG WIDTH=50 HEIGHT=50 SRC="<TMPL_VAR NAME=active_albumart>"><BR>
-</TMPL_IF>
-</TMPL_IF>
+&nbsp; <B>Song:</B> [% active_name %]<BR>
+[% IF active_isradio %]
+&nbsp; <B>Station:</B> [% active_album %]<BR>
+[% ELSE %]
+&nbsp; <B>Artist:</B> [% active_artist %]<BR>
+&nbsp; <B>Album:</B> [% active_album %]<BR>
+&nbsp; <B>Track:</B> [% active_track_num %]/[% active_track_tot %]<BR>
+[% IF active_albumart %]
+<IMG WIDTH=50 HEIGHT=50 SRC="[% active_albumart %]"><BR>
+[% END %]
+[% END %]
 
 <HR>
 
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Previous">Previous</A>
-<TMPL_IF NAME=active_playing>
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>
-<TMPL_ELSE>
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Start">Play</A>
-</TMPL_IF>
-<A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
+<A TARGET=middle HREF="middle.html?[% all_arg %]action=Previous">Previous</A>
+[% IF active_playing %]
+<A TARGET=middle HREF="middle.html?[% all_arg %]action=Pause">Pause</A>
+[% ELSE %]
+<A TARGET=middle HREF="middle.html?[% all_arg %]action=Start">Play</A>
+[% END %]
+<A TARGET=middle HREF="middle.html?[% all_arg %]action=Next">Next</A>
 <BR>
-<TMPL_IF NAME=active_shuffle>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=ShuffleOff">Shuffle Off</A>
-<TMPL_ELSE>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=ShuffleOn">Shuffle On</A>
-</TMPL_IF>
-<TMPL_IF NAME=active_repeat>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=RepeatOff">Repeat Off</A>
-<TMPL_ELSE>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=RepeatOn">Repeat On</A>
-</TMPL_IF>
+[% IF active_shuffle %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=ShuffleOff">Shuffle Off</A>
+[% ELSE %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=ShuffleOn">Shuffle On</A>
+[% END %]
+[% IF active_repeat %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=RepeatOff">Repeat Off</A>
+[% ELSE %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=RepeatOn">Repeat On</A>
+[% END %]
 <BR>
-<TMPL_IF NAME=active_muted>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuteOff">Mute Off</A>
-<TMPL_ELSE>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuteOn">Mute On</A>
-</TMPL_IF>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuchSofter">--</A>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=Softer">-</A>
-<TMPL_VAR NAME=active_volume>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=Louder">+</A>
-<A TARGET=control HREF="control.html?<TMPL_VAR NAME=all_arg>action=MuchLouder">++</A>
+[% IF active_muted %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=MuteOff">Mute Off</A>
+[% ELSE %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=MuteOn">Mute On</A>
+[% END %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=MuchSofter">--</A>
+<A TARGET=control HREF="control.html?[% all_arg %]action=Softer">-</A>
+[% active_volume %]
+<A TARGET=control HREF="control.html?[% all_arg %]action=Louder">+</A>
+<A TARGET=control HREF="control.html?[% all_arg %]action=MuchLouder">++</A>
 
 </BODY>
 </HTML>

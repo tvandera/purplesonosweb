@@ -4,24 +4,24 @@
 </HEAD>
 <BODY>
 
-<TMPL_IF NAME=active_zone_img><IMG SRC="<TMPL_VAR NAME=active_zone_img>"> </TMPL_IF>
-<TMPL_VAR NAME=has_active_zone> Queue:  <A TARGET=queue HREF="queue.html?<TMPL_VAR NAME=all_arg>action=RemoveAll">Remove All</A>
-<FONT SIZE=0><A TARGET=queue HREF="queue.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT>
+[% IF active_zone_img %]<IMG SRC="[% active_zone_img %]"> [% END %]
+[% has_active_zone %] Queue:  <A TARGET=queue HREF="queue.html?[% all_arg %]action=RemoveAll">Remove All</A>
+<FONT SIZE=0><A TARGET=queue HREF="queue.html?[% all_arg %]">Refresh</A></FONT>
 <BR>
 <FORM ACTION="queue.html" METHOD="get">
 Save Q as:
 <INPUT NAME=savename VALUE="">
 <INPUT NAME=action VALUE="Save" TYPE=HIDDEN>
-<INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
+<INPUT NAME=zone VALUE="[% active_zoneid %]" TYPE=HIDDEN>
 <INPUT VALUE="Save" TYPE=submit>
 </FORM>
 <HR>
-<TMPL_LOOP NAME=queue_loop>
-    <IMG SRC="<TMPL_VAR NAME=queue_img>">
-    <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=queue_arg>action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
-    <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=queue_arg>action=Seek"><TMPL_VAR NAME=queue_name></A>
+[% FOREACH item IN queue_loop %]
+    <IMG SRC="[% queue_img %]">
+    <A TARGET=middle HREF="middle.html?[% queue_arg %]action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
+    <A TARGET=middle HREF="middle.html?[% queue_arg %]action=Seek">[% queue_name %]</A>
     <BR>
-</TMPL_LOOP>
+[% END %]
 </BODY>
 </HTML>
 

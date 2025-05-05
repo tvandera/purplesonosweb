@@ -7,114 +7,114 @@
 <BODY>
 
 <table width=100% cellspacing=0 cellpadding=0><tr><td>
-<TMPL_UNLESS NAME=has_active_zone>
+[% UNLESS has_active_zone %]
 To begin, select a zone:<BR>
-</TMPL_UNLESS>
-<TMPL_LOOP NAME=zones_loop>
-	<TMPL_IF NAME=zone_active>
-		<A HREF="?<TMPL_VAR NAME=zone_arg>"><font size=+1 color=#000000><B><TMPL_VAR NAME=zone_name></font></B></A>
-	<TMPL_ELSE>
-		<A HREF="?<TMPL_VAR NAME=zone_arg>"><font size=-1><TMPL_VAR NAME=zone_name></font></A>
-	</TMPL_IF>
-</TMPL_LOOP>
-</td><td align=right><font size=-1><A HREF="?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT>
+[% END %]
+[% FOREACH item IN zones_loop %]
+	[% IF zone_active %]
+		<A HREF="?[% zone_arg %]"><font size=+1 color=#000000><B>[% zone_name %]</font></B></A>
+	[% ELSE %]
+		<A HREF="?[% zone_arg %]"><font size=-1>[% zone_name %]</font></A>
+	[% END %]
+[% END %]
+</td><td align=right><font size=-1><A HREF="?[% all_arg %]">Refresh</A></FONT>
 </td></tr></table>
 <hr>
-<TMPL_IF NAME=has_active_zone>
+[% IF has_active_zone %]
 
 <table border=0 width=100%  cellspacing=0 cellpadding=0>
-<TMPL_IF NAME=active_isradio>
+[% IF active_isradio %]
 <tr><td colspan=2><b>Radio</b></td></tr>
-<tr><td colspan=2><TMPL_VAR NAME=active_name></td></tr>
-<tr><td colspan=2><TMPL_VAR NAME=active_name></td></tr>
-<TMPL_VAR NAME=active_artist>
-<tr><td colspan=2><font size=-1><i>Listening to: </i></font><TMPL_VAR NAME=active_album></td></tr>
-<TMPL_ELSE>
+<tr><td colspan=2>[% active_name %]</td></tr>
+<tr><td colspan=2>[% active_name %]</td></tr>
+[% active_artist %]
+<tr><td colspan=2><font size=-1><i>Listening to: </i></font>[% active_album %]</td></tr>
+[% ELSE %]
 <tr>
-<tr><td colspan=2><TMPL_VAR NAME=active_name></td>
-<td align=center valign=center rowspan=4><a href=pocketpc_now.html?zone=<TMPL_VAR NAME=active_zoneid>><IMG WIDTH=70 HEIGHT=70 SRC="<TMPL_VAR NAME=active_albumart>"></a></td>
+<tr><td colspan=2>[% active_name %]</td>
+<td align=center valign=center rowspan=4><a href=pocketpc_now.html?zone=[% active_zoneid %]><IMG WIDTH=70 HEIGHT=70 SRC="[% active_albumart %]"></a></td>
 </tr>
-<tr><td><font size=-1><i>by</i></font></td><td><TMPL_VAR NAME=active_artist></td>
+<tr><td><font size=-1><i>by</i></font></td><td>[% active_artist %]</td>
 </tr>
-<tr><td><font size=-1><i>from </i></font></td><td><TMPL_VAR NAME=active_album></td></tr>
+<tr><td><font size=-1><i>from </i></font></td><td>[% active_album %]</td></tr>
 
-<TMPL_IF NAME=active_track_tot_gt_1>
-<tr><td></td><td><font size=-1><i>[track <TMPL_VAR NAME=active_track_num> of <TMPL_VAR NAME=active_track_tot>]</i></font></td></tr>
-</TMPL_IF>
-</TMPL_IF>
+[% IF active_track_tot_gt_1 %]
+<tr><td></td><td><font size=-1><i>[track [% active_track_num %] of [% active_track_tot %]]</i></font></td></tr>
+[% END %]
+[% END %]
 </table>
 <HR>
 <table width=100% cellspacing=0 cellpadding=0><tr align=center>
-<td><A HREF="?<TMPL_VAR NAME=all_arg>action=Previous">Prev</A>
-<TMPL_IF NAME=active_playing>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Start">Play</A>
-</TMPL_IF>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
+<td><A HREF="?[% all_arg %]action=Previous">Prev</A>
+[% IF active_playing %]
+<A HREF="?[% all_arg %]action=Pause">Pause</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=Start">Play</A>
+[% END %]
+<A HREF="?[% all_arg %]action=Next">Next</A>
 <br>
-<TMPL_IF NAME=active_shuffle>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=ShuffleOff">Shuffle</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=ShuffleOn">Shuffle-Off</A>
-</TMPL_IF>
-<TMPL_IF NAME=active_repeat>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=RepeatOff">Rpt</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=RepeatOn">Rpt-Off</A>
-</TMPL_IF>
+[% IF active_shuffle %]
+<A HREF="?[% all_arg %]action=ShuffleOff">Shuffle</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=ShuffleOn">Shuffle-Off</A>
+[% END %]
+[% IF active_repeat %]
+<A HREF="?[% all_arg %]action=RepeatOff">Rpt</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=RepeatOn">Rpt-Off</A>
+[% END %]
 </td>
 
 <td>
-<TMPL_IF NAME=active_muted>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOff">Mute</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOn">No-Mute</A>
-</TMPL_IF>
+[% IF active_muted %]
+<A HREF="?[% all_arg %]action=MuteOff">Mute</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=MuteOn">No-Mute</A>
+[% END %]
 <br>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchSofter">--</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Softer">-</A>
-<TMPL_VAR NAME=active_volume>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Louder">+</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchLouder">++</A>
+<A HREF="?[% all_arg %]action=MuchSofter">--</A>
+<A HREF="?[% all_arg %]action=Softer">-</A>
+[% active_volume %]
+<A HREF="?[% all_arg %]action=Louder">+</A>
+<A HREF="?[% all_arg %]action=MuchLouder">++</A>
 </td>
 </tr></table>
 <HR>
 <font size=-1>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=R:">Radio</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=SQ:">Playlists</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:ARTIST">Artists</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:ALBUM">Albums</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:GENRE">Genre</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=A:COMPOSER">Composers</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=S:">Folders</A>
-<A HREF="?<TMPL_VAR NAME=all_arg>mpath=AI:">Line In</A>
-<FORM ACTION="?<TMPL_VAR NAME=all_arg>" METHOD="get">
-<INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
-<INPUT NAME=msearch VALUE="<TMPL_VAR NAME=music_search>" TYPE=text>
+<A HREF="?[% all_arg %]mpath=R:">Radio</A>
+<A HREF="?[% all_arg %]mpath=SQ:">Playlists</A>
+<A HREF="?[% all_arg %]mpath=A:ARTIST">Artists</A>
+<A HREF="?[% all_arg %]mpath=A:ALBUM">Albums</A>
+<A HREF="?[% all_arg %]mpath=A:GENRE">Genre</A>
+<A HREF="?[% all_arg %]mpath=A:COMPOSER">Composers</A>
+<A HREF="?[% all_arg %]mpath=S:">Folders</A>
+<A HREF="?[% all_arg %]mpath=AI:">Line In</A>
+<FORM ACTION="?[% all_arg %]" METHOD="get">
+<INPUT NAME=zone VALUE="[% active_zoneid %]" TYPE=HIDDEN>
+<INPUT NAME=msearch VALUE="[% music_search %]" TYPE=text>
 <INPUT VALUE="Search" TYPE=submit></FORM>
 </font><HR>
-<TMPL_UNLESS NAME=music_root>
-<B><TMPL_VAR NAME=music_error></B>
+[% UNLESS music_root %]
+<B>[% music_error %]</B>
 
 <table border=0 cellspacing=1 cellpadding=0>
-<TMPL_LOOP NAME=music_loop>
+[% FOREACH item IN music_loop %]
 	<tr>
 	<td><font size=-1>
-<A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=add">+</A></font></td>
-	<td><A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Play"><font size=-1>|&gt;</font></A></td>
+<A HREF="?[% all_arg %][% music_arg %]action=add">+</A></font></td>
+	<td><A HREF="?[% all_arg %][% music_arg %]action=Play"><font size=-1>|&gt;</font></A></td>
     	<td>
-	<TMPL_IF NAME=music_issong>
-    		<font size=-1><TMPL_VAR NAME=music_name></font>
-	<TMPL_ELSE>
-		<A HREF="?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Browse"><font size=-1><TMPL_VAR NAME=music_name></font></A>
-    	</TMPL_IF>
+	[% IF music_issong %]
+    		<font size=-1>[% music_name %]</font>
+	[% ELSE %]
+		<A HREF="?[% all_arg %][% music_arg %]action=Browse"><font size=-1>[% music_name %]</font></A>
+    	[% END %]
 	</td>
 	</tr>
-</TMPL_LOOP>
+[% END %]
 </table>
-</TMPL_UNLESS>
-</TMPL_IF>
+[% END %]
+[% END %]
 <a href=/><font size=-1>Home Page</font></A>
 <a href=/AlarmClock/index.html><font size=-1>Alarm Clock</font></A>
 <a href=/Podcasts/index.html><font size=-1>Podcasts</font></A>

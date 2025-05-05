@@ -6,45 +6,45 @@
 <BODY>
 
 
-<TMPL_IF NAME=has_active_zone>
+[% IF has_active_zone %]
 <table width=100% align=center cellspacing=0 cellpadding=0>
-<tr align=center><td><B><A HREF="pocketpc.html?<TMPL_VAR NAME=all_arg>"><TMPL_VAR NAME=active_zone></b></A></td></tr>
-<tr align=center><td><a href=pocketpc.html?zone=<TMPL_VAR NAME=active_zoneid>><IMG WIDTH=160 HEIGHT=160 SRC="<TMPL_VAR NAME=active_albumart>"></a></td></tr>
-<tr align=center><td><font size=-1><TMPL_VAR NAME=active_name></font></td></tr>
-<TMPL_IF NAME=active_isradio>
-<tr><td><font size=-1><TMPL_VAR NAME=active_album></td></tr>
-<TMPL_ELSE>
-<tr align=center><td><font size=-1><TMPL_VAR NAME=active_artist><br>
-<TMPL_VAR NAME=active_album></td></tr>
-</TMPL_IF>
+<tr align=center><td><B><A HREF="pocketpc.html?[% all_arg %]">[% active_zone %]</b></A></td></tr>
+<tr align=center><td><a href=pocketpc.html?zone=[% active_zoneid %]><IMG WIDTH=160 HEIGHT=160 SRC="[% active_albumart %]"></a></td></tr>
+<tr align=center><td><font size=-1>[% active_name %]</font></td></tr>
+[% IF active_isradio %]
+<tr><td><font size=-1>[% active_album %]</td></tr>
+[% ELSE %]
+<tr align=center><td><font size=-1>[% active_artist %]<br>
+[% active_album %]</td></tr>
+[% END %]
 </table>
 <HR>
 
 <table width=100% cellspacing=0 cellpadding=0><tr align=center>
-<td><font size=-1><A HREF="?<TMPL_VAR NAME=all_arg>action=Previous">Prev</A>&nbsp
-<TMPL_IF NAME=active_playing>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Pause">Pause</A>&nbsp
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Start">Play</A>&nbsp
-</TMPL_IF>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Next">Next</A>
+<td><font size=-1><A HREF="?[% all_arg %]action=Previous">Prev</A>&nbsp
+[% IF active_playing %]
+<A HREF="?[% all_arg %]action=Pause">Pause</A>&nbsp
+[% ELSE %]
+<A HREF="?[% all_arg %]action=Start">Play</A>&nbsp
+[% END %]
+<A HREF="?[% all_arg %]action=Next">Next</A>
 </font></td>
 <td><font size=-1>
-<TMPL_IF NAME=active_muted>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOff">Mute</A>
-<TMPL_ELSE>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuteOn">No-Mute</A>
-</TMPL_IF>
+[% IF active_muted %]
+<A HREF="?[% all_arg %]action=MuteOff">Mute</A>
+[% ELSE %]
+<A HREF="?[% all_arg %]action=MuteOn">No-Mute</A>
+[% END %]
 &nbsp
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchSofter">--</A>&nbsp
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Softer">-</A>&nbsp
-<TMPL_VAR NAME=active_volume>
-<A HREF="?<TMPL_VAR NAME=all_arg>action=Louder">+</A>&nbsp
-<A HREF="?<TMPL_VAR NAME=all_arg>action=MuchLouder">++</A>
+<A HREF="?[% all_arg %]action=MuchSofter">--</A>&nbsp
+<A HREF="?[% all_arg %]action=Softer">-</A>&nbsp
+[% active_volume %]
+<A HREF="?[% all_arg %]action=Louder">+</A>&nbsp
+<A HREF="?[% all_arg %]action=MuchLouder">++</A>
 </font></td>
 </tr></table>
 
-</TMPL_IF>
+[% END %]
 
 </BODY>
 </HTML>

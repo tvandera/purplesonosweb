@@ -1,7 +1,7 @@
-<TMPL_INCLUDE name="header.tmpl">
+[% INCLUDE header.tmpl %]
 
 <div id="top-labels">
-	<h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
+	<h4 id="currentzonename" onclick="goto('zones')">[% ZONE_FANCYNAME %]</h4>
 	<h4 id="nowplayinglabel" onclick="goto('playing')">NOW PLAYING</h4>
 </div>
 
@@ -15,18 +15,18 @@
                 <p class="buttons" onclick="removeall()">Remove All</p>
             </div>
             </li>
-            <TMPL_LOOP NAME=queue_loop>
-                <li onclick="seek('<TMPL_VAR NAME=queue_arg>');">
-                    <img width="44" height="44" class="albumart" src="<TMPL_VAR name="QUEUE_ALBUMART">" />
+            [% FOREACH item IN queue_loop %]
+                <li onclick="seek('[% queue_arg %]');">
+                    <img width="44" height="44" class="albumart" src="[% QUEUE_ALBUMART %]" />
                     <div>
-                        <p class="title"><TMPL_VAR name="queue_name"></p>
-                        <p class="artist"><TMPL_VAR name="QUEUE_ARTIST"></p>
+                        <p class="title">[% queue_name %]</p>
+                        <p class="artist">[% QUEUE_ARTIST %]</p>
                     </div>
                   </a>
                 </li>
-            </TMPL_LOOP>
+            [% END %]
         </ul>
     </div>
 <hr />
 
-<TMPL_INCLUDE name="footer.tmpl">
+[% INCLUDE footer.tmpl %]
