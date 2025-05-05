@@ -389,7 +389,12 @@ sub sendHello($self, $req) {
 sub restAPI($self, $r) {
     $self->action($r, sub {
         my %qf = $r->query_form;
-        my $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
+        my $builder;
+        if (defined $qf{"v1"}) {
+            $builder = Sonos::HTTP::Builder->new($self->system(), \%qf);
+        } else {
+            $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
+        }
 
         my $what = $qf{"what"} || "zones";
         my $method = "build_" . $what . "_data";
