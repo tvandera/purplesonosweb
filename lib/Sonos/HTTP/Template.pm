@@ -17,7 +17,7 @@ require JSON;
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use MIME::Types;
 
-require HTML::Template;
+require Template;
 
 ###############################################################################
 # HTTP
@@ -27,20 +27,14 @@ sub new {
     my($self, $system, $diskpath, $qf, %args) = @_;
 	my $class = ref($self) || $self;
 
-    $self = $class->SUPER::new($system, $qf, %args);
+    $self   = $class->SUPER::new($system, $qf, %args);
+    my $tt  = $self->{_template} = Template->new();
+    my $map = $self->build_all_data();
 
-    # One of our templates, now fill in the parts we know
-    my $template = $self->{_template} = HTML::Template->new(
-        filename          => $diskpath,
-        die_on_bad_params => 0,
-        global_vars       => 1,
-        use_query         => 1,
-        loop_context_vars => 1
-    );
+    my $output = '';
+    $tt->process($diskpath, $map, \$output) || die $tt->error(), "\n";
 
-    my $map    = $self->build_all_data();
-    $template->param(%$map);
-
+    $self->{_output} = $output;
     return $self;
 }
 
@@ -49,5 +43,5 @@ sub template($self) {
 }
 
 sub output($self) {
-    return $self->template()->output();
+    return $self->{_output};
 }
