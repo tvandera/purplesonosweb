@@ -86,8 +86,7 @@ sub TO_JSON($self, $qf) {
 sub args($self, $qf) {
     my @keys = qw(zone what action rand mpath msearch link queue);
     my %args = map { $_ => $qf->{$_} // "" } @keys;
-    $args{"all"} = join "&", map { $_ . "=" . $qf->{$_} } @keys;
-    $args{"music"} = $args{"mpath"} // $args{"msearch"};
+    $args{"all"} = join "&", map { $_ . "=" . $qf->{$_} } keys %$qf;
     return { %args };
 }
 
