@@ -108,8 +108,15 @@ sub build_system_data($self) {
     return $self->system()->TO_JSON($self->qf());
 }
 
+sub build_args_data($self, $qf) {
+    my @keys = qw(zone what action rand mpath msearch link queue);
+    my %args = map { $_ => $qf->{$_} // "" } @keys;
+    $args{"all"} = join "&", map { $_ . "=" . $qf->{$_} } keys %$qf;
+    return { %args };
+}
+
 sub build_all_data($self) {
-    my @categories = ( "system", "zone", "queue", "music", "zones" ) ;
+    my @categories = ( "system", "zone", "queue", "music" ) ;
     my %methods = map { $_ => "build_" . $_ . "_data" } @categories;
     my %data = ();
     while (my ($key, $value) = each(%methods)) {
