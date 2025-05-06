@@ -77,6 +77,11 @@ sub owner($self) {
 
 sub player($self) {
     return unless $self->id();
+
+    # Queue item
+    return $self->owner()->player() if $self->isQueueItem();
+
+    # MusicLibrary item
     return $self->owner()->playerForID($self->id());
 }
 
@@ -160,10 +165,21 @@ sub title($self)               { return $self->prop("dc:title"); }
 sub creator($self)             { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
 
+sub arg($self) {
+    my $mpath_arg = "";
+    $mpath_arg .= $self->isQueueItem() ?  "queue=" : "mpath=";
+    $mpath_arg .= uri_escape_utf8($self->id()) . "&";
+    $mpath_arg .= "zone=" . $self->player()->friendlyName() . "&" if $self->isQueueItem();
+    return $mpath_arg;
+}
+
+
+
 sub TO_JSON($self, $player = undef) {
     return undef unless ($self->populated());
     return {
         "id"             => $self->id(),
+        "arg"            => $self->arg(),
         "title"          => $self->title(),
         "desc"           => $self->description(),
         "creator"        => $self->creator(),
