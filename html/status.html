@@ -10,54 +10,49 @@
 <TR></TR>
 <TR></TR>
 
-[% FOREACH item IN zones_loop %] 
-<TR>
-<TD ALIGN=CENTER><B>[% zone_name %]</B><BR>
-[% IF active_playing %](Playing)[% END %]
-[% IF active_paused_playback %](Paused)[% END %]
-[% IF active_stopped %](Paused)[% END %]
-[% IF active_isradio %] 
-	<BR>Internet Radio<BR>
-[% ELSE %]
-	<BR>[% active_track_num %] of [% active_track_tot %]<BR>
-[% IF active_shuffle %](Rnd)[% END %]
-[% IF active_repeat %](Rpt)[% END %]
-[% END %]
-<br>Vol.[% active_volume %]
-</TD>
-
-
-
-[% IF active_isradio %] 
-	<td><Table>
-	<TD><font size = 1>Information:</font><br>
-	[% active_name %]<BR>
-	<font size = 1>Station:</font><br>
-	[% active_album %]</TD>
-	</Table>
-[% ELSE %]
-	<TD>
-	<Table>
-	<tr><td><font size = 1>Track:</font></td>
-	<td>[% active_name %]</td></tr>
-	<tr><td><font size = 1>Artist:</font></td>
-	<td>[% active_artist %]</td></tr>
-	<tr><td><font size = 1>Album:</font></td>
-	<td>[% active_album %]</td></tr>
-	[% IF next_name %]
-		<tr><td></td></tr>
-		<tr><td colspan=2><font size = 1>Next: </font><br>
-		[% next_name %] - [% next_artist %]</td></tr>
-	[% END %]
-        </table>
+[% FOREACH zone IN zones %]
+	<TR>
+		<TD ALIGN=CENTER><B>[% zone.zone.name %]</B><BR>
+		[% zone.av.transport_state %]<BR>
+		[% IF zone.av.isradio %]
+			<BR>Internet Radio<BR>
+		[% ELSE %]
+			<BR>[% zone.av.track_num %] of [% zone.av.track_tot %]<BR>
+			<BR>[% zone.av.play_mode %]<BR>
+		[% END %]
+		<br>Vol.[% zone.render.volume %]
 	</TD>
-[% END %]
-</TR>
 
-<TR></TR>
-<TR></TR>
-<TR></TR>
-<TR></TR>
+
+
+	[% IF zone.av.isradio %]
+		<td><Table>
+			<TD> <font size = 1>Station:</font><br> [% zone.av.title %]</TD>
+			<TD><font size = 1>Information:</font><br>[% zone.av.current_transport.stream_content %]</TD>
+		</Table>
+	[% ELSE %]
+		<TD>
+		<Table>
+		<tr><td><font size = 1>Track:</font></td>
+		<td>[% zone.av.title %]</td></tr>
+		<tr><td><font size = 1>Artist:</font></td>
+		<td>[% zone.av.artist %]</td></tr>
+		<tr><td><font size = 1>Album:</font></td>
+		<td>[% zone.av.album %]</td></tr>
+		[% IF next_name %]
+			<tr><td></td></tr>
+			<tr><td colspan=2><font size = 1>Next: </font><br>
+			[% next_name %] - [% next_artist %]</td></tr>
+		[% END %]
+			</table>
+		</TD>
+	[% END %]
+	</TR>
+
+	<TR></TR>
+	<TR></TR>
+	<TR></TR>
+	<TR></TR>
 [% END %]
 
 </TABLE>
