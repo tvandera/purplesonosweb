@@ -5,7 +5,7 @@
 <BODY>
 
 [% IF active_zone_img %]<IMG SRC="[% active_zone_img %]"> [% END %]
-[% has_active_zone %] Queue:  <A TARGET=queue HREF="queue.html?[% args.all %]action=RemoveAll">Remove All</A>
+[% args.zone %] Queue:  <A TARGET=queue HREF="queue.html?[% args.all %]action=RemoveAll">Remove All</A>
 <FONT SIZE=0><A TARGET=queue HREF="queue.html?[% args.all %]">Refresh</A></FONT>
 <BR>
 <FORM ACTION="queue.html" METHOD="get">

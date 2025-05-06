@@ -24,7 +24,7 @@
         <td width="167" align="left" valign="top">
           <font color="#990000" face="Arial, Helvetica, sans-serif" size="3"><b>NOW PLAYING
           <br>
-          [% has_active_zone %] <br>
+          [% args.zone %] <br>
           <br>
           </b></font>
 
@@ -92,7 +92,7 @@
             <BR>
           [% END %]
           <P>
-          [% UNLESS has_active_zone %]
+          [% UNLESS args.zone %]
             <B><font color="#FFFFFF" face="Arial, Helvetica, sans-serif" size="1">Select a zone to start</font></B>
           [% END %] </td>
           <td width="8"><img src="shim.gif" height="8" width="8"></td>

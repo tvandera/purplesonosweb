@@ -6,7 +6,7 @@
 </HEAD>
 <BODY>
 
-[% UNLESS has_active_zone %]
+[% UNLESS args.zone %]
 To begin, select a zone:<BR>
 [% END %]
 
@@ -19,10 +19,10 @@ To begin, select a zone:<BR>
 [% END %]
 <P>
 
-[% IF has_active_zone %]
+[% IF args.zone %]
 <FONT SIZE="0"><A HREF="?[% args.all %]">Refresh</A></FONT><BR>
 
-[% has_active_zone %] Now Playing: <BR>
+[% args.zone %] Now Playing: <BR>
 &nbsp; <B>Song:</B> [% active_name %]<BR>
 [% IF active_isradio %]
 &nbsp; <B>Station:</B> [% active_album %]<BR>

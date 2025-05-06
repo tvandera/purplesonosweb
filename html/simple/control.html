@@ -5,7 +5,7 @@
 </HEAD>
 <BODY>
 
-[% has_active_zone %] Now Playing: <FONT SIZE=0><A TARGET=control HREF="control.html?[% args.all %]">Refresh</A></FONT><BR>
+[% args.zone %] Now Playing: <FONT SIZE=0><A TARGET=control HREF="control.html?[% args.all %]">Refresh</A></FONT><BR>
 
 &nbsp; <B>Song:</B> [% active_name %]<BR>
 [% IF active_isradio %]

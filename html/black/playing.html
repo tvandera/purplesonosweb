@@ -5,7 +5,7 @@
      <h4 id="musiclabel" onclick="goto('music')">MUSIC LIBRARY</h4>
 </div>
 
-[% IF has_active_zone %]
+[% IF args.zone %]
 <div id="current-track-info">
     <img class="albumart" id="albumart"
       [% IF active_albumart %]
