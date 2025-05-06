@@ -78,9 +78,19 @@ sub TO_JSON($self, $qf) {
        "version"     => $self->version(),
        "last_update" => $self->lastUpdate(),
        "zones"       => [ map { $_->TO_JSON() } $self->players() ],
-       "music"       => $self->musicLibrary()->TO_JSON($qf)
+       "music"       => $self->musicLibrary()->TO_JSON($qf),
+       "args"        => $self->args($qf),
     }
 }
+
+sub args($self, $qf) {
+    my @keys = qw(zone what action rand mpath msearch link queue);
+    my %args = map { $_ => $qf->{$_} // "" } @keys;
+    $args{"all"} = join "&", map { $_ . "=" . $qf->{$_} } @keys;
+    $args{"music"} = $args{"mpath"} // $args{"msearch"};
+    return { %args };
+}
+
 
 sub players($self, $sorted = undef) {
     my @players = values %{$self->{_players}};
