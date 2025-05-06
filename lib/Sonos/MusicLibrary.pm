@@ -151,7 +151,7 @@ sub TO_JSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
         @elements   = ( $item ) unless @elements;
     }
 
-    return { map { $_->id() => $_->TO_JSON() } @elements };
+    return [ map { $_->TO_JSON() } @elements ];
 }
 
 
