@@ -6,6 +6,8 @@ require JSON;
 use Data::Dumper;
 use Template;
 use File::Slurp;
+use File::Basename;
+
 
 my @files = glob('
     html/*.html
@@ -21,22 +23,21 @@ my $decoder = JSON->new()->utf8();
 my $fname = shift @ARGV;
 my $input = read_file($fname);
 my $json = $decoder->decode($input);
-# print Dumper($json);
 
 for my $fname (@files) {
    print("=======  $fname =======\n");
-   my $tt = Template->new({
-        STRICT => 1,
-        # DEBUG => DEBUG_ALL,
-   });
 
    my $output = '';
+    my $tt = Template->new({
+        STRICT => 1,
+        INCLUDE_PATH => [ '.', dirname($fname) ],
+        RELATIVE => 1,
+    });
    my $ok = $tt->process($fname, $json, \$output);
 
-   print $tt->error(), "\n" unless $ok;
-   # print Dumper($output);
-
-   # print Dumper($template);
-   # print $template->output();
-   # %param_map = (%param_map, $template->{param_map});
+   if ($ok) {
+        print("$fname: ✅\n\n");
+   } else {
+        print $tt->error(), "\n" unless $ok;
+   }
 }
