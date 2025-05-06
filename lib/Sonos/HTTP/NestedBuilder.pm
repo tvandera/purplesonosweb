@@ -101,13 +101,11 @@ sub build_queue_data($self) {
 
 sub build_music_data($self) {
     my $music   = $self->system()->musicLibrary();
-    my $mpath   = $self->qf("mpath", "");
-    my $msearch = $self->qf("msearch");
-    return $music->TO_JSON($mpath, $msearch);
+    return $music->TO_JSON($self->qf());
 }
 
 sub build_system_data($self) {
-    return $self->system()->TO_JSON();
+    return $self->system()->TO_JSON($self->qf());
 }
 
 sub build_all_data($self) {

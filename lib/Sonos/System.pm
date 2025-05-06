@@ -73,11 +73,12 @@ sub version($self) {
     return $Sonos::VERSION;
 }
 
-sub TO_JSON($self) {
+sub TO_JSON($self, $qf) {
     return {
        "version"     => $self->version(),
        "last_update" => $self->lastUpdate(),
-       "zones"       => [ map { $_->TO_JSON() } $self->players() ]
+       "zones"       => [ map { $_->TO_JSON() } $self->players() ],
+       "music"       => $self->musicLibrary()->TO_JSON($qf)
     }
 }
 
