@@ -40,10 +40,6 @@ sub new {
     return $self;
 }
 
-sub version($self) {
-    return "0.99";
-}
-
 sub system($self) {
     return $self->{"_system"};
 }
@@ -86,20 +82,17 @@ sub build_none_data($self) {
     return {};
 }
 
-###############################################################################
 sub build_zones_data($self) {
-    return { map { $_->zoneName() => $self->build_zone_data( $_ ) } $self->players() };
+    return [ map { $self->build_zone_data( $_ ) } $self->players() ];
 }
 
 
-###############################################################################
 sub build_zone_data($self, $player = undef) {
     $player = $self->player() unless $player;
     return {} unless $player;
     return $player->TO_JSON();
 }
 
-###############################################################################
 sub build_queue_data($self) {
     my $player = $self->player();
     return {} unless $player;
@@ -113,30 +106,12 @@ sub build_music_data($self) {
     return $music->TO_JSON($mpath, $msearch);
 }
 
-sub build_globals_data($self) {
-    my $updatenum = $self->qf("updatenum", -1);
-
-    my $globals = {};
-    $globals->{"version"}              = $self->version();
-    $globals->{"last_update"}          = $self->lastUpdate();
-    $globals->{"last_update_readable"} = localtime $self->lastUpdate();
-
-    my $qf = $self->qf();
-    my @keys    = grep !/action|rand|mpath|msearch|link/, ( keys %$qf );
-    my $all_arg = join "&", map { "$_=$qf->{$_}" } @keys;
-    $all_arg .= "&" if $all_arg;
-    $globals->{"all_arg"} = $all_arg;
-
-    $globals->{"musicdir_available"} = 0;
-    $globals->{"zones_lastupdate"}   = $self->lastUpdate(); # FIXME
-    $globals->{"zones_updated"}      = int( $self->lastUpdate() > $updatenum );
-
-    return $globals;
+sub build_system_data($self) {
+    return $self->system()->TO_JSON();
 }
 
-###############################################################################
 sub build_all_data($self) {
-    my @categories = ( "globals", "zone", "queue", "music", "zones" ) ;
+    my @categories = ( "system", "zone", "queue", "music", "zones" ) ;
     my %methods = map { $_ => "build_" . $_ . "_data" } @categories;
     my %data = ();
     while (my ($key, $value) = each(%methods)) {

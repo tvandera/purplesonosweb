@@ -68,10 +68,6 @@ sub new {
     return $self;
 }
 
-sub version($self) {
-    return "0.99";
-}
-
 sub system($self) {
     return $self->{_system};
 }
