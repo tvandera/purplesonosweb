@@ -12,12 +12,12 @@ To begin, select a zone:<BR>
 [% END %]
 [% FOREACH item IN zones_loop %]
 	[% IF zone_active %]
-		<A HREF="?[% zone_arg %]"><font size=+1 color=#000000><B>[% zone_name %]</font></B></A>
+		<A HREF="?[% args.zone %]"><font size=+1 color=#000000><B>[% zone_name %]</font></B></A>
 	[% ELSE %]
-		<A HREF="?[% zone_arg %]"><font size=-1>[% zone_name %]</font></A>
+		<A HREF="?[% args.zone %]"><font size=-1>[% zone_name %]</font></A>
 	[% END %]
 [% END %]
-</td><td align=right><font size=-1><A HREF="?[% all_arg %]">Refresh</A></FONT>
+</td><td align=right><font size=-1><A HREF="?[% args.all %]">Refresh</A></FONT>
 </td></tr></table>
 <hr>
 [% IF has_active_zone %]
@@ -45,51 +45,51 @@ To begin, select a zone:<BR>
 </table>
 <HR>
 <table width=100% cellspacing=0 cellpadding=0><tr align=center>
-<td><A HREF="?[% all_arg %]action=Previous">Prev</A>
+<td><A HREF="?[% args.all %]action=Previous">Prev</A>
 [% IF active_playing %]
-<A HREF="?[% all_arg %]action=Pause">Pause</A>
+<A HREF="?[% args.all %]action=Pause">Pause</A>
 [% ELSE %]
-<A HREF="?[% all_arg %]action=Start">Play</A>
+<A HREF="?[% args.all %]action=Start">Play</A>
 [% END %]
-<A HREF="?[% all_arg %]action=Next">Next</A>
+<A HREF="?[% args.all %]action=Next">Next</A>
 <br>
 [% IF active_shuffle %]
-<A HREF="?[% all_arg %]action=ShuffleOff">Shuffle</A>
+<A HREF="?[% args.all %]action=ShuffleOff">Shuffle</A>
 [% ELSE %]
-<A HREF="?[% all_arg %]action=ShuffleOn">Shuffle-Off</A>
+<A HREF="?[% args.all %]action=ShuffleOn">Shuffle-Off</A>
 [% END %]
 [% IF active_repeat %]
-<A HREF="?[% all_arg %]action=RepeatOff">Rpt</A>
+<A HREF="?[% args.all %]action=RepeatOff">Rpt</A>
 [% ELSE %]
-<A HREF="?[% all_arg %]action=RepeatOn">Rpt-Off</A>
+<A HREF="?[% args.all %]action=RepeatOn">Rpt-Off</A>
 [% END %]
 </td>
 
 <td>
 [% IF active_muted %]
-<A HREF="?[% all_arg %]action=MuteOff">Mute</A>
+<A HREF="?[% args.all %]action=MuteOff">Mute</A>
 [% ELSE %]
-<A HREF="?[% all_arg %]action=MuteOn">No-Mute</A>
+<A HREF="?[% args.all %]action=MuteOn">No-Mute</A>
 [% END %]
 <br>
-<A HREF="?[% all_arg %]action=MuchSofter">--</A>
-<A HREF="?[% all_arg %]action=Softer">-</A>
+<A HREF="?[% args.all %]action=MuchSofter">--</A>
+<A HREF="?[% args.all %]action=Softer">-</A>
 [% active_volume %]
-<A HREF="?[% all_arg %]action=Louder">+</A>
-<A HREF="?[% all_arg %]action=MuchLouder">++</A>
+<A HREF="?[% args.all %]action=Louder">+</A>
+<A HREF="?[% args.all %]action=MuchLouder">++</A>
 </td>
 </tr></table>
 <HR>
 <font size=-1>
-<A HREF="?[% all_arg %]mpath=R:">Radio</A>
-<A HREF="?[% all_arg %]mpath=SQ:">Playlists</A>
-<A HREF="?[% all_arg %]mpath=A:ARTIST">Artists</A>
-<A HREF="?[% all_arg %]mpath=A:ALBUM">Albums</A>
-<A HREF="?[% all_arg %]mpath=A:GENRE">Genre</A>
-<A HREF="?[% all_arg %]mpath=A:COMPOSER">Composers</A>
-<A HREF="?[% all_arg %]mpath=S:">Folders</A>
-<A HREF="?[% all_arg %]mpath=AI:">Line In</A>
-<FORM ACTION="?[% all_arg %]" METHOD="get">
+<A HREF="?[% args.all %]mpath=R:">Radio</A>
+<A HREF="?[% args.all %]mpath=SQ:">Playlists</A>
+<A HREF="?[% args.all %]mpath=A:ARTIST">Artists</A>
+<A HREF="?[% args.all %]mpath=A:ALBUM">Albums</A>
+<A HREF="?[% args.all %]mpath=A:GENRE">Genre</A>
+<A HREF="?[% args.all %]mpath=A:COMPOSER">Composers</A>
+<A HREF="?[% args.all %]mpath=S:">Folders</A>
+<A HREF="?[% args.all %]mpath=AI:">Line In</A>
+<FORM ACTION="?[% args.all %]" METHOD="get">
 <INPUT NAME=zone VALUE="[% active_zoneid %]" TYPE=HIDDEN>
 <INPUT NAME=msearch VALUE="[% music_search %]" TYPE=text>
 <INPUT VALUE="Search" TYPE=submit></FORM>
@@ -101,13 +101,13 @@ To begin, select a zone:<BR>
 [% FOREACH item IN music_loop %]
 	<tr>
 	<td><font size=-1>
-<A HREF="?[% all_arg %][% music_arg %]action=add">+</A></font></td>
-	<td><A HREF="?[% all_arg %][% music_arg %]action=Play"><font size=-1>|&gt;</font></A></td>
+<A HREF="?[% args.all %][% args.mpath %]action=add">+</A></font></td>
+	<td><A HREF="?[% args.all %][% args.mpath %]action=Play"><font size=-1>|&gt;</font></A></td>
     	<td>
 	[% IF music_issong %]
     		<font size=-1>[% music_name %]</font>
 	[% ELSE %]
-		<A HREF="?[% all_arg %][% music_arg %]action=Browse"><font size=-1>[% music_name %]</font></A>
+		<A HREF="?[% args.all %][% args.mpath %]action=Browse"><font size=-1>[% music_name %]</font></A>
     	[% END %]
 	</td>
 	</tr>

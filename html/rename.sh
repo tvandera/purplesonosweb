@@ -2,7 +2,7 @@
 
 REPLACEMENTS="
     zone_arg/args.zone
-    music_arg/args.music
+    music_arg/args.mpath
     all_arg/args.all
     "
 

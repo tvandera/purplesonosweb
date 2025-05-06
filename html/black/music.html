@@ -14,9 +14,9 @@
                 <p id='musicpath'>[% music_name %]</p>
                 <p class='artist'>[% music_artist %]</p>
                 [% IF music_iscontainer %]
-                <p class='buttons'>
-                <a onclick="play('[% music_arg %]');">Play</A> -
-                <a onclick="add('[% music_arg %]');">Add</A></p>
+                    <p class='buttons'>
+                    <a onclick="play('[% args.mpath %]');">Play</A> -
+                    <a onclick="add('[% args.mpath %]');">Add</A></p>
                 [% END %]
             </div>
             </li>
@@ -29,9 +29,9 @@
 
     [% FOREACH item IN music_loop %]
         [% IF music_isradio %]
-            <li onclick="play('[% music_arg %]');">
+            <li onclick="play('[% args.mpath %]');">
         [% ELSE %]
-            <li onclick="browse('[% music_arg %]');">
+            <li onclick="browse('[% args.mpath %]');">
         [% END %]
         [% IF music_issong %]
             <div class='trackno'>[% MUSIC_TRACK_NUM %]</div>
