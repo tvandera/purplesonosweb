@@ -1,0 +1,12 @@
+#!/bin/bash
+
+REPLACEMENTS="
+    zone_arg/args.zone
+    music_arg/args.music
+    all_arg/args.all
+    "
+
+for R in $REPLACEMENTS
+do
+    sed -i -e "s/$R/g" *.html  */*.html */*.tmpl
+done
