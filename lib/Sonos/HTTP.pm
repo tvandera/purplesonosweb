@@ -392,7 +392,7 @@ sub restAPI($self, $r) {
             $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
         }
 
-        my $what = $qf{"what"} || "zones";
+        my $what = $qf{"what"} || "system";
         my $method = "build_" . $what . "_data";
         my $data = $builder->$method();
         my $json = $builder->to_json($data);
