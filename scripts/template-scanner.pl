@@ -2,24 +2,10 @@ use v5.36;
 use strict;
 use warnings;
 
+require JSON;
 use Data::Dumper;
-
-require Sonos::System;
-require HTML::Template;
-
-require IO::Async::Loop;
-
-
-my @locations = (
-    'http://192.168.2.101:1400/xml/device_description.xml',
-    'http://192.168.2.199:1400/xml/device_description.xml',
-);
-
-#my $loop = IO::Async::Loop->new;
-#my $system = Sonos::System->discover($loop, @locations);
-#$system->wait();
-#my @players = $system->players();
-#my $player = shift @players;
+use Template;
+use File::Slurp;
 
 my @files = glob('
     html/*.html
@@ -31,18 +17,26 @@ my @files = glob('
     html/*.xml
     html/*/*.xml');
 
-my @tags = qw(TMPL_IF TMPL_LOOP TMPL_UNLESS TMPL_VAR);
-
-my %param_map = ();
+my $decoder = JSON->new()->utf8();
+my $fname = shift @ARGV;
+my $input = read_file($fname);
+my $json = $decoder->decode($input);
+# print Dumper($json);
 
 for my $fname (@files) {
-    my $template = HTML::Template->new(
-        filename          => $fname,
-        die_on_bad_params => 0,
-        global_vars       => 1,
-        use_query         => 1,
-        loop_context_vars => 1
-   );
-   print Dumper($template);
+   print("=======  $fname =======\n");
+   my $tt = Template->new({
+        STRICT => 1,
+        # DEBUG => DEBUG_ALL,
+   });
+
+   my $output = '';
+   my $ok = $tt->process($fname, $json, \$output);
+
+   print $tt->error(), "\n" unless $ok;
+   # print Dumper($output);
+
+   # print Dumper($template);
+   # print $template->output();
    # %param_map = (%param_map, $template->{param_map});
 }

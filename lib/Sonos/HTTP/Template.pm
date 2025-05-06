@@ -1,6 +1,6 @@
 package Sonos::HTTP::Template;
 
-use base 'Sonos::HTTP::Builder';
+use base 'Sonos::HTTP::NestedBuilder';
 
 use v5.36;
 use strict;
@@ -19,6 +19,9 @@ use MIME::Types;
 
 require Template;
 
+
+
+
 ###############################################################################
 # HTTP
 ###############################################################################
@@ -28,13 +31,14 @@ sub new {
 	my $class = ref($self) || $self;
 
     $self   = $class->SUPER::new($system, $qf, %args);
-    my $tt  = $self->{_template} = Template->new();
-    my $map = $self->build_all_data();
 
-    my $output = '';
-    $tt->process($diskpath, $map, \$output) || die $tt->error(), "\n";
+    $self->{_diskpath} = $diskpath;
 
-    $self->{_output} = $output;
+    my $tt = $self->{_template} = Template->new({
+        STRICT => 1,
+        # DEBUG => DEBUG_ALL,
+    });
+
     return $self;
 }
 
@@ -42,6 +46,12 @@ sub template($self) {
     return $self->{_template};
 }
 
+sub input($self) {
+    return $self->build_all_data();
+}
 sub output($self) {
-    return $self->{_output};
+    my $tt = $self->template();
+    my $output = '';
+    $tt->process($self->{_diskpath}, $self->input(), \$output) || die $tt->error(), "\n";
+    return $output;
 }
