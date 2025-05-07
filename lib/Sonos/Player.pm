@@ -133,6 +133,7 @@ sub queue($self)             { return $self->getService("Queue"); }
 
 sub TO_JSON($self) {
     return {
+        "id"          => $self->UDN(),
         "last_update" => $self->lastUpdate(),
         "zone"        => $self->zoneGroupTopology()->TO_JSON(),
         "av"          => $self->avTransport()->TO_JSON(),
