@@ -162,7 +162,7 @@ sub id($self)                  { return $self->prop("id"); }
 sub parentID($self)            { return $self->prop("parentID"); }
 sub content($self)             { return $self->prop("res/content"); }
 sub title($self)               { return $self->prop("dc:title"); }
-sub creator($self)             { return $self->prop("dc:creator"); }
+sub artist($self)              { return $self->prop("dc:creator"); }
 sub album($self)               { return $self->prop("upnp:album"); }
 
 sub arg($self) {
@@ -182,7 +182,7 @@ sub TO_JSON($self, $player = undef) {
         "arg"            => $self->arg(),
         "title"          => $self->title(),
         "desc"           => $self->description(),
-        "creator"        => $self->creator(),
+        "artist"         => $self->artist(),
         "album"          => $self->album(),
         "class"          => $self->class(),
         "stream_content" => $self->streamContent(),
@@ -413,7 +413,7 @@ sub displayFields() {
         "id",
         "class",
         "title",
-        "creator",
+        "artist",
         "album",
         "streamContent",
     );
