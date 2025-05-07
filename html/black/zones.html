@@ -1,48 +1,46 @@
 [% INCLUDE header.tmpl %]
 
-[% IF args.zone %]
+[% IF player %]
   <div id="top-labels">
-     <h4 id="currentzonename" onclick="goto('zones')">[% ZONE_FANCYNAME %]</h4>
+     <h4 id="currentzonename" onclick="goto('zones')">[% player.zone.name %]</h4>
   </div>
 [% END %]
 
 <div id="zones">
-[% FOREACH item IN zones_loop %]
+[% FOREACH item IN players %]
  <div
-     [% IF zone_active %]
+     [% IF player and item.id == player.id %]
         class="active"
      [% ELSE %]
         class="normal"
      [% END %]
  >
- [% UNLESS zone_linked %]
-   [% IF args.zone %]
-   [% UNLESS zone_active %]
-       <img style='float: right;' onclick="goto('zones', 'action=Link&link=[% active_zoneid %]'); return true;" width="44" height="44" src="svg/link.svg">
-   [% END %]
+ [% IF item.zone.is_coord %]
+   [% IF player and item.id != player.id %]
+       <img style='float: right;' onclick="goto('zones', 'action=Link&link=[% player.zone.name %]'); return true;" width="44" height="44" src="svg/link.svg">
    [% END %]
 
-   [% IF ZONE_NUMLINKED %]
-       <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=[% zone_name %]');" width="44" height="44" src="svg/unlink.svg">
+   [% IF item.zone.members %]
+       <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=[% item.zone.name %]');" width="44" height="44" src="svg/unlink.svg">
    [% END %]
 
    <ul
-       onclick="zone('[% zone_name %]');">
-    [% FOREACH item IN ZONE_MEMBERS %]
-       <li style="background-image: url(zone_icons/[% zone_icon %].png);">
-         [% zone_name %]
+       onclick="zone('[% item.zone.name %]');">
+    [% FOREACH member IN item.zone.members %]
+       <li style="background-image: url(zone_icons/[% member %].png);">
+         [% member %]
       </li>
     [% END %]
   </ul>
 
   <div class="zoneinfo">
     <span>
-        [% IF active_playing %]
+        [% IF item.av.transport_state == "PLAYING" %]
            <img width="22" height="22" src="svg/play.svg">
         [% ELSE %]
            <img width="22" height="22" src="svg/pause.svg">
         [% END %]
-        [% active_album %]
+        [% item.av.album %]
     </span>
   </div>
  [% END %]

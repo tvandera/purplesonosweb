@@ -1,47 +1,47 @@
 [% INCLUDE header.tmpl %]
 
 <div id="top-labels">
-   <h4 id="currentzonename" onclick="goto('zones')">[% ZONE_FANCYNAME %]</h4>
+   <h4 id="currentzonename" onclick="goto('zones')">[% player.zone.name %]</h4>
    <h4 id="nowplayinglabel" onclick="goto('playing')">NOW PLAYING</h4>
 </div>
 
 <div id="music">
     <ul id='musiclist'>
-        [% IF music_path %]
+        [% IF music.id %]
             <li class='header'>
-            <img onClick="browse('mpath=[% music_parent %]')" src='tiles/back.svg'>
+            <img onClick="browse('mpath=[% music.parent %]')" src='tiles/back.svg'>
             <div>
-                <p id='musicpath'>[% music_name %]</p>
-                <p class='artist'>[% music_artist %]</p>
-                [% IF music_iscontainer %]
+                <p id='musicpath'>[% music.title %]</p>
+                <p class='artist'>[% music.artist %]</p>
+                [% IF music.iscontainer %]
                     <p class='buttons'>
-                    <a onclick="play('[% args.mpath %]');">Play</A> -
-                    <a onclick="add('[% args.mpath %]');">Add</A></p>
+                    <a onclick="play('[% music.arg %]');">Play</A> -
+                    <a onclick="add('[% music.arg %]');">Add</A></p>
                 [% END %]
             </div>
             </li>
         [% END %]
-        [% IF music_isalbum %]
-            [% IF music_albumart %]
-            <li class='albumart'><img width="200" height="200" src="[% music_albumart %]"></li>
+        [% IF music.isalbum %]
+            [% IF music.albumart %]
+            <li class='albumart'><img width="200" height="200" src="[% music.albumart %]"></li>
             [% END %]
         [% END %]
 
-    [% FOREACH item IN music_loop %]
-        [% IF music_isradio %]
-            <li onclick="play('[% args.mpath %]');">
+    [% FOREACH item IN music.items %]
+        [% IF item.isradio %]
+            <li onclick="play('[% item.arg %]');">
         [% ELSE %]
-            <li onclick="browse('[% args.mpath %]');">
+            <li onclick="browse('[% item.arg %]');">
         [% END %]
-        [% IF music_issong %]
-            <div class='trackno'>[% MUSIC_TRACK_NUM %]</div>
+        [% IF item.issong %]
+            <div class='trackno'>[% item.track_num %]</div>
         [% ELSE %]
-            <img width="44" height="44" src="[% music_albumart %]">
+            <img width="44" height="44" src="[% item.albumart %]">
         [% END %]
         <div>
-            <p class='title'>[% music_name %]</p>
-            <p class='artist'>[% music_artist %]</p>
-            <p class='description'>[% music_desc %]</p>
+            <p class='title'>[% item.title %]</p>
+            <p class='artist'>[% item.artist %]</p>
+            <p class='description'>[% item.desc %]</p>
         </div>
     </li>
     [% END %]

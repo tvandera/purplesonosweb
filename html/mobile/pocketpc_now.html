@@ -6,9 +6,9 @@
 <BODY>
 
 
-[% IF args.zone %]
+[% IF url.values.zone %]
 <table width=100% align=center cellspacing=0 cellpadding=0>
-<tr align=center><td><B><A HREF="pocketpc.html?[% args.all %]">[% active_zone %]</b></A></td></tr>
+<tr align=center><td><B><A HREF="pocketpc.html?[% url.args.all %]">[% active_zone %]</b></A></td></tr>
 <tr align=center><td><a href=pocketpc.html?zone=[% active_zoneid %]><IMG WIDTH=160 HEIGHT=160 SRC="[% active_albumart %]"></a></td></tr>
 <tr align=center><td><font size=-1>[% active_name %]</font></td></tr>
 [% IF active_isradio %]
@@ -21,26 +21,26 @@
 <HR>
 
 <table width=100% cellspacing=0 cellpadding=0><tr align=center>
-<td><font size=-1><A HREF="?[% args.all %]action=Previous">Prev</A>&nbsp
+<td><font size=-1><A HREF="?[% url.args.all %]action=Previous">Prev</A>&nbsp
 [% IF active_playing %]
-<A HREF="?[% args.all %]action=Pause">Pause</A>&nbsp
+<A HREF="?[% url.args.all %]action=Pause">Pause</A>&nbsp
 [% ELSE %]
-<A HREF="?[% args.all %]action=Start">Play</A>&nbsp
+<A HREF="?[% url.args.all %]action=Start">Play</A>&nbsp
 [% END %]
-<A HREF="?[% args.all %]action=Next">Next</A>
+<A HREF="?[% url.args.all %]action=Next">Next</A>
 </font></td>
 <td><font size=-1>
 [% IF active_muted %]
-<A HREF="?[% args.all %]action=MuteOff">Mute</A>
+<A HREF="?[% url.args.all %]action=MuteOff">Mute</A>
 [% ELSE %]
-<A HREF="?[% args.all %]action=MuteOn">No-Mute</A>
+<A HREF="?[% url.args.all %]action=MuteOn">No-Mute</A>
 [% END %]
 &nbsp
-<A HREF="?[% args.all %]action=MuchSofter">--</A>&nbsp
-<A HREF="?[% args.all %]action=Softer">-</A>&nbsp
+<A HREF="?[% url.args.all %]action=MuchSofter">--</A>&nbsp
+<A HREF="?[% url.args.all %]action=Softer">-</A>&nbsp
 [% active_volume %]
-<A HREF="?[% args.all %]action=Louder">+</A>&nbsp
-<A HREF="?[% args.all %]action=MuchLouder">++</A>
+<A HREF="?[% url.args.all %]action=Louder">+</A>&nbsp
+<A HREF="?[% url.args.all %]action=MuchLouder">++</A>
 </font></td>
 </tr></table>
 

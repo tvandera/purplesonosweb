@@ -6,23 +6,23 @@
 </HEAD>
 <BODY>
 
-[% UNLESS args.zone %]
+[% UNLESS url.values.zone %]
 To begin, select a zone:<BR>
 [% END %]
 
 [% FOREACH item IN zones_loop %]
     [% IF zone_active %]
-        <B><A HREF="?[% args.zone %]">[% zone_name %]</A></B>
+        <B><A HREF="?[% url.values.zone %]">[% zone_name %]</A></B>
     [% ELSE %]
-        <A HREF="?[% args.zone %]">[% zone_name %]</A>
+        <A HREF="?[% url.values.zone %]">[% zone_name %]</A>
     [% END %]
 [% END %]
 <P>
 
-[% IF args.zone %]
-<FONT SIZE="0"><A HREF="?[% args.all %]">Refresh</A></FONT><BR>
+[% IF url.values.zone %]
+<FONT SIZE="0"><A HREF="?[% url.args.all %]">Refresh</A></FONT><BR>
 
-[% args.zone %] Now Playing: <BR>
+[% url.values.zone %] Now Playing: <BR>
 &nbsp; <B>Song:</B> [% active_name %]<BR>
 [% IF active_isradio %]
 &nbsp; <B>Station:</B> [% active_album %]<BR>
@@ -34,46 +34,46 @@ To begin, select a zone:<BR>
 
 <HR>
 
-<A HREF="?[% args.all %]action=Previous">Previous</A>
+<A HREF="?[% url.args.all %]action=Previous">Previous</A>
 [% IF active_playing %]
-<A HREF="?[% args.all %]action=Pause">Pause</A>
+<A HREF="?[% url.args.all %]action=Pause">Pause</A>
 [% ELSE %]
-<A HREF="?[% args.all %]action=Start">Play</A>
+<A HREF="?[% url.args.all %]action=Start">Play</A>
 [% END %]
-<A HREF="?[% args.all %]action=Next">Next</A>
+<A HREF="?[% url.args.all %]action=Next">Next</A>
 <BR>
 [% IF active_shuffle %]
-<A HREF="?[% args.all %]action=ShuffleOff">Shuffle Off</A>
+<A HREF="?[% url.args.all %]action=ShuffleOff">Shuffle Off</A>
 [% ELSE %]
-<A HREF="?[% args.all %]action=ShuffleOn">Shuffle On</A>
+<A HREF="?[% url.args.all %]action=ShuffleOn">Shuffle On</A>
 [% END %]
 [% IF active_repeat %]
-<A HREF="?[% args.all %]action=RepeatOff">Repeat Off</A>
+<A HREF="?[% url.args.all %]action=RepeatOff">Repeat Off</A>
 [% ELSE %]
-<A HREF="?[% args.all %]action=RepeatOn">Repeat On</A>
+<A HREF="?[% url.args.all %]action=RepeatOn">Repeat On</A>
 [% END %]
 <BR>
 [% IF active_muted %]
-<A HREF="?[% args.all %]action=MuteOff">Mute Off</A>
+<A HREF="?[% url.args.all %]action=MuteOff">Mute Off</A>
 [% ELSE %]
-<A HREF="?[% args.all %]action=MuteOn">Mute On</A>
+<A HREF="?[% url.args.all %]action=MuteOn">Mute On</A>
 [% END %]
-<A HREF="?[% args.all %]action=MuchSofter">--</A>
-<A HREF="?[% args.all %]action=Softer">-</A>
+<A HREF="?[% url.args.all %]action=MuchSofter">--</A>
+<A HREF="?[% url.args.all %]action=Softer">-</A>
 [% active_volume %]
-<A HREF="?[% args.all %]action=Louder">+</A>
-<A HREF="?[% args.all %]action=MuchLouder">++</A>
+<A HREF="?[% url.args.all %]action=Louder">+</A>
+<A HREF="?[% url.args.all %]action=MuchLouder">++</A>
 
 <HR>
-<A HREF="?[% args.all %]mpath=R:">Radio</A>
-<A HREF="?[% args.all %]mpath=SQ:">Playlists</A>
-<A HREF="?[% args.all %]mpath=A:ARTIST">Artists</A>
-<A HREF="?[% args.all %]mpath=A:ALBUM">Albums</A>
-<A HREF="?[% args.all %]mpath=A:GENRE">Genre</A>
-<A HREF="?[% args.all %]mpath=A:COMPOSER">Composers</A>
-<A HREF="?[% args.all %]mpath=S:">Folders</A>
-<A HREF="?[% args.all %]mpath=AI:">Line In</A>
-<FORM ACTION="?[% args.all %]" METHOD="get">
+<A HREF="?[% url.args.all %]mpath=R:">Radio</A>
+<A HREF="?[% url.args.all %]mpath=SQ:">Playlists</A>
+<A HREF="?[% url.args.all %]mpath=A:ARTIST">Artists</A>
+<A HREF="?[% url.args.all %]mpath=A:ALBUM">Albums</A>
+<A HREF="?[% url.args.all %]mpath=A:GENRE">Genre</A>
+<A HREF="?[% url.args.all %]mpath=A:COMPOSER">Composers</A>
+<A HREF="?[% url.args.all %]mpath=S:">Folders</A>
+<A HREF="?[% url.args.all %]mpath=AI:">Line In</A>
+<FORM ACTION="?[% url.args.all %]" METHOD="get">
 Regex:
 <INPUT NAME=zone VALUE="[% active_zoneid %]" TYPE=HIDDEN>
 <INPUT NAME=msearch VALUE="[% music_search %]" TYPE=text>
@@ -83,12 +83,12 @@ Regex:
 [% UNLESS music_root %]
 <B>[% music_error %]</B>
 [% FOREACH item IN music_loop %]
-    <A HREF="?[% args.all %][% args.mpath %]action=add">+</A>
-    <A HREF="?[% args.all %][% args.mpath %]action=Play">|&gt;</A>
+    <A HREF="?[% url.args.all %][% url.args.mpath %]action=add">+</A>
+    <A HREF="?[% url.args.all %][% url.args.mpath %]action=Play">|&gt;</A>
     [% IF music_issong %]
     [% music_name %]
     [% ELSE %]
-    <A HREF="?[% args.all %][% args.mpath %]action=Browse">[% music_name %]</A>
+    <A HREF="?[% url.args.all %][% url.args.mpath %]action=Browse">[% music_name %]</A>
     [% END %]
     <BR>
 [% END %]

@@ -10,35 +10,35 @@
 <TR></TR>
 <TR></TR>
 
-[% FOREACH zone IN zones %]
+[% FOREACH player IN players %]
 	<TR>
-		<TD ALIGN=CENTER><B>[% zone.zone.name %]</B><BR>
-		[% zone.av.transport_state %]<BR>
-		[% IF zone.av.isradio %]
+		<TD ALIGN=CENTER><B>[% player.zone.name %]</B><BR>
+		[% player.av.transport_state %]<BR>
+		[% IF player.av.isradio %]
 			<BR>Internet Radio<BR>
 		[% ELSE %]
-			<BR>[% zone.av.track_num %] of [% zone.av.track_tot %]<BR>
-			<BR>[% zone.av.play_mode %]<BR>
+			<BR>[% player.av.track_num %] of [% player.av.track_tot %]<BR>
+			<BR>[% player.av.play_mode %]<BR>
 		[% END %]
-		<br>Vol.[% zone.render.volume %]
+		<br>Vol.[% player.render.volume %]
 	</TD>
 
 
 
-	[% IF zone.av.isradio %]
+	[% IF player.av.isradio %]
 		<td><Table>
-			<TD> <font size = 1>Station:</font><br> [% zone.av.title %]</TD>
-			<TD><font size = 1>Information:</font><br>[% zone.av.current_transport.stream_content %]</TD>
+			<TD> <font size = 1>Station:</font><br> [% player.av.title %]</TD>
+			<TD><font size = 1>Information:</font><br>[% player.av.current_transport.stream_content %]</TD>
 		</Table>
 	[% ELSE %]
 		<TD>
 		<Table>
 		<tr><td><font size = 1>Track:</font></td>
-		<td>[% zone.av.title %]</td></tr>
+		<td>[% player.av.title %]</td></tr>
 		<tr><td><font size = 1>Artist:</font></td>
-		<td>[% zone.av.artist %]</td></tr>
+		<td>[% player.av.artist %]</td></tr>
 		<tr><td><font size = 1>Album:</font></td>
-		<td>[% zone.av.album %]</td></tr>
+		<td>[% player.av.album %]</td></tr>
 		[% IF next_name %]
 			<tr><td></td></tr>
 			<tr><td colspan=2><font size = 1>Next: </font><br>

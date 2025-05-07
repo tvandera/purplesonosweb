@@ -3,7 +3,7 @@
 <html>
 <head>
 <title>NONOS - Web SONOS Controller</title>
-<meta http-equiv="refresh" content="3000;URL=index.html?[% args.all %]">
+<meta http-equiv="refresh" content="3000;URL=index.html?[% url.args.all %]">
 </head>
 <body bgcolor="#697583" bottommargin="0" leftmargin="0" rightmargin="0" topmargin="0">
 <table  border="0" align="center" cellpadding="8" cellspacing="0">
@@ -24,7 +24,7 @@
         <td width="167" align="left" valign="top">
           <font color="#990000" face="Arial, Helvetica, sans-serif" size="3"><b>NOW PLAYING
           <br>
-          [% args.zone %] <br>
+          [% url.values.zone %] <br>
           <br>
           </b></font>
 
@@ -86,13 +86,13 @@
             [% IF zone_img %]<IMG SRC="[% zone_img %]" align="right"> [% END %]
             [% IF zone_active %]<I>[% END %]
             [% IF zone_linked %]<font color="#FFFFFF" face="Arial, Helvetica, sans-serif" size="1">&nbsp; &nbsp; [% zone_name %]</font>
-            [% ELSE %]<A HREF="index.html?[% args.zone %]"><font color="#FFFFFF" face="Arial, Helvetica, sans-serif" size="1">[% zone_name %]</font></A>
+            [% ELSE %]<A HREF="index.html?[% url.values.zone %]"><font color="#FFFFFF" face="Arial, Helvetica, sans-serif" size="1">[% zone_name %]</font></A>
             [% END %]
             [% IF zone_active %]</I>[% END %]
             <BR>
           [% END %]
           <P>
-          [% UNLESS args.zone %]
+          [% UNLESS url.values.zone %]
             <B><font color="#FFFFFF" face="Arial, Helvetica, sans-serif" size="1">Select a zone to start</font></B>
           [% END %] </td>
           <td width="8"><img src="shim.gif" height="8" width="8"></td>
@@ -134,7 +134,7 @@
     <tr>
       <td bgcolor="#E4F2FF">
 
-      <form ACTION="index.html?[% args.all %]" METHOD="get">
+      <form ACTION="index.html?[% url.args.all %]" METHOD="get">
       <table width="275" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td>&nbsp;</td>
@@ -156,7 +156,7 @@
       </tr>
       <tr>
         <td>&nbsp;</td>
-        <td colspan="2" align="left" valign="top"><div align="center"><font color="#000000" size="1"><A HREF="index.html?[% args.all %]action=RemoveAll"><font face="Arial, Helvetica, sans-serif">Remove All</font></A></font></div></td>
+        <td colspan="2" align="left" valign="top"><div align="center"><font color="#000000" size="1"><A HREF="index.html?[% url.args.all %]action=RemoveAll"><font face="Arial, Helvetica, sans-serif">Remove All</font></A></font></div></td>
         <td>&nbsp;</td>
       </tr>
       </table>
@@ -175,7 +175,7 @@
     <tr> <td><img src="src_table_top.gif" width="275" height="8"></td> </tr>
     <tr>
       <td bgcolor="#E4F2FF">
-      <form ACTION="index.html?[% args.all %]" METHOD="get">
+      <form ACTION="index.html?[% url.args.all %]" METHOD="get">
       <table width="275" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td>&nbsp;</td>
@@ -194,13 +194,13 @@
         <B>[% music_error %]</B>
         [% FOREACH item IN music_loop %]
           [% UNLESS music_root %]
-            <A HREF="index.html?[% args.all %][% args.mpath %]action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-            <A HREF="index.html?[% args.all %][% args.mpath %]action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+            <A HREF="index.html?[% url.args.all %][% url.args.mpath %]action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+            <A HREF="index.html?[% url.args.all %][% url.args.mpath %]action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
           [% END %]
           [% IF music_issong %]
             [% music_name %]
           [% ELSE %]
-            <A HREF="index.html?[% args.all %][% args.mpath %]action=Browse">[% music_name %]</A>
+            <A HREF="index.html?[% url.args.all %][% url.args.mpath %]action=Browse">[% music_name %]</A>
           [% END %]
           <BR>
         [% END %]
@@ -211,8 +211,8 @@
       <tr>
         <td>&nbsp;</td>
         <td colspan="2" align="left" valign="top"><div align="center"><FONT color="#000000" SIZE=0 face="Arial, Helvetica, sans-serif">
-        <A HREF="index.html?[% args.all %]action=ReIndex">Re-Index Music</A>
-        <A HREF="index.html?[% args.all %]">Refresh</A>
+        <A HREF="index.html?[% url.args.all %]action=ReIndex">Re-Index Music</A>
+        <A HREF="index.html?[% url.args.all %]">Refresh</A>
         <A HREF="index.html?zone=[% active_zoneid %]&mpath=/">Top</A>
         [% UNLESS music_root %]
           <A HREF="index.html?zone=[% active_zoneid %]&mpath=[% music_parent %]">Up</A>
@@ -235,26 +235,26 @@
 </tr>
 </table>
 <map name="Map">
-  <area shape="rect" coords="-8,1,32,41" href="index.html?[% args.all %]action=MuchSofter">
-  <area shape="rect" coords="31,1,68,39" href="index.html?[% args.all %]action=Softer">
+  <area shape="rect" coords="-8,1,32,41" href="index.html?[% url.args.all %]action=MuchSofter">
+  <area shape="rect" coords="31,1,68,39" href="index.html?[% url.args.all %]action=Softer">
 </map>
 <map name="Map2">
-  <area shape="rect" coords="30,1,70,44" href="index.html?[% args.all %]action=MuchLouder">
-  <area shape="rect" coords="-7,1,30,35" href="index.html?[% args.all %]action=Louder">
+  <area shape="rect" coords="30,1,70,44" href="index.html?[% url.args.all %]action=MuchLouder">
+  <area shape="rect" coords="-7,1,30,35" href="index.html?[% url.args.all %]action=Louder">
 </map>
 <map name="Map3">
-  <area shape="rect" coords="6,5,43,46" href="index.html?[% args.all %]action=Previous">
-  <area shape="rect" coords="52,4,93,22" href="index.html?[% args.all %]action=Start">
-  <area shape="rect" coords="52,30,94,48" href="index.html?[% args.all %]action=Pause">
-  <area shape="rect" coords="101,5,142,47" href="index.html?[% args.all %]action=Next">
+  <area shape="rect" coords="6,5,43,46" href="index.html?[% url.args.all %]action=Previous">
+  <area shape="rect" coords="52,4,93,22" href="index.html?[% url.args.all %]action=Start">
+  <area shape="rect" coords="52,30,94,48" href="index.html?[% url.args.all %]action=Pause">
+  <area shape="rect" coords="101,5,142,47" href="index.html?[% url.args.all %]action=Next">
 </map>
 <map name="Map4">
-  <area shape="rect" coords="7,6,47,22" href="index.html?[% args.all %]action=ShuffleOn">
-  <area shape="rect" coords="50,7,88,22" href="index.html?[% args.all %]action=RepeatOn">
-  <area shape="rect" coords="97,4,117,22" href="index.html?[% args.all %]action=MuteOn">
-  <area shape="rect" coords="7,37,46,51" href="index.html?[% args.all %]action=ShuffleOff">
-  <area shape="rect" coords="50,35,89,52" href="index.html?[% args.all %]action=RepeatOff">
-  <area shape="rect" coords="97,33,117,51" href="index.html?[% args.all %]action=MuteOff">
+  <area shape="rect" coords="7,6,47,22" href="index.html?[% url.args.all %]action=ShuffleOn">
+  <area shape="rect" coords="50,7,88,22" href="index.html?[% url.args.all %]action=RepeatOn">
+  <area shape="rect" coords="97,4,117,22" href="index.html?[% url.args.all %]action=MuteOn">
+  <area shape="rect" coords="7,37,46,51" href="index.html?[% url.args.all %]action=ShuffleOff">
+  <area shape="rect" coords="50,35,89,52" href="index.html?[% url.args.all %]action=RepeatOff">
+  <area shape="rect" coords="97,33,117,51" href="index.html?[% url.args.all %]action=MuteOff">
 </map>
 </body>
 </html>

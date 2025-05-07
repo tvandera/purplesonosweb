@@ -4,15 +4,15 @@
 </HEAD>
 <BODY>
 <FONT SIZE=0>
-<A TARGET=music HREF="music.html?[% args.all %]action=ReIndex">ReIndex Music</A>
-<A TARGET=music HREF="music.html?[% args.all %]">Refresh</A>
+<A TARGET=music HREF="music.html?[% url.args.all %]action=ReIndex">ReIndex Music</A>
+<A TARGET=music HREF="music.html?[% url.args.all %]">Refresh</A>
 <A TARGET=music HREF="music.html?zone=[% active_zoneid %]&mpath=/">Top</A>
 [% UNLESS music_root %]
 <A TARGET=music HREF="music.html?zone=[% active_zoneid %]&mpath=[% music_parent %]">Up</A>
 [% END %]
 </FONT>
 <P>
-<FORM ACTION="music.html?[% args.all %]" METHOD="get">
+<FORM ACTION="music.html?[% url.args.all %]" METHOD="get">
 Perl Expression:
 <INPUT NAME=msearch VALUE="[% music_search %]">
 <INPUT NAME=zone VALUE="[% active_zoneid %]" TYPE=HIDDEN>
@@ -24,13 +24,13 @@ Perl Expression:
 [% FOREACH item IN music_loop %]
     <IMG BORDER=0 SRC=[% music_albumart %]>
     [% UNLESS music_root %]
-        <A TARGET=middle HREF="middle.html?[% args.all %][% args.mpath %]action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-        <A TARGET=middle HREF="middle.html?[% args.all %][% args.mpath %]action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+        <A TARGET=middle HREF="middle.html?[% url.args.all %][% url.args.mpath %]action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+        <A TARGET=middle HREF="middle.html?[% url.args.all %][% url.args.mpath %]action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
     [% END %]
     [% UNLESS music_iscontainer %]
         [% music_name %]
     [% ELSE %]
-        <A TARGET=music HREF="music.html?[% args.all %][% args.mpath %]action=Browse">[% music_name %]</A>
+        <A TARGET=music HREF="music.html?[% url.args.all %][% url.args.mpath %]action=Browse">[% music_name %]</A>
     [% END %]
     <BR>
 [% END %]

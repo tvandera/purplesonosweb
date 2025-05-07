@@ -4,9 +4,9 @@
         <TITLE>Sonos Web Controller - [% version %]</TITLE>
     </HEAD>
     <FRAMESET COLS="150,30%,*">
-        <FRAME NAME=zones  SRC="zones.html?[% args.all %]">
-        <FRAME NAME=middle SRC="middle.html?[% args.all %]">
-        <FRAME NAME=music  SRC="music.html?[% args.all %]">
+        <FRAME NAME=zones  SRC="zones.html?[% url.args.all %]">
+        <FRAME NAME=middle SRC="middle.html?[% url.args.all %]">
+        <FRAME NAME=music  SRC="music.html?[% url.args.all %]">
     </FRAMESET>
     <NOFRAMES>
     This document requires frames.

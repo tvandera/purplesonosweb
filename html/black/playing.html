@@ -1,15 +1,15 @@
 [% INCLUDE header.tmpl %]
 
 <div id="top-labels">
-     <h4 id="currentzonename" onclick="goto('zones')">[% ZONE_FANCYNAME %]</h4>
+     <h4 id="currentzonename" onclick="goto('zones')">[% player.zone.name %]</h4>
      <h4 id="musiclabel" onclick="goto('music')">MUSIC LIBRARY</h4>
 </div>
 
-[% IF args.zone %]
+[% IF url.values.zone %]
 <div id="current-track-info">
     <img class="albumart" id="albumart"
-      [% IF active_albumart %]
-         src="[% active_albumart %]"
+      [% IF player.av.albumart %]
+         src="[% player.av.albumart %]"
       [% ELSE %]
          src="tiles/missingaa_lite.svg"
       [% END %]
@@ -20,12 +20,12 @@
 <div id="control">
     <img onclick="send('Previous');" width="44" height="44" src="svg/prev.svg" id="previous">
     <img onclick="send('Pause');" width="44" height="44" src="svg/pause.svg" id="pause"
-      [% UNLESS active_playing %]
+      [% UNLESS player.av.transport_state == 'PLAYING' %]
             style="display: none;"
       [% END %]
     >
     <img onclick="send('Start');" width="44" height="44" src="svg/play.svg" id="play"
-      [% IF active_playing %]
+      [% IF player.av.transport_state == 'PLAYING' %]
             style="display: none;"
       [% END %]
     >
@@ -38,12 +38,12 @@
 
 <div id="mute">
     <img onclick="send('MuteOn');" width="44" height="44" src="svg/mute_off.svg" id="muteon"
-      [% IF active_muted %]
+      [% IF player.render.muted %]
             style="display: none;"
       [% END %]
     >
     <img onclick="send('MuteOff');" width="44" height="44" src="svg/mute_on.svg" id="muteoff"
-      [% UNLESS active_muted %]
+      [% UNLESS player.render.muted %]
             style="display: none;"
       [% END %]
     >
@@ -51,7 +51,7 @@
 
 <div id="volumes">
    <img onclick="softer();" width="44" height="44" src="svg/minus.svg" id="muchsofter">
-    <label id="volume">[% active_volume %]%</label>
+    <label id="volume">[% player.render.volume %]%</label>
     <img onclick="louder();" width="44" height="44" src="svg/plus.svg" id="muchlouder">
 
 </div>
