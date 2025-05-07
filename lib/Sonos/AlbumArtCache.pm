@@ -133,9 +133,8 @@ sub get($self, $uri) {
             write_file($full_filename, $blob) unless -e $full_filename;
         }
     } catch {
-        $self->system()->log("aacache", "failed [$uri]");
-    }
-
+        $self->system()->log("aacache", "failed [$uri]: $_");
+    };
 
     # save + write json
     $self->{_album_art}->{$sha} = [ $mime_type, $blob, $filename ];
