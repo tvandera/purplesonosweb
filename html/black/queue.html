@@ -16,7 +16,7 @@
             </div>
             </li>
             [% FOREACH item IN player.queue.items %]
-                <li onclick="seek('[% item.id %]');">
+                <li onclick="seek('[% item.arg %]');">
                     <img width="44" height="44" class="albumart" src="[% item.albumart %]" />
                     <div>
                         <p class="title">[% item.title %]</p>
