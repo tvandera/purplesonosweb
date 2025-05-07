@@ -8,6 +8,7 @@
 
 <div id="zones">
 [% FOREACH item IN players %]
+ [% IF item.zone.is_coord %]
  <div
      [% IF player and item.id == player.id %]
         class="active"
@@ -15,13 +16,12 @@
         class="normal"
      [% END %]
  >
- [% IF item.zone.is_coord %]
    [% IF player and item.id != player.id %]
-       <img style='float: right;' onclick="goto('zones', 'action=Link&link=[% player.zone.name %]'); return true;" width="44" height="44" src="svg/link.svg">
+       <img style='float: right;' onclick="goto('zones', 'action=Link&link=[% item.name %]'); return true;" width="44" height="44" src="svg/link.svg">
    [% END %]
 
-   [% IF item.zone.members %]
-       <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=[% item.zone.name %]');" width="44" height="44" src="svg/unlink.svg">
+   [% IF item.zone.members.size > 1 %]
+       <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=[% item.name %]');" width="44" height="44" src="svg/unlink.svg">
    [% END %]
 
    <ul
@@ -43,9 +43,8 @@
         [% item.av.album %]
     </span>
   </div>
- [% END %]
 </div>
-
+[% END %]
 [% END %]
 </div>
 
