@@ -385,12 +385,7 @@ sub sendHello($self, $req) {
 sub restAPI($self, $r) {
     $self->action($r, sub {
         my %qf = $r->query_form;
-        my $builder;
-        if (defined $qf{"v1"}) {
-            $builder = Sonos::HTTP::Builder->new($self->system(), \%qf);
-        } else {
-            $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
-        }
+        my $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
 
         my $what = $qf{"what"} || "system";
         my $method = "build_" . $what . "_data";
