@@ -51,6 +51,12 @@ sub description($self) {
         : $self->curTrack()->artist() . " / " . $self->curTrack()->album();
 }
 
+
+sub albumArtURI($self) {
+    return $self->curTrack()->albumArtURI();
+}
+
+
 sub info($self) {
     my @fields = (
         "lastUpdateReadable",
@@ -77,6 +83,8 @@ sub TO_JSON($self) {
     return {
         "last_update"       => $self->lastUpdate(),
         "title"             => $self->title(),
+        "album"             => $self->curTrack()->album(),
+        "artist"            => $self->curTrack()->album(),
         "description"       => $self->description(),
         "isradio"           => $self->isRadio(),
         "current_track"     => $self->curTrack()->TO_JSON($player),
@@ -86,7 +94,8 @@ sub TO_JSON($self) {
         "track_num"         => int($self->currentTrack()),
         "track_tot"         => int($self->numberOfTracks()),
         "transport_state"   => $self->transportState(),
-        "play_mode"         => $self->currentPlayMode()
+        "play_mode"         => $self->currentPlayMode(),
+        "albumart"          => $self->albumArtURI()
     }
 }
 
