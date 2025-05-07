@@ -25,7 +25,7 @@ my $input = read_file($fname);
 my $json = $decoder->decode($input);
 
 for my $fname (@files) {
-   print("=======  $fname =======\n");
+   print("\n=======  $fname =======\n");
 
    my $output = '';
     my $tt = Template->new({
@@ -36,7 +36,7 @@ for my $fname (@files) {
    my $ok = $tt->process($fname, $json, \$output);
 
    if ($ok) {
-        print("$fname: ✅\n\n");
+        print("$fname: ✅\n");
    } else {
         print $tt->error(), "\n" unless $ok;
    }
