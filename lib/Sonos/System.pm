@@ -89,9 +89,9 @@ sub TO_JSON($self, $qf) {
     }
 }
 
-sub players($self, $sorted = undef) {
+sub players($self) {
     my @players = values %{$self->{_players}};
-    @players = sort { $a->cmp($b) } @players unless !$sorted;
+    @players = sort { $a->cmp($b) } @players;
     return @players;
 }
 

@@ -45,8 +45,8 @@ sub system($self) {
     return $self->{"_system"};
 }
 
-sub players($self, $sorted = 1) {
-    return $self->system()->players($sorted);
+sub players($self) {
+    return $self->system()->players();
 }
 
 sub lastUpdate($self) {
