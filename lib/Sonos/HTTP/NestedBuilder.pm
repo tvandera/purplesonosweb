@@ -12,6 +12,7 @@ use HTML::Entities;
 use URI::Escape;
 use Encode qw(encode decode);
 use URI::WithBase;
+use URI::Escape;
 use File::Spec::Functions 'catfile';
 require JSON;
 use IO::Compress::Gzip qw(gzip $GzipError) ;
@@ -112,19 +113,24 @@ sub build_system_data($self) {
     return $self->system()->TO_JSON($self->qf());
 }
 
-sub build_args_data($self, $qf) {
+sub encode_arg($self, $key) {
+    my $value = uri_escape_utf8($self->qf($_));
+    return $value ? "$key=$value&" : "";
+}
+
+sub build_url_data($self) {
     my @keys = qw(zone what action rand mpath msearch link queue);
-    my %args = map { $_ => $qf->{$_} // "" } @keys;
-    $args{"all"} = join "&", map { $_ . "=" . $qf->{$_} } keys %$qf;
-    return { %args };
+    my %values = map { $_ =>  $self->qf($_) } @keys;
+    my %args = map { $_ => $self->encode_arg($_) } @keys;
+    $args{"all"} = join "&", map { $self->encode_arg($_) } keys %{$self->qf()};
+    return {
+        "args" => { %args },
+        "values" => { %values },
+    };
 }
 
 sub build_all_data($self) {
-    my @categories = ( "system", "zone", "queue", "music" ) ;
-    my %methods = map { $_ => "build_" . $_ . "_data" } @categories;
-    my %data = ();
-    while (my ($key, $value) = each(%methods)) {
-        $data{$key} = $self->$value();
-    }
-    return \%data;
+    my $ret = $self->build_system_data();
+    $ret->{"url"} = $self->build_url_data();
+    return $ret;
 }
