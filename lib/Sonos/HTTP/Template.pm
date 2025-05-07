@@ -13,6 +13,7 @@ use URI::Escape;
 use Encode qw(encode decode);
 use URI::WithBase;
 use File::Spec::Functions 'catfile';
+use File::Basename;
 require JSON;
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use MIME::Types;
@@ -35,7 +36,9 @@ sub new {
     $self->{_diskpath} = $diskpath;
 
     my $tt = $self->{_template} = Template->new({
-        STRICT => 1,
+        # STRICT => 1,
+        RELATIVE => 1,
+        INCLUDE_PATH => [ '.', dirname($diskpath) ],
         # DEBUG => DEBUG_ALL,
     });
 
