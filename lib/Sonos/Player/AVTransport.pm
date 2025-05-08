@@ -220,10 +220,10 @@ sub setShuffle($self, $on_or_off) {
     );
     $self->switchPlayMode(%switch_shuffle);
 
-    return !$self->getShuffle() == $on_or_off;
+    return !$self->isShuffle() == $on_or_off;
 }
 
-sub shuffleOf($self) { $self->setShuffle(0); }
+sub shuffleOff($self) { $self->setShuffle(0); }
 sub shuffleOn($self) { $self-setShuffle(1); }
 
 # ---- queue ----

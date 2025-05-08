@@ -249,7 +249,7 @@ sub action {
         "repeatoff"   => [ $av, sub { $av->setRepeat(0) } ],
         "repeaton"    => [ $av, sub { $av->setRepeat(1); } ],
         "shuffleoff"  => [ $av, sub { $av->setShuffle(0); } ],
-        "shuffleon"   => [ $av, sub { $av-setShuffle(1); } ],
+        "shuffleon"   => [ $av, sub { $av->setShuffle(1); } ],
 
         # queue
         "removeall"   => [ $av, sub {
