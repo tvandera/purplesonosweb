@@ -387,7 +387,7 @@ sub restAPI($self, $r) {
         my %qf = $r->query_form;
         my $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
 
-        my $what = $qf{"what"} || "system";
+        my $what = $qf{"what"} || "all";
         my $method = "build_" . $what . "_data";
         my $data = $builder->$method();
         my $json = $builder->to_json($data);
