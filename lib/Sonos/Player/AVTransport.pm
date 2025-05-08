@@ -82,7 +82,7 @@ sub TO_JSON($self) {
         "last_update"       => $self->lastUpdate(),
         "title"             => $self->title(),
         "album"             => $self->curTrack()->album(),
-        "artist"            => $self->curTrack()->album(),
+        "artist"            => $self->curTrack()->artist(),
         "description"       => $self->description(),
         "isradio"           => $self->isRadio(),
         "current_track"     => $self->curTrack()->TO_JSON(),
