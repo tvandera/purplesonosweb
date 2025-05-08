@@ -4,18 +4,18 @@
 </HEAD>
 <BODY>
 <FONT SIZE=0><A TARGET=_top HREF="index.html?[% url.args.all %]">Refresh</A></FONT><P>
-[% FOREACH item IN zones_loop %]
-    [% IF zone_active %]<B>[% END %]
-    [% IF zone_linked %]
-       &nbsp; &nbsp;[% zone_name %]
-      <A TARGET=_top HREF="index.html?[% url.args.all %]link=[% active_zone %]&action=Unlink"><font size=-2>[U]</font></a>
+[% FOREACH item IN players %]
+    [% IF player %]<B>[% END %]
+    [% UNLESS item.zone.is_coord %]
+       &nbsp; &nbsp;[% item.zone.name %]
+      <A TARGET=_top HREF="index.html?[% url.args.all %]link=[% player.arg %]&action=Unlink"><font size=-2>[U]</font></a>
     [% ELSE %]
-       <A TARGET=_top HREF="index.html?[% url.values.zone %]">[% zone_name %]</A>
-       [% UNLESS zone_active %]
-          <A TARGET=_top HREF="index.html?[% url.args.all %]link=[% active_zone %]&action=Link"><font size=-2>[L]</font></a>
+       <A TARGET=_top HREF="index.html?[% item.arg %]">[% item.zone.name %]</A>
+       [% UNLESS player %]
+          <A TARGET=_top HREF="index.html?[% url.args.all %]link=[% player.name %]&action=Link"><font size=-2>[L]</font></a>
        [% END %]
     [% END %]
-    [% IF zone_active %]</B>[% END %]
+    [% IF player %]</B>[% END %]
     <BR>
 [% END %]
 <P>

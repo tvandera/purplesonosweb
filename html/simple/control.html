@@ -5,49 +5,49 @@
 </HEAD>
 <BODY>
 
-[% url.values.zone %] Now Playing: <FONT SIZE=0><A TARGET=control HREF="control.html?[% url.args.all %]">Refresh</A></FONT><BR>
+[% player.zone.name %] Now Playing: <FONT SIZE=0><A TARGET=control HREF="control.html?[% url.args.all %]">Refresh</A></FONT><BR>
 
-&nbsp; <B>Song:</B> [% active_name %]<BR>
-[% IF active_isradio %]
-&nbsp; <B>Station:</B> [% active_album %]<BR>
+&nbsp; <B>Song:</B> [% player.title %]<BR>
+[% IF player.isradio %]
+    &nbsp; <B>Station:</B> [% player.album %]<BR>
 [% ELSE %]
-&nbsp; <B>Artist:</B> [% active_artist %]<BR>
-&nbsp; <B>Album:</B> [% active_album %]<BR>
-&nbsp; <B>Track:</B> [% active_track_num %]/[% active_track_tot %]<BR>
-[% IF active_albumart %]
-<IMG WIDTH=50 HEIGHT=50 SRC="[% active_albumart %]"><BR>
-[% END %]
+    &nbsp; <B>Artist:</B> [% player.artist %]<BR>
+    &nbsp; <B>Album:</B> [% player.album %]<BR>
+    &nbsp; <B>Track:</B> [% player.track_num %]/[% player.track_tot %]<BR>
+    [% IF player.albumart %]
+        <IMG WIDTH=50 HEIGHT=50 SRC="[% player.albumart %]"><BR>
+    [% END %]
 [% END %]
 
 <HR>
 
 <A TARGET=middle HREF="middle.html?[% url.args.all %]action=Previous">Previous</A>
-[% IF active_playing %]
+[% IF player.playing %]
 <A TARGET=middle HREF="middle.html?[% url.args.all %]action=Pause">Pause</A>
 [% ELSE %]
 <A TARGET=middle HREF="middle.html?[% url.args.all %]action=Start">Play</A>
 [% END %]
 <A TARGET=middle HREF="middle.html?[% url.args.all %]action=Next">Next</A>
 <BR>
-[% IF active_shuffle %]
+[% IF player.shuffle %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=ShuffleOff">Shuffle Off</A>
 [% ELSE %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=ShuffleOn">Shuffle On</A>
 [% END %]
-[% IF active_repeat %]
+[% IF player.repeat %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=RepeatOff">Repeat Off</A>
 [% ELSE %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=RepeatOn">Repeat On</A>
 [% END %]
 <BR>
-[% IF active_muted %]
+[% IF player.muted %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=MuteOff">Mute Off</A>
 [% ELSE %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=MuteOn">Mute On</A>
 [% END %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=MuchSofter">--</A>
 <A TARGET=control HREF="control.html?[% url.args.all %]action=Softer">-</A>
-[% active_volume %]
+[% player.volume %]
 <A TARGET=control HREF="control.html?[% url.args.all %]action=Louder">+</A>
 <A TARGET=control HREF="control.html?[% url.args.all %]action=MuchLouder">++</A>
 
