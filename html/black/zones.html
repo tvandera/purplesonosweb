@@ -10,17 +10,15 @@
 [% FOREACH item IN players %]
  [% IF item.zone.is_coord %]
  <div
-     [% IF player and item.id == player.id %]
+     [% IF item.isactive %]
         class="active"
      [% ELSE %]
         class="normal"
      [% END %]
  >
-   [% IF player and item.id != player.id %]
+   [% UNLESS item.isactive %]
        <img style='float: right;' onclick="goto('zones', 'action=Link&link=[% item.name %]'); return true;" width="44" height="44" src="svg/link.svg">
-   [% END %]
-
-   [% IF item.zone.members.size > 1 %]
+   [% ELSIF item.zone.members.size > 1 %]
        <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=[% item.name %]');" width="44" height="44" src="svg/unlink.svg">
    [% END %]
 
