@@ -9,7 +9,7 @@
     <ul id='musiclist'>
         [% IF music.id %]
             <li class='header'>
-            <img onClick="browse('mpath=[% music.parent %]')" src='tiles/back.svg'>
+            <img onClick="browse('mpath=[% music.parent.id %]')" src='tiles/back.svg'>
             <div>
                 <p id='musicpath'>[% music.title %]</p>
                 <p class='artist'>[% music.artist %]</p>
