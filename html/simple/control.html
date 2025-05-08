@@ -7,15 +7,16 @@
 
 [% player.zone.name %] Now Playing: <FONT SIZE=0><A TARGET=control HREF="control.html?[% url.args.all %]">Refresh</A></FONT><BR>
 
-&nbsp; <B>Song:</B> [% player.title %]<BR>
-[% IF player.isradio %]
-    &nbsp; <B>Station:</B> [% player.album %]<BR>
+[% IF player.av.isradio %]
+    &nbsp; <B>Station:</B> [% player.av.title %]<BR>
+    &nbsp; <B>Stream Content:</B> [% player.av.current_transport.stream_content %]<BR>
 [% ELSE %]
-    &nbsp; <B>Artist:</B> [% player.artist %]<BR>
-    &nbsp; <B>Album:</B> [% player.album %]<BR>
+    &nbsp; <B>Song:</B> [% player.av.title %]<BR>
+    &nbsp; <B>Artist:</B> [% player.av.artist %]<BR>
+    &nbsp; <B>Album:</B> [% player.av.album %]<BR>
     &nbsp; <B>Track:</B> [% player.av.track_num %]/[% player.av.track_tot %]<BR>
-    [% IF player.albumart %]
-        <IMG WIDTH=50 HEIGHT=50 SRC="[% player.albumart %]"><BR>
+    [% IF player.av.albumart %]
+        <IMG WIDTH=50 HEIGHT=50 SRC="[% player.av.albumart %]"><BR>
     [% END %]
 [% END %]
 
