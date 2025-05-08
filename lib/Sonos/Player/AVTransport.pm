@@ -93,7 +93,13 @@ sub TO_JSON($self) {
         "track_tot"         => int($self->numberOfTracks()),
         "transport_state"   => $self->transportState(),
         "play_mode"         => $self->currentPlayMode(),
-        "albumart"          => $self->albumArtURI()
+        "albumart"          => $self->albumArtURI(),
+
+        "shuffle"           => $self->isShuffle(),
+        "repeat"            => $self->isRepeat(),
+        "stopped"           => $self->isStopped(),
+        "playing"           => $self->isPlaying(),
+        "paused"            => $self->isPaused(),
     }
 }
 
