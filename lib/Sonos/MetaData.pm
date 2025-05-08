@@ -85,6 +85,25 @@ sub player($self) {
     return $self->owner()->playerForID($self->id());
 }
 
+sub system($self) {
+    return unless $self->id();
+    return $self->player()->system();
+}
+
+sub musicLibrary($self) {
+    return unless $self->id();
+    return $self->system()->musicLibrary();
+}
+
+sub parent($self) {
+    my $empty = Sonos::MetaData->new();
+
+    return $empty if $self->isQueueItem();
+    return $empty if $self->isRoot();
+
+    return $self->musicLibrary()->item($self->parentID());
+}
+
 # true unless data is empty
 sub populated($self) {
     return $self->{_data};
