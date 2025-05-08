@@ -1,61 +1,88 @@
 <HTML>
+
 <HEAD>
-<TITLE>SONOS Zones Status</TITLE>
+	<TITLE>SONOS Zones Status</TITLE>
 </HEAD>
+
 <BODY>
-<TABLE BORDER=1>
-<TR><TD COLSPAN=2 ALIGN=CENTER><B>SONOS  Zone Status</B></TD></TR>
-<TR></TR>
-<TR></TR>
-<TR></TR>
-<TR></TR>
+	<TABLE BORDER=1>
+		<TR>
+			<TD COLSPAN=2 ALIGN=CENTER><B>SONOS Zone Status</B></TD>
+		</TR>
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
 
-[% FOREACH player IN players %]
-	<TR>
-		<TD ALIGN=CENTER><B>[% player.zone.name %]</B><BR>
-		[% player.av.transport_state %]<BR>
-		[% IF player.av.isradio %]
-			<BR>Internet Radio<BR>
-		[% ELSE %]
-			<BR>[% player.av.track_num %] of [% player.av.track_tot %]<BR>
-			<BR>[% player.av.play_mode %]<BR>
+		[% FOREACH player IN players %]
+		<TR>
+			<TD ALIGN=CENTER><B>[% player.zone.name %]</B><BR>
+				[% player.av.transport_state %]<BR>
+				[% IF player.av.isradio %]
+				<BR>Internet Radio<BR>
+				[% ELSE %]
+				<BR>[% player.av.track_num %] of [% player.av.track_tot %]<BR>
+				<BR>[% player.av.play_mode %]<BR>
+				[% END %]
+				<br>Vol.[% player.render.volume %]
+			</TD>
+
+
+
+			[% IF player.av.isradio %]
+			<td>
+				<Table>
+					<TD>
+						<font size=1>Station:</font><br> [% player.av.title %]
+					</TD>
+					<TD>
+						<font size=1>Information:</font><br>[% player.av.current_transport.stream_content %]
+					</TD>
+				</Table>
+				[% ELSE %]
+			<TD>
+				<Table>
+					<tr>
+						<td>
+							<font size=1>Track:</font>
+						</td>
+						<td>[% player.av.title %]</td>
+					</tr>
+					<tr>
+						<td>
+							<font size=1>Artist:</font>
+						</td>
+						<td>[% player.av.artist %]</td>
+					</tr>
+					<tr>
+						<td>
+							<font size=1>Album:</font>
+						</td>
+						<td>[% player.av.album %]</td>
+					</tr>
+					[% IF player.av.next_track %]
+					<tr>
+						<td></td>
+					</tr>
+					<tr>
+						<td colspan=2>
+							<font size=1>Next: </font><br>
+							[% player.av.next_track.desc %]
+						</td>
+					</tr>
+					[% END %]
+				</table>
+			</TD>
+			[% END %]
+		</TR>
+
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
 		[% END %]
-		<br>Vol.[% player.render.volume %]
-	</TD>
 
-
-
-	[% IF player.av.isradio %]
-		<td><Table>
-			<TD> <font size = 1>Station:</font><br> [% player.av.title %]</TD>
-			<TD><font size = 1>Information:</font><br>[% player.av.current_transport.stream_content %]</TD>
-		</Table>
-	[% ELSE %]
-		<TD>
-		<Table>
-		<tr><td><font size = 1>Track:</font></td>
-		<td>[% player.av.title %]</td></tr>
-		<tr><td><font size = 1>Artist:</font></td>
-		<td>[% player.av.artist %]</td></tr>
-		<tr><td><font size = 1>Album:</font></td>
-		<td>[% player.av.album %]</td></tr>
-		[% IF next_name %]
-			<tr><td></td></tr>
-			<tr><td colspan=2><font size = 1>Next: </font><br>
-			[% next_name %] - [% next_artist %]</td></tr>
-		[% END %]
-			</table>
-		</TD>
-	[% END %]
-	</TR>
-
-	<TR></TR>
-	<TR></TR>
-	<TR></TR>
-	<TR></TR>
-[% END %]
-
-</TABLE>
+	</TABLE>
 </BODY>
-</HTML>
 
+</HTML>
