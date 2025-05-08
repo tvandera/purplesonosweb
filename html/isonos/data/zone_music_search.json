@@ -1,1 +1,0 @@
-{"musiclib":{"error":"[% music_error %]","query":"[% music_search %]","path":"[% music_path %]","song":[[% FOREACH item IN music_loop %]{"type":"[% IF music_issong %]song[% ELSE %]container[% END %]","arg":"[% music_arg %]","name":"[% music_name %]","path":"[% music_path %]"},[% END %]]}}

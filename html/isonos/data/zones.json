@@ -1,1 +1,0 @@
-{"zone":[[% FOREACH item IN zones_loop %]{"id":"[% zone_id %]","name":"[% zone_name %]","icon":"[% zone_icon %]","is_child":"[% zone_linked %]","parent_zone":"[% zone_link %]","volume":"[% zone_volume %]","muted":"[% zone_muted %]","mode":"[% zone_mode %]","last_update":"[% zone_lastupdate %]"},[% END %]]}
