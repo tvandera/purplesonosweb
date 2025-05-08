@@ -47,7 +47,7 @@ sub title($self) {
 
 sub description($self) {
     return $self->isRadio()
-        ? $self->curTransport()->streamContent()
+        ? $self->curTrack()->streamContent()
         : $self->curTrack()->artist() . " / " . $self->curTrack()->album();
 }
 
@@ -84,7 +84,7 @@ sub TO_JSON($self) {
         "album"             => $self->curTrack()->album(),
         "artist"            => $self->curTrack()->artist(),
         "description"       => $self->description(),
-        "stream_content"    => $self->curTransport()->streamContent(),
+        "stream_content"    => $self->curTrack()->streamContent(),
         "isradio"           => Types::Serialiser::as_bool($self->isRadio()),
         "current_track"     => $self->curTrack()->TO_JSON(),
         "current_transport" => $self->curTransport()->TO_JSON(),
