@@ -140,7 +140,6 @@ sub TO_JSON($self, $qf) {
     my $mpath = $qf->{mpath};
     my $msearch = $qf->{msearch};
 
-
     if ($msearch) {
         @elements   = $self->search($msearch);
 
@@ -151,6 +150,7 @@ sub TO_JSON($self, $qf) {
 
     $mpath = "" unless $mpath;
     my $item = $self->item($mpath);
+    my $parent = $item->isRoot() ? Sonos::MetaData->new() : $self->item($item->parentID());
 
     # get the linked item if this is a Favorite
     # except for Radio, because the linked item is empty
@@ -164,6 +164,7 @@ sub TO_JSON($self, $qf) {
 
     return {
         %{$item->TO_JSON()},
+        "parent" => $parent->TO_JSON(),
         "favorite" => $fav_item->TO_JSON(),
         "items" => [ map { $_->TO_JSON() } @elements ]
     }
