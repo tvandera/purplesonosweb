@@ -72,7 +72,7 @@ sub info($self) {
     for ( "curTrack", "curTransport", "nextTrack" ) {
         next unless $self->$_()->populated();
         $self->log("  $_:");
-        $self->$_()->log($self, " " x 4);
+        $self->$_()->log($self, " " x 4, "streamContent");
     }
 
 }

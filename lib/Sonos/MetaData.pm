@@ -434,7 +434,6 @@ sub displayFields() {
         "title",
         "artist",
         "album",
-        "streamContent",
     );
 }
 
@@ -446,10 +445,11 @@ sub as_string($self) {
     return join " - ", $self->displayValues;
 }
 
-sub log($self, $logger, $indent) {
+sub log($self, $logger, $indent, @extraFields) {
     return unless $self->populated();
 
-    for (displayFields()) {
+    my @fields = (displayFields(), @extraFields);
+    for (@fields) {
         my $value = $self->$_();
         next unless defined $value and $value ne "";
         $logger->log($indent . $_ . ": " . $value);
