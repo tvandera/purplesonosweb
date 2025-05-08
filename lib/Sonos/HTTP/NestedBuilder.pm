@@ -121,8 +121,10 @@ sub encode_arg($self, $key) {
 sub build_url_data($self) {
     my @keys = qw(zone what action rand mpath msearch link queue);
     my %values = map { $_ =>  $self->qf($_) } @keys;
+
     my %args = map { $_ => $self->encode_arg($_) } @keys;
-    $args{"all"} = join "&", map { $self->encode_arg($_) } keys %{$self->qf()};
+    my @filtered = grep !/action|rand|mpath|msearch|link/, ( keys %{$self->qf()} );
+    $args{"all"} = join "&", map { $self->encode_arg($_) } @filtered;
     return {
         "args" => { %args },
         "values" => { %values },
