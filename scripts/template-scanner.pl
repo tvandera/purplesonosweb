@@ -69,7 +69,7 @@ sub scan($template_file) {
      for my $var (@used_vars) {
           print " - $var";
           if (exists $flat_stash{$var}) {
-               print " ✔️ defined\n";
+               # print " ✔️ defined\n";
           } else {
                print " ❌ undefined\n";
                $missing++;
@@ -77,9 +77,9 @@ sub scan($template_file) {
      }
 
      if ($missing) {
-     print "\nFound $missing undefined variable(s).\n";
+          print "\nFound $missing undefined variable(s).\n";
      } else {
-     print "\nAll variables are defined.\n";
+          print "\nAll variables are defined.\n";
      }
 }
 
