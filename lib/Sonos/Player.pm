@@ -14,7 +14,7 @@ use XML::LibXML::Simple qw(XMLin);
 XML::Liberal->globally_override('LibXML');
 
 use HTML::Entities;
-
+use URI::Escape;
 
 require Sonos::Player::ZoneGroupTopology;
 require Sonos::Player::ContentDirectory;
@@ -134,6 +134,7 @@ sub queue($self)             { return $self->getService("Queue"); }
 sub TO_JSON($self) {
     return {
         "id"          => $self->UDN(),
+        "arg"         => "zone=" . uri_escape_utf8($self->zoneName()) . "&",
         "name"        => $self->zoneName(),
         "last_update" => $self->lastUpdate(),
         "zone"        => $self->zoneGroupTopology()->TO_JSON(),
