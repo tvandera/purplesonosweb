@@ -84,7 +84,7 @@ sub TO_JSON($self) {
         "album"             => $self->curTrack()->album(),
         "artist"            => $self->curTrack()->artist(),
         "description"       => $self->description(),
-        "isradio"           => $self->isRadio(),
+        "stream_content"    => $self->curTransport()->streamContent(),
         "current_track"     => $self->curTrack()->TO_JSON(),
         "current_transport" => $self->curTransport()->TO_JSON(),
         "next_track"        => $self->nextTrack()->TO_JSON(),
