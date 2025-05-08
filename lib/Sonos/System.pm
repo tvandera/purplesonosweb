@@ -75,15 +75,16 @@ sub version($self) {
 
 sub TO_JSON($self, $qf) {
     my $player_info = {};
+    my $player;
     if ($qf->{"zone"}) {
-        my $player = $self->player($qf->{"zone"});
-        $player_info = $player->TO_JSON();
+        $player = $self->player($qf->{"zone"});
+        $player_info = $player->TO_JSON(1);
     }
 
     return {
        "version"     => $self->version(),
        "last_update" => $self->lastUpdate(),
-       "players"     => [ map { $_->TO_JSON() } $self->players() ],
+       "players"     => [ map { $_->TO_JSON($player == $_) } $self->players() ],
        "player"      => $player_info,
        "music"       => $self->musicLibrary()->TO_JSON($qf),
     }
