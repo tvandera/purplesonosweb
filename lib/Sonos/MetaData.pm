@@ -351,7 +351,7 @@ sub isAlbum($self)    { return $self->isOfClass("musicAlbum"); }
 sub isPlaylist($self) { return $self->isOfClass("playlistContainer"); }
 sub isFav($self)      { return $self->class() eq "sonos-favorite"; }
 sub isTop($self)      { return $self->isOfClass("top"); }
-sub isRoot($self)     { return $self->id() eq "/" || $self->id() eq ""; }
+sub isRoot($self)     { return $self->isTop() && ( $self->id() eq "/" || $self->id() eq "" ); }
 
 sub isContainer($self) {
     my $fullclass = $self->prop("upnp:class");
