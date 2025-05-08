@@ -193,6 +193,7 @@ sub TO_JSON($self) {
         "isalbum"        => Types::Serialiser::as_bool( $self->isAlbum() ),
         "isfav"          => Types::Serialiser::as_bool( $self->isFav() ),
         "istop"          => Types::Serialiser::as_bool( $self->isTop() ),
+        "isroot"         => Types::Serialiser::as_bool( $self->isRoot() ),
         "iscontainer"    => Types::Serialiser::as_bool( $self->isContainer() ),
         "isplaylist"     => Types::Serialiser::as_bool( $self->isPlaylist() ),
         "track_num"      => int( $self->originalTrackNumber() ),
@@ -331,6 +332,7 @@ sub isAlbum($self)    { return $self->isOfClass("musicAlbum"); }
 sub isPlaylist($self) { return $self->isOfClass("playlistContainer"); }
 sub isFav($self)      { return $self->class() eq "sonos-favorite"; }
 sub isTop($self)      { return $self->isOfClass("top"); }
+sub isRoot($self)     { return $self->id() eq "/" || $self->id() eq ""; }
 
 sub isContainer($self) {
     my $fullclass = $self->prop("upnp:class");
