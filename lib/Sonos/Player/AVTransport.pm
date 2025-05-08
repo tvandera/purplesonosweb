@@ -78,8 +78,6 @@ sub info($self) {
 }
 
 sub TO_JSON($self) {
-    my $player = $self->player();
-
     return {
         "last_update"       => $self->lastUpdate(),
         "title"             => $self->title(),
@@ -87,9 +85,9 @@ sub TO_JSON($self) {
         "artist"            => $self->curTrack()->album(),
         "description"       => $self->description(),
         "isradio"           => $self->isRadio(),
-        "current_track"     => $self->curTrack()->TO_JSON($player),
-        "current_transport" => $self->curTransport()->TO_JSON($player),
-        "next_track"        => $self->nextTrack()->TO_JSON($player),
+        "current_track"     => $self->curTrack()->TO_JSON(),
+        "current_transport" => $self->curTransport()->TO_JSON(),
+        "next_track"        => $self->nextTrack()->TO_JSON(),
         "length"            => $self->lengthInSeconds(),
         "track_num"         => int($self->currentTrack()),
         "track_tot"         => int($self->numberOfTracks()),

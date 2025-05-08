@@ -173,9 +173,7 @@ sub arg($self) {
     return $mpath_arg;
 }
 
-
-
-sub TO_JSON($self, $player = undef) {
+sub TO_JSON($self) {
     return undef unless ($self->populated());
     return {
         "id"             => $self->id(),
