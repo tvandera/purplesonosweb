@@ -85,6 +85,7 @@ sub TO_JSON($self) {
         "artist"            => $self->curTrack()->artist(),
         "description"       => $self->description(),
         "stream_content"    => $self->curTransport()->streamContent(),
+        "isradio"           => Types::Serialiser::as_bool($self->isRadio()),
         "current_track"     => $self->curTrack()->TO_JSON(),
         "current_transport" => $self->curTransport()->TO_JSON(),
         "next_track"        => $self->nextTrack()->TO_JSON(),
@@ -95,11 +96,11 @@ sub TO_JSON($self) {
         "play_mode"         => $self->currentPlayMode(),
         "albumart"          => $self->albumArtURI(),
 
-        "shuffle"           => $self->isShuffle(),
-        "repeat"            => $self->isRepeat(),
-        "stopped"           => $self->isStopped(),
-        "playing"           => $self->isPlaying(),
-        "paused"            => $self->isPaused(),
+        "shuffle"           => Types::Serialiser::as_bool($self->isShuffle()),
+        "repeat"            => Types::Serialiser::as_bool($self->isRepeat()),
+        "stopped"           => Types::Serialiser::as_bool($self->isStopped()),
+        "playing"           => Types::Serialiser::as_bool($self->isPlaying()),
+        "paused"            => Types::Serialiser::as_bool($self->isPaused()),
     }
 }
 
