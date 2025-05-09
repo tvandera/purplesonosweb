@@ -20,7 +20,6 @@ use Carp;
 
 require Sonos::HTTP::Template;
 require Sonos::HTTP::Builder;
-require Sonos::HTTP::NestedBuilder;
 
 ###############################################################################
 # HTTP
@@ -394,7 +393,7 @@ sub sendHello($self, $req) {
 sub restAPI($self, $r) {
     $self->action($r, sub {
         my %qf = $r->query_form;
-        my $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
+        my $builder = Sonos::HTTP::Builder->new($self->system(), \%qf);
 
         my $what = $qf{"what"} || "all";
         my $method = "build_" . $what . "_data";

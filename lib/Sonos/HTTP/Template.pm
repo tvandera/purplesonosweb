@@ -1,6 +1,6 @@
 package Sonos::HTTP::Template;
 
-use base 'Sonos::HTTP::NestedBuilder';
+use base 'Sonos::HTTP::Builder';
 
 use v5.36;
 use strict;
