@@ -1,30 +1,36 @@
+<!DOCTYPE HTML>
 <HTML>
+
 <HEAD>
-<TITLE>Playlist</TITLE>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+    <TITLE>Playlist</TITLE>
 </HEAD>
+
 <BODY>
 
-<TMPL_IF NAME=active_zone_img><IMG SRC="<TMPL_VAR NAME=active_zone_img>"> </TMPL_IF>
-<TMPL_VAR NAME=has_active_zone> Queue:  <A TARGET=queue HREF="queue.html?<TMPL_VAR NAME=all_arg>action=RemoveAll">Remove All</A>
-<FONT SIZE=0><A TARGET=queue HREF="queue.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT>
-<BR>
-<FORM ACTION="queue.html" METHOD="get">
-Save Q as:
-<INPUT NAME=savename VALUE="">
-<INPUT NAME=action VALUE="Save" TYPE=HIDDEN>
-<INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
-<INPUT VALUE="Save" TYPE=submit>
-</FORM>
-<HR>
-<TMPL_LOOP NAME=queue_loop>
-    <IMG SRC="<TMPL_VAR NAME=queue_img>">
-    <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=queue_arg>action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
-    <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=queue_arg>action=Seek"><TMPL_VAR NAME=queue_name></A>
+    [% IF player.zone.img %]<IMG SRC="[% player.zone.img %]"> [% END %]
+    [% player.zone.name %] Queue: <A TARGET=queue HREF="queue.html?[% url.args.all %]action=RemoveAll">Remove All</A>
+    <FONT SIZE=0><A TARGET=queue HREF="queue.html?[% url.args.all %]">Refresh</A></FONT>
     <BR>
-</TMPL_LOOP>
+    <FORM ACTION="queue.html" METHOD="get">
+        Save Q as:
+        <INPUT NAME=savename VALUE="">
+        <INPUT NAME=action VALUE="Save" TYPE=HIDDEN>
+        <INPUT NAME=zone VALUE="[% player.name %]" TYPE=HIDDEN>
+        <INPUT VALUE="Save" TYPE=submit>
+    </FORM>
+    <HR>
+    [% FOREACH item IN player.queue.items %]
+        <IMG SRC="[% item.albumart %]">
+        <A TARGET=middle HREF="middle.html?[% item.arg %]action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
+        <A TARGET=middle HREF="middle.html?[% item.arg %]action=Seek">[% item.title %]</A>
+        <BR>
+    [% END %]
 </BODY>
+
 </HTML>
 
 
 </BODY>
+
 </HTML>

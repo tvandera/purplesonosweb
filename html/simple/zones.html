@@ -1,30 +1,33 @@
+<!DOCTYPE HTML>
 <HTML>
 <HEAD>
-<TITLE>Zones</TITLE>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+   <TITLE>Zones</TITLE>
 </HEAD>
 <BODY>
-<FONT SIZE=0><A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>">Refresh</A></FONT><P>
-<TMPL_LOOP NAME=zones_loop>
-    <TMPL_IF NAME=zone_active><B></TMPL_IF>
-    <TMPL_IF NAME=zone_linked>
-       &nbsp; &nbsp;<TMPL_VAR NAME=zone_name>
-      <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zone>&action=Unlink"><font size=-2>[U]</font></a>
-    <TMPL_ELSE>
-       <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=zone_arg>"><TMPL_VAR NAME=zone_name></A>
-       <TMPL_UNLESS NAME=zone_active>
-          <A TARGET=_top HREF="index.html?<TMPL_VAR NAME=all_arg>link=<TMPL_VAR NAME=active_zone>&action=Link"><font size=-2>[L]</font></a>
-       </TMPL_UNLESS>
-    </TMPL_IF>
-    <TMPL_IF NAME=zone_active></B></TMPL_IF>
+<FONT SIZE=0><A TARGET=_top HREF="index.html?[% url.args.all %]">Refresh</A></FONT><P>
+[% FOREACH item IN players %]
+    [% IF item.isactive %]<B>[% END %]
+    [% UNLESS item.zone.is_coord %]
+       &nbsp; &nbsp; <IMG SRC='[% item.zone.img %]'> [% item.name %]
+      <A TARGET=_top HREF="index.html?[% url.args.all %]link=[% item.name %]&action=Unlink"><font size=-2>[U]</font></a>
+    [% ELSE %]
+       <A TARGET=_top HREF="index.html?[% item.arg %]">
+         <IMG SRC='[% item.zone.img %]'> [% item.name %]
+       </A>
+       [% UNLESS item.zone.is_coord %]
+          <A TARGET=_top HREF="index.html?[% url.args.all %][% item.zone_arg %]&action=Link"><font size=-2>[L]</font></a>
+       [% END %]
+    [% END %]
+    [% IF item.isactive %]</B>[% END %]
     <BR>
-</TMPL_LOOP>
+[% END %]
 <P>
-<TMPL_IF NAME=has_active_zone>
-    <A TARGET=_top HREF="index.html?zone=<TMPL_VAR NAME=active_zoneid>&action=LinkAll">Party Mode</A>
-<TMPL_ELSE>
+[% UNLESS player %]
     <B>Select a zone to start</B>
-</TMPL_IF>
+[% END %]
 <hr>
+<A TARGET=_top HREF="index.html?action=LinkAll">Party Mode</A>
 <A TARGET =_top HREF="/">Home Page</A>
 </BODY>
 </HTML>

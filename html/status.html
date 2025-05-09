@@ -1,66 +1,89 @@
 <HTML>
+
 <HEAD>
-<TITLE>SONOS Zones Status</TITLE>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+	<TITLE>SONOS Zones Status</TITLE>
 </HEAD>
+
 <BODY>
-<TABLE BORDER=1>
-<TR><TD COLSPAN=2 ALIGN=CENTER><B>SONOS  Zone Status</B></TD></TR>
-<TR></TR>
-<TR></TR>
-<TR></TR>
-<TR></TR>
+	<TABLE BORDER=1>
+		<TR>
+			<TD COLSPAN=2 ALIGN=CENTER><B>SONOS Zone Status</B></TD>
+		</TR>
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
 
-<TMPL_LOOP NAME=zones_loop> 
-<TR>
-<TD ALIGN=CENTER><B><TMPL_VAR NAME=zone_name></B><BR>
-<TMPL_IF NAME=active_playing>(Playing)</TMPL_IF>
-<TMPL_IF NAME=active_paused_playback>(Paused)</TMPL_IF>
-<TMPL_IF NAME=active_stopped>(Paused)</TMPL_IF>
-<TMPL_IF NAME=active_isradio> 
-	<BR>Internet Radio<BR>
-<TMPL_ELSE>
-	<BR><TMPL_VAR NAME=active_track_num> of <TMPL_VAR NAME=active_track_tot><BR>
-<TMPL_IF NAME=active_shuffle>(Rnd)</TMPL_IF>
-<TMPL_IF NAME=active_repeat>(Rpt)</TMPL_IF>
-</TMPL_IF>
-<br>Vol.<TMPL_VAR NAME=active_volume>
-</TD>
-
+		[% FOREACH player IN players %]
+		<TR>
+			<TD ALIGN=CENTER><B>[% player.zone.name %]</B><BR>
+				[% player.av.transport_state %]<BR>
+				[% IF player.av.isradio %]
+				<BR>Internet Radio<BR>
+				[% ELSE %]
+				<BR>[% player.av.track_num %] of [% player.av.track_tot %]<BR>
+				<BR>[% player.av.play_mode %]<BR>
+				[% END %]
+				<br>Vol.[% player.render.volume %]
+			</TD>
 
 
-<TMPL_IF NAME=active_isradio> 
-	<td><Table>
-	<TD><font size = 1>Information:</font><br>
-	<TMPL_VAR NAME=active_name><BR>
-	<font size = 1>Station:</font><br>
-	<TMPL_VAR NAME=active_album></TD>
-	</Table>
-<TMPL_ELSE>
-	<TD>
-	<Table>
-	<tr><td><font size = 1>Track:</font></td>
-	<td><TMPL_VAR NAME=active_name></td></tr>
-	<tr><td><font size = 1>Artist:</font></td>
-	<td><TMPL_VAR NAME=active_artist></td></tr>
-	<tr><td><font size = 1>Album:</font></td>
-	<td><TMPL_VAR NAME=active_album></td></tr>
-	<TMPL_IF NAME=next_name>
-		<tr><td></td></tr>
-		<tr><td colspan=2><font size = 1>Next: </font><br>
-		<TMPL_VAR NAME=next_name> - <TMPL_VAR NAME=next_artist></td></tr>
-	</TMPL_IF>
-        </table>
-	</TD>
-</TMPL_IF>
-</TR>
 
-<TR></TR>
-<TR></TR>
-<TR></TR>
-<TR></TR>
-</TMPL_LOOP>
+			[% IF player.av.isradio %]
+			<td>
+				<Table>
+					<TD>
+						<font size=1>Station:</font><br> [% player.av.title %]
+					</TD>
+					<TD>
+						<font size=1>Information:</font><br>[% player.av.current_transport.stream_content %]
+					</TD>
+				</Table>
+				[% ELSE %]
+			<TD>
+				<Table>
+					<tr>
+						<td>
+							<font size=1>Track:</font>
+						</td>
+						<td>[% player.av.title %]</td>
+					</tr>
+					<tr>
+						<td>
+							<font size=1>Artist:</font>
+						</td>
+						<td>[% player.av.artist %]</td>
+					</tr>
+					<tr>
+						<td>
+							<font size=1>Album:</font>
+						</td>
+						<td>[% player.av.album %]</td>
+					</tr>
+					[% IF player.av.next_track %]
+					<tr>
+						<td></td>
+					</tr>
+					<tr>
+						<td colspan=2>
+							<font size=1>Next: </font><br>
+							[% player.av.next_track.desc %]
+						</td>
+					</tr>
+					[% END %]
+				</table>
+			</TD>
+			[% END %]
+		</TR>
 
-</TABLE>
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
+		<TR></TR>
+		[% END %]
+
+	</TABLE>
 </BODY>
-</HTML>
 
+</HTML>

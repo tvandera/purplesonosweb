@@ -6,6 +6,7 @@ use warnings;
 
 require Sonos::MetaData;
 
+use Try::Tiny;
 use List::Util qw(first reduce);
 use JSON::XS;
 use File::Slurp;
@@ -114,22 +115,26 @@ sub get($self, $uri) {
     my $player = $players[rand @players];
     my $baseurl = $player->location();
     my $full_uri  = URI::WithBase->new($uri, $baseurl);
-    my $response = $self->{_useragent}->get($full_uri->abs());
 
     my ($mime_type, $blob, $filename) = (undef, undef, undef);
 
-    if ($response->is_success()) {
-        $blob = $response->content;
-        $blob = $self->resize($blob);
+    try {
+        my $response = $self->{_useragent}->get($full_uri->abs());
+        if ($response->is_success()) {
+            $blob = $response->content;
+            $blob = $self->resize($blob);
 
-        # Sonos returns the wrong or no mime type, determine from blob
-        $mime_type = $self->mimeTypeOf($blob);
-        $filename = sha256_hex($blob) . "." . $self->extensionOf($blob);
+            # Sonos returns the wrong or no mime type, determine from blob
+            $mime_type = $self->mimeTypeOf($blob);
+            $filename = sha256_hex($blob) . "." . $self->extensionOf($blob);
 
-        # also write blob to file cache
-        my $full_filename = $self->cacheDir() . "/" . $filename;
-        write_file($full_filename, $blob) unless -e $full_filename;
-    }
+            # also write blob to file cache
+            my $full_filename = $self->cacheDir() . "/" . $filename;
+            write_file($full_filename, $blob) unless -e $full_filename;
+        }
+    } catch {
+        $self->system()->log("aacache", "failed [$uri]: $_");
+    };
 
     # save + write json
     $self->{_album_art}->{$sha} = [ $mime_type, $blob, $filename ];

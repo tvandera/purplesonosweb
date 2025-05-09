@@ -1,39 +1,39 @@
+<!DOCTYPE HTML>
 <HTML>
 <HEAD>
-<TITLE>Music</TITLE>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+    <TITLE>Music</TITLE>
 </HEAD>
 <BODY>
 <FONT SIZE=0>
-<A TARGET=music HREF="music.html?<TMPL_VAR NAME=all_arg>action=ReIndex">ReIndex Music</A>
-<A TARGET=music HREF="music.html?<TMPL_VAR NAME=all_arg>">Refresh</A>
-<A TARGET=music HREF="music.html?zone=<TMPL_VAR NAME=active_zoneid>&mpath=/">Top</A>
-<TMPL_UNLESS NAME=music_root>
-<A TARGET=music HREF="music.html?zone=<TMPL_VAR NAME=active_zoneid>&mpath=<TMPL_VAR NAME=music_parent>">Up</A>
-</TMPL_UNLESS>
+<A TARGET=music HREF="music.html?[% url.args.all %]action=ReIndex">ReIndex Music</A>
+<A TARGET=music HREF="music.html?[% url.args.all %]">Refresh</A>
+<A TARGET=music HREF="music.html?[% url.args.all %]mpath=/">Top</A>
+[% UNLESS music.istop %]
+    <A TARGET=music HREF="music.html?[% player.arg %]mpath=[% music.parent.arg %]">Up</A>
+[% END %]
 </FONT>
 <P>
-<FORM ACTION="music.html?<TMPL_VAR NAME=all_arg>" METHOD="get">
+<FORM ACTION="music.html?[% url.args.all %]" METHOD="get">
 Perl Expression:
-<INPUT NAME=msearch VALUE="<TMPL_VAR NAME=music_search>">
-<INPUT NAME=zone VALUE="<TMPL_VAR NAME=active_zoneid>" TYPE=HIDDEN>
+<INPUT NAME=msearch VALUE="[% url.values.msearch %]">
 <INPUT VALUE="Search" TYPE=submit>
 </FORM>
 <HR>
-<B><TMPL_VAR NAME=music_error></B>
 
-<TMPL_LOOP NAME=music_loop>
-    <IMG BORDER=0 SRC=<TMPL_VAR NAME=music_albumart>>
-    <TMPL_UNLESS NAME=music_root>
-        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
-        <A TARGET=middle HREF="middle.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
-    </TMPL_UNLESS>
-    <TMPL_UNLESS NAME=music_iscontainer>
-        <TMPL_VAR NAME=music_name>
-    <TMPL_ELSE>
-        <A TARGET=music HREF="music.html?<TMPL_VAR NAME=all_arg><TMPL_VAR NAME=music_arg>action=Browse"><TMPL_VAR NAME=music_name></A>
-    </TMPL_UNLESS>
+[% FOREACH item IN music.items %]
+    <IMG BORDER=0 SRC=[% item.albumart %]>
+    [% UNLESS item.isroot %]
+        <A TARGET=middle HREF="middle.html?[% url.args.all %][% item.arg %]action=add"><IMG BORDER=0 SRC=/static/images/add.gif></A>
+        <A TARGET=middle HREF="middle.html?[% url.args.all %][% item.arg %]action=Play"><IMG BORDER=0 SRC=/static/images/playing.gif></A>
+    [% END %]
+    [% UNLESS item.iscontainer %]
+        [% item.title %]
+    [% ELSE %]
+        <A TARGET=music HREF="music.html?[% url.args.all %][% item.arg %]action=Browse">[% item.title %]</A>
+    [% END %]
     <BR>
-</TMPL_LOOP>
+[% END %]
 
 </BODY>
 </HTML>

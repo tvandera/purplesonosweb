@@ -1,12 +1,13 @@
+<!DOCTYPE HTML>
 <HTML>
     <HEAD>
-        <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-        <TITLE>Sonos Web Controller - <TMPL_VAR NAME=version></TITLE>
+        <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+        <TITLE>Sonos Web Controller - [% version %]</TITLE>
     </HEAD>
     <FRAMESET COLS="150,30%,*">
-        <FRAME NAME=zones  SRC="zones.html?<TMPL_VAR NAME=all_arg>">
-        <FRAME NAME=middle SRC="middle.html?<TMPL_VAR NAME=all_arg>">
-        <FRAME NAME=music  SRC="music.html?<TMPL_VAR NAME=all_arg>">
+        <FRAME NAME=zones  SRC="zones.html?[% url.args.all %]">
+        <FRAME NAME=middle SRC="middle.html?[% url.args.all %]">
+        <FRAME NAME=music  SRC="music.html?[% url.args.all %]">
     </FRAMESET>
     <NOFRAMES>
     This document requires frames.

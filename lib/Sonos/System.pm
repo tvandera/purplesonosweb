@@ -7,6 +7,8 @@ use warnings;
 use List::Util qw(all max);
 
 require UPnP::ControlPoint;
+
+require Sonos;
 require Sonos::Player;
 require Sonos::MusicLibrary;
 require Sonos::AlbumArtCache;
@@ -50,6 +52,8 @@ sub new {
 
     $self->addToLoop($loop) if defined $loop;
 
+    INFO "Sonos v" . $self->version() . " starting\n";
+
     for (@locations) {
         my $device = $cp->addByLocation($_);
         $self->addPlayer($device) if $device;
@@ -65,9 +69,30 @@ sub numPlayers($self) {
     return scalar keys %{$self->{_players}};
 }
 
-sub players($self, $sorted = undef) {
+sub version($self) {
+    return $Sonos::VERSION;
+}
+
+sub TO_JSON($self, $qf) {
+    my $player_info = {};
+    my $player = 0;
+    if ($qf->{"zone"}) {
+        $player = $self->player($qf->{"zone"});
+        $player_info = $player->TO_JSON(1);
+    }
+
+    return {
+       "version"     => $self->version(),
+       "last_update" => $self->lastUpdate(),
+       "players"     => [ map { $_->TO_JSON($player == $_) } $self->players() ],
+       "player"      => $player_info,
+       "music"       => $self->musicLibrary()->TO_JSON($qf),
+    }
+}
+
+sub players($self) {
     my @players = values %{$self->{_players}};
-    @players = sort { $a->cmp($b) } @players unless !$sorted;
+    @players = sort { $a->cmp($b) } @players;
     return @players;
 }
 

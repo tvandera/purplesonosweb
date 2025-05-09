@@ -135,23 +135,39 @@ sub topItem($self) {
     return $self->item("");
 }
 
-sub TO_JSON($self, $mpath = undef, $msearch = undef, $recursive = 0) {
+sub TO_JSON($self, $qf) {
     my @elements;
+    my $mpath = $qf->{mpath};
+    my $msearch = $qf->{msearch};
 
     if ($msearch) {
         @elements   = $self->search($msearch);
-    } else {
-        $mpath = "" unless $mpath;
-        my $item  = $self->item($mpath);
 
-        # get the linked item if this is a Favorite
-        $item = $item->res() if $item->isFav();
-
-        @elements   = $self->children($item);
-        @elements   = ( $item ) unless @elements;
+        return {
+            "items" => [ map { $_->TO_JSON() } @elements ]
+        }
     }
 
-    return { map { $_->id() => $_->TO_JSON() } @elements };
+    $mpath = "" unless $mpath;
+    my $item = $self->item($mpath);
+    my $parent = $item->isRoot() ? Sonos::MetaData->new() : $self->item($item->parentID());
+
+    # get the linked item if this is a Favorite
+    # except for Radio, because the linked item is empty
+    my $fav_item = Sonos::MetaData->new();
+    if ($item->isFav() && !$item->isRadio()) {
+        $fav_item = $item;
+        $item = $fav_item->res();
+    }
+
+    @elements   = $self->children($item);
+
+    return {
+        %{$item->TO_JSON()},
+        "parent" => $parent->TO_JSON(),
+        "favorite" => $fav_item->TO_JSON(),
+        "items" => [ map { $_->TO_JSON() } @elements ]
+    }
 }
 
 

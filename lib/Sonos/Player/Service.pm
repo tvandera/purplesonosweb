@@ -54,7 +54,7 @@ sub friendlyName($self) {
 sub renewSubscription($self) {
     my $sub = $self->getSubscription();
     if (defined $sub) {
-        $sub->renew();
+        $sub = $sub->renew();
     }
 
     # if the above failed, try to subscribe again

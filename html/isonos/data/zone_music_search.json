@@ -1,1 +1,0 @@
-{"musiclib":{"error":"<TMPL_VAR NAME=music_error>","query":"<TMPL_VAR NAME=music_search>","path":"<TMPL_VAR NAME=music_path>","song":[<TMPL_LOOP NAME=music_loop>{"type":"<TMPL_IF NAME=music_issong>song<TMPL_ELSE>container</TMPL_IF>","arg":"<TMPL_VAR NAME=music_arg>","name":"<TMPL_VAR NAME=music_name>","path":"<TMPL_VAR NAME=music_path>"},</TMPL_LOOP>]}}

@@ -1,54 +1,49 @@
-<TMPL_INCLUDE name="header.tmpl">
+[% INCLUDE header.tmpl %]
 
-<TMPL_IF NAME="has_active_zone">
+[% IF player %]
   <div id="top-labels">
-     <h4 id="currentzonename" onclick="goto('zones')"><TMPL_VAR NAME="ZONE_FANCYNAME"></h4>
+     <h4 id="currentzonename" onclick="goto('zones')">[% player.zone.name %]</h4>
   </div>
-</TMPL_IF>
+[% END %]
 
 <div id="zones">
-<TMPL_LOOP name="zones_loop">
+[% FOREACH item IN players %]
+ [% IF item.zone.is_coord %]
  <div
-     <TMPL_IF name="zone_active">
+     [% IF item.isactive %]
         class="active"
-     <TMPL_ELSE>
+     [% ELSE %]
         class="normal"
-     </TMPL_IF>
+     [% END %]
  >
- <TMPL_UNLESS NAME=zone_linked>
-   <TMPL_IF name="has_active_zone">
-   <TMPL_UNLESS NAME="zone_active">
-       <img style='float: right;' onclick="goto('zones', 'action=Link&link=<TMPL_VAR name="active_zoneid">'); return true;" width="44" height="44" src="svg/link.svg">
-   </TMPL_UNLESS>
-   </TMPL_IF>
-
-   <TMPL_IF NAME="ZONE_NUMLINKED">
-       <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=<TMPL_VAR name="zone_name">');" width="44" height="44" src="svg/unlink.svg">
-   </TMPL_IF>
+   [% UNLESS item.isactive %]
+       <img style='float: right;' onclick="goto('zones', 'action=Link&link=[% item.name %]'); return true;" width="44" height="44" src="svg/link.svg">
+   [% ELSIF item.zone.members.size > 1 %]
+       <img style='float: right;' onclick="goto('zones', 'action=Unlink&link=[% item.name %]');" width="44" height="44" src="svg/unlink.svg">
+   [% END %]
 
    <ul
-       onclick="zone('<TMPL_VAR name="zone_name">');">
-    <TMPL_LOOP name="ZONE_MEMBERS">
-       <li style="background-image: url(zone_icons/<TMPL_VAR name="zone_icon">.png);">
-         <TMPL_VAR name="zone_name" >
+       onclick="zone('[% item.name %]');">
+    [% FOREACH member IN item.zone.members %]
+       <li style="background-image: url('[% member.img %]');">
+         [% member.name %]
       </li>
-    </TMPL_LOOP>
+    [% END %]
   </ul>
 
   <div class="zoneinfo">
     <span>
-        <TMPL_IF name="active_playing">
+        [% IF item.av.transport_state == "PLAYING" %]
            <img width="22" height="22" src="svg/play.svg">
-        <TMPL_ELSE>
+        [% ELSE %]
            <img width="22" height="22" src="svg/pause.svg">
-        </TMPL_IF>
-        <TMPL_VAR name="active_album">
+        [% END %]
+        [% item.av.album %]
     </span>
   </div>
- </TMPL_UNLESS>
+</div>
+[% END %]
+[% END %]
 </div>
 
-</TMPL_LOOP>
-</div>
-
-<TMPL_INCLUDE name="footer.tmpl">
+[% INCLUDE footer.tmpl %]

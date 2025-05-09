@@ -47,9 +47,15 @@ sub title($self) {
 
 sub description($self) {
     return $self->isRadio()
-        ? $self->curTransport()->streamContent()
-        : $self->curTrack()->creator() . " / " . $self->curTrack()->album();
+        ? $self->curTrack()->streamContent()
+        : $self->curTrack()->artist() . " / " . $self->curTrack()->album();
 }
+
+
+sub albumArtURI($self) {
+    return $self->curTrack()->albumArtURI();
+}
+
 
 sub info($self) {
     my @fields = (
@@ -66,27 +72,35 @@ sub info($self) {
     for ( "curTrack", "curTransport", "nextTrack" ) {
         next unless $self->$_()->populated();
         $self->log("  $_:");
-        $self->$_()->log($self, " " x 4);
+        $self->$_()->log($self, " " x 4, "streamContent");
     }
 
 }
 
 sub TO_JSON($self) {
-    my $player = $self->player();
-
     return {
         "last_update"       => $self->lastUpdate(),
         "title"             => $self->title(),
+        "album"             => $self->curTrack()->album(),
+        "artist"            => $self->curTrack()->artist(),
         "description"       => $self->description(),
-        "isradio"           => $self->isRadio(),
-        "current_track"     => $self->curTrack()->TO_JSON($player),
-        "current_transport" => $self->curTransport()->TO_JSON($player),
-        "next_track"        => $self->nextTrack()->TO_JSON($player),
+        "stream_content"    => $self->curTrack()->streamContent(),
+        "isradio"           => Types::Serialiser::as_bool($self->isRadio()),
+        "current_track"     => $self->curTrack()->TO_JSON(),
+        "current_transport" => $self->curTransport()->TO_JSON(),
+        "next_track"        => $self->nextTrack()->TO_JSON(),
         "length"            => $self->lengthInSeconds(),
         "track_num"         => int($self->currentTrack()),
         "track_tot"         => int($self->numberOfTracks()),
         "transport_state"   => $self->transportState(),
-        "play_mode"         => $self->currentPlayMode()
+        "play_mode"         => $self->currentPlayMode(),
+        "albumart"          => $self->albumArtURI(),
+
+        "shuffle"           => Types::Serialiser::as_bool($self->isShuffle()),
+        "repeat"            => Types::Serialiser::as_bool($self->isRepeat()),
+        "stopped"           => Types::Serialiser::as_bool($self->isStopped()),
+        "playing"           => Types::Serialiser::as_bool($self->isPlaying()),
+        "paused"            => Types::Serialiser::as_bool($self->isPaused()),
     }
 }
 
@@ -207,10 +221,10 @@ sub setShuffle($self, $on_or_off) {
     );
     $self->switchPlayMode(%switch_shuffle);
 
-    return !$self->getShuffle() == $on_or_off;
+    return !$self->isShuffle() == $on_or_off;
 }
 
-sub shuffleOf($self) { $self->setShuffle(0); }
+sub shuffleOff($self) { $self->setShuffle(0); }
 sub shuffleOn($self) { $self-setShuffle(1); }
 
 # ---- queue ----

@@ -15,6 +15,7 @@ use Encode qw(encode decode);
 use File::Spec::Functions 'catfile';
 use MIME::Types;
 use Scalar::Util::Numeric qw(isint);
+use Carp;
 
 
 require Sonos::HTTP::Template;
@@ -66,10 +67,6 @@ sub new {
     $self->{_daemon} = $httpserver;
 
     return $self;
-}
-
-sub version($self) {
-    return "0.99";
 }
 
 sub system($self) {
@@ -132,7 +129,7 @@ sub validateRequest($self, $r) {
 
     if (exists $qf{what}) {
         my $what = $qf{what};
-        my @allowed_requests = qw(globals music zones zone info queue none all);
+        my @allowed_requests = qw(system music zones zone info queue none all);
         unless (grep { $what eq $_ } @allowed_requests) {
             return $self->sendError($r, 404, "Request \"$what\" unknown. Known: " . (join ", ", @allowed_requests));
         }
@@ -179,7 +176,6 @@ sub handleRequest($self, $server, $r) {
         return $callback->($r);
     }
 
-
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         my $redirect = $self->defaultPage;
         return $self->sendRedirect($r, $redirect);
@@ -187,6 +183,15 @@ sub handleRequest($self, $server, $r) {
 
     # Find where on disk
     my $diskpath = $self->diskpath($path);
+
+    # Find icons
+    if ( ( $path =~ m@/icons/@ ) && ! -e $diskpath ) {
+        my @images = glob("$diskpath.*");
+        carp("Mulitple icons found for $path:\n" . @images) if (scalar @images) > 1;
+        carp("No icon found for $path") unless @images;
+        $diskpath = $images[0] if scalar @images == 1;
+    }
+
     return $self->sendError($r, HTTP::Status::RC_NOT_FOUND, "Could not find $diskpath") unless -e $diskpath;
 
     # File is a directory, redirect for the browser
@@ -253,7 +258,7 @@ sub action {
         "repeatoff"   => [ $av, sub { $av->setRepeat(0) } ],
         "repeaton"    => [ $av, sub { $av->setRepeat(1); } ],
         "shuffleoff"  => [ $av, sub { $av->setShuffle(0); } ],
-        "shuffleon"   => [ $av, sub { $av-setShuffle(1); } ],
+        "shuffleon"   => [ $av, sub { $av->setShuffle(1); } ],
 
         # queue
         "removeall"   => [ $av, sub {
@@ -391,7 +396,7 @@ sub restAPI($self, $r) {
         my %qf = $r->query_form;
         my $builder = Sonos::HTTP::NestedBuilder->new($self->system(), \%qf);
 
-        my $what = $qf{"what"} || "zones";
+        my $what = $qf{"what"} || "all";
         my $method = "build_" . $what . "_data";
         my $data = $builder->$method();
         my $json = $builder->to_json($data);

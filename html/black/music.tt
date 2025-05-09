@@ -1,0 +1,53 @@
+[% INCLUDE header.tmpl %]
+
+<div id="top-labels">
+   <h4 id="currentzonename" onclick="goto('zones')">[% ZONE_FANCYNAME %]</h4>
+   <h4 id="nowplayinglabel" onclick="goto('playing')">NOW PLAYING</h4>
+</div>
+
+<div id="music">
+    <ul id='musiclist'>
+        [% IF music_path %]
+            <li class='header'>
+            <img onClick="browse('mpath=[% music_parent %]')" src='tiles/back.svg'>
+            <div>
+                <p id='musicpath'>[% music_name %]</p>
+                <p class='artist'>[% music_artist %]</p>
+                [% IF music_iscontainer %]
+                    <p class='buttons'>
+                        <a onclick="play('[% music_arg %]');">Play</A> -
+                        <a onclick="add('[% music_arg %]');">Add</A>
+                    </p>
+                [% END %]
+            </div>
+            </li>
+        [% END %]
+        [% IF music_isalbum %]
+            [% IF music_albumart %]
+                <li class='albumart'><img width="200" height="200" src="[% music_albumart %]"></li>
+            [% END %]
+        [% END %]
+
+    [% FOREACH item IN item.loop %]
+        [% IF item.isradio %]
+            <li onclick="play('[% item.arg %]');">
+        [% ELSE %]
+            <li onclick="browse('[% item.arg %]');">
+        [% END %]
+        [% IF item.issong %]
+            <div class='trackno'>[% item.TRACK_NUM %]</div>
+        [% ELSE %]
+            <img width="44" height="44" src="[% item.albumart %]">
+        [% END %]
+        <div>
+            <p class='title'>[% item.name %]</p>
+            <p class='artist'>[% item.artist %]</p>
+            <p class='description'>[% item.desc %]</p>
+        </div>
+    </li>
+    [% END %]
+
+</ul>
+</div>
+
+[% INCLUDE footer.tmpl %]
