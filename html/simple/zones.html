@@ -7,10 +7,12 @@
 [% FOREACH item IN players %]
     [% IF item.isactive %]<B>[% END %]
     [% UNLESS item.zone.is_coord %]
-       &nbsp; &nbsp;[% item.name %]
+       &nbsp; &nbsp; <IMG SRC='[% item.zone.img %]'> [% item.name %]
       <A TARGET=_top HREF="index.html?[% url.args.all %]link=[% item.name %]&action=Unlink"><font size=-2>[U]</font></a>
     [% ELSE %]
-       <A TARGET=_top HREF="index.html?[% item.arg %]">[% item.name %]</A>
+       <A TARGET=_top HREF="index.html?[% item.arg %]">
+         <IMG SRC='[% item.zone.img %]'> [% item.name %]
+       </A>
        [% UNLESS item.zone.is_coord %]
           <A TARGET=_top HREF="index.html?[% url.args.all %][% item.zone_arg %]&action=Link"><font size=-2>[L]</font></a>
        [% END %]
@@ -19,12 +21,11 @@
     <BR>
 [% END %]
 <P>
-[% IF player %]
-    <A TARGET=_top HREF="index.html?[% player.arg %]&action=LinkAll">Party Mode</A>
-[% ELSE %]
+[% UNLESS player %]
     <B>Select a zone to start</B>
 [% END %]
 <hr>
+<A TARGET=_top HREF="index.html?action=LinkAll">Party Mode</A>
 <A TARGET =_top HREF="/">Home Page</A>
 </BODY>
 </HTML>
