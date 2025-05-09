@@ -15,6 +15,7 @@ use Encode qw(encode decode);
 use File::Spec::Functions 'catfile';
 use MIME::Types;
 use Scalar::Util::Numeric qw(isint);
+use Carp;
 
 
 require Sonos::HTTP::Template;
@@ -175,7 +176,6 @@ sub handleRequest($self, $server, $r) {
         return $callback->($r);
     }
 
-
     if ( ( $path eq "/" ) || ( $path =~ /\.\./ ) ) {
         my $redirect = $self->defaultPage;
         return $self->sendRedirect($r, $redirect);
@@ -183,6 +183,15 @@ sub handleRequest($self, $server, $r) {
 
     # Find where on disk
     my $diskpath = $self->diskpath($path);
+
+    # Find icons
+    if ( ( $path =~ m@/icons/@ ) && ! -e $diskpath ) {
+        my @images = glob("$diskpath.*");
+        carp("Mulitple icons found for $path:\n" . @images) if (scalar @images) > 1;
+        carp("No icon found for $path") unless @images;
+        $diskpath = $images[0] if scalar @images == 1;
+    }
+
     return $self->sendError($r, HTTP::Status::RC_NOT_FOUND, "Could not find $diskpath") unless -e $diskpath;
 
     # File is a directory, redirect for the browser

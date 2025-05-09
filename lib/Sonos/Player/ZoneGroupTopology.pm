@@ -35,7 +35,7 @@ sub TO_JSON($self, $recurse = 1) {
     return {
         "last_update" => $self->lastUpdate(),
         "icon"        => $self->icon(),
-        "img"         => "zone_icons/" . $self->icon() . ".png",
+        "img"         => "icons/zone/" . $self->icon(),
         "name"        => $self->friendlyName(),
         "coordinator" => $self->coordinator()->zoneName(),
         "is_coord"    => Types::Serialiser::as_bool($self->isCoordinator()),
