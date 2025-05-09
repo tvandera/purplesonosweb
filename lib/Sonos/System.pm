@@ -75,7 +75,7 @@ sub version($self) {
 
 sub TO_JSON($self, $qf) {
     my $player_info = {};
-    my $player;
+    my $player = undef;
     if ($qf->{"zone"}) {
         $player = $self->player($qf->{"zone"});
         $player_info = $player->TO_JSON(1);
