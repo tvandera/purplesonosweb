@@ -25,7 +25,7 @@
    <ul
        onclick="zone('[% item.name %]');">
     [% FOREACH member IN item.zone.members %]
-       <li style="background-image: url(zone_icons/[% member.icon %].png);">
+       <li style="background-image: url('[% member.img %]');">
          [% member.name %]
       </li>
     [% END %]

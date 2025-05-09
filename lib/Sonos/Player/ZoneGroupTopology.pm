@@ -96,9 +96,12 @@ sub memberNames($self, $uuid = undef) {
 }
 
 sub memberInfo($self, $uuid = undef) {
-    return map { {
+    return map {
+      my $icon = $self->icon($_->{UUID});
+      {
         "name" => $_->{ZoneName},
-        "icon" => $self->icon($_->{UUID}),
+        "icon" => $icon,
+        "img"  => "icons/zone/" . $icon,
     } } $self->members($uuid);
 }
 
