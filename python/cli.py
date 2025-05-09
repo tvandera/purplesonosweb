@@ -32,19 +32,19 @@ def do_request(**params):
 
 def show_info(what, data):
     specs = {
-        "music" : ( T.values(), [{
+        "music" : ( 'items', [{
             'id' : 'id',
             'title' : 'title',
             'class' : 'class',
             'album' : 'album',
-            'artist' : 'creator'
+            'artist' : 'artist'
         }]),
-        "search" : ( T.values(), [{
+        "search" : ( 'items', [{
             'id' : 'id',
             'title' : 'title',
             'class' : 'class',
             'album' : 'album',
-            'artist' : 'creator'
+            'artist' : 'artist'
         }]),
         "queue" : ('items', [{
             'pos' : 'pos',
@@ -52,12 +52,14 @@ def show_info(what, data):
             'album' : 'album',
             'artist' : 'creator'
         }]),
-        "zones" : (T.values(), [
+        "zones" : [
             { 'name' : 'zone.name',
               'state' : 'av.transport_state',
+              'title' : 'av.title',
+              'description' : 'av.description',
               'volume' : 'render.volume',
             },
-        ]),
+        ],
     }
 
     rows = glom(data, specs[what])
