@@ -284,7 +284,7 @@ sub action {
         }, "queue", ],
 
         # wait for update, unless already happened
-        "wait"       => [ $player, sub { $player->lastUpdate() <= $lastupdate; }, 'lastupdate' ],
+        "wait"       => [ $system, sub { $system->lastUpdate() <= $lastupdate; }, 'nozone', 'lastupdate' ],
 
         # Browse/Search music data
         "browse"     => [ undef, sub { return 0; }, "nozone" ],
