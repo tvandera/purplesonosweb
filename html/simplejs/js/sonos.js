@@ -27,15 +27,14 @@ var sonos = {};
 sonos.start = function() {
     sonos.music = {};
     sonos._lastUpdate = 1;
-    sonos._fetch();
     sonos.zones = {};
     sonos.queues = {};
+    sonos._fetch();
 }
 
 sonos.sendAction = function(zoneId, action, other) {
     if (!other) other = "";
-    startspin();
-    sonos._loadData("/action.html?nowait=1&action=" + action + "&zone=" + zoneId + other);
+    sonos._loadData("/api?nowait=1&action=" + action + "&zone=" + zoneId + other);
 }
 
 sonos.sendControlAction = function(zoneId, action) {
@@ -55,7 +54,7 @@ sonos.sendMusicAction = function(zoneId, action, path) {
 }
 
 sonos.sendMusicSearch = function(zoneId, str) {
-    sonos._loadData("/action.html?zone=" + zoneId + "&lastupdate="+sonos._lastUpdate + "&msearch="+str);
+    sonos._loadData("/api?zone=" + zoneId + "&lastupdate="+sonos._lastUpdate + "&msearch="+str);
 }
 
 sonos.setVolume = function(zoneId, volume) {
@@ -66,20 +65,19 @@ sonos.setVolume = function(zoneId, volume) {
 sonos._loadData = function(filename, afterFunc) {
     console.log("sonos load: " + filename);
     Http.get(filename, function (data) {
-        eval(data);
+        all = JSON.parse(data);
+        sonos.zones = all.players;
+        sonos.music = all.music;
+        sonos.queues = all.player.queue;
+        sonos._lastUpdate = all.last_update;
         if (afterFunc) eval(afterFunc);
    });
 }
 
 sonos._doFetch = function() {
-    sonos._loadData("/data.html?action=Wait&lastupdate="+sonos._lastUpdate, "stopspin(); sonos._fetch();");
+    sonos._loadData("/api?action=Wait&lastupdate="+sonos._lastUpdate, "sonos._fetch();");
 }
 
 sonos._fetch = function() {
     window.setTimeout("sonos._doFetch();", 100);
 }
-
-sonos._setLastUpdate = function(lastUpdate) {
-    sonos._lastUpdate = lastUpdate;
-}
-

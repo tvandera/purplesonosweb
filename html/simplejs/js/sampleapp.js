@@ -39,14 +39,6 @@ function updateToggle(first, second, doFirst) {
     document.getElementById(second).style.display  = (doFirst?"none":"inline");
 }
 
-function mZones() {
-    $("#top-labels").hide();
-    $("#zone-container").show();
-    $("#music").hide();
-    $("#now-playing").hide();
-    $("#queue").hide();
-}
-
 function mSelectLabel(name) {
     var labels = [ "currentzone", "nowplaying", "music", "queue" ];
     for (i=0; i < labels.length; i++) {
@@ -56,44 +48,11 @@ function mSelectLabel(name) {
     }
 }
 
-
-function mNowPlaying() {
-    $("#top-labels").show();
-    $("#zone-container").hide();
-    $("#music").hide();
-    $("#now-playing").show();
-    $("#queue").hide();
-
-    mSelectLabel("nowplaying");
-}
-
-
-function mQueue() {
-    $("#top-labels").show();
-    $("#zone-container").hide();
-    $("#music").hide();
-    $("#now-playing").hide();
-    $("#queue").show();
-
-    mSelectLabel("queue");
-}
-
-function mMusic() {
-    $("#top-labels").show();
-    $("#zone-container").hide();
-    $("#music").show();
-    $("#now-playing").hide();
-    $("#queue").hide();
-
-    mSelectLabel("music");
-}
-
 function start() {
     app.currentMusicPath = "";
     app.musicPathStack = [];
     app.rootLastUpdate = 0;
     sonos.start();
-    mZones();
 }
 
 function setCurrentZone(zoneId) {
@@ -101,7 +60,6 @@ function setCurrentZone(zoneId) {
     drawControl(zoneId);
     drawQueue(zoneId);
     drawZones();
-    mNowPlaying();
 }
 
 function needZone() {
