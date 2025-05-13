@@ -5,16 +5,9 @@
  * Of course you don't have to use this to write your app.
  *
  */
+"use strict";
 
 var app = {};
-
-function startspin() {
-  $("#tabs").spin();
-}
-
-function stopspin() {
-  $("#tabs").spin(false);
-}
 
 function updateText(name, text) {
     var element = document.getElementById(name);
@@ -41,7 +34,7 @@ function updateToggle(first, second, doFirst) {
 
 function mSelectLabel(name) {
     var labels = [ "currentzone", "nowplaying", "music", "queue" ];
-    for (i=0; i < labels.length; i++) {
+    for (let i=0; i < labels.length; i++) {
         var n = labels[i];
         if (name == n) $('#' + n + "label").css("background", "#666");
         else $('#' + n + "label").css("background", "#000");
@@ -53,17 +46,19 @@ function start() {
     app.musicPathStack = [];
     app.rootLastUpdate = 0;
     sonos.start();
+    drawZones();
 }
 
 function setCurrentZone(zoneId) {
-    app.currentZoneId = zoneId;
+    app.currentZoneName = zoneId;
     drawControl(zoneId);
+    drawMusic(app.currentMusicPath);
     drawQueue(zoneId);
     drawZones();
 }
 
 function needZone() {
-    if (!app.currentZoneId) {
+    if (!app.currentZoneName) {
         alert("Please select a Zone first.");
         return 1;
     }
@@ -72,17 +67,17 @@ function needZone() {
 
 function doAction(action) {
     if (needZone()) return;
-    sonos.sendControlAction(app.currentZoneId, action);
+    sonos.sendControlAction(app.currentZoneName, action);
 }
 
 function doQAction(action, id) {
     if (needZone()) return;
-    sonos.sendQueueAction(app.currentZoneId, action, id);
+    sonos.sendQueueAction(app.currentZoneName, action, id);
 }
 
 function doMAction(action, path) {
     if (needZone()) return;
-    sonos.sendMusicAction(app.currentZoneId, action, path);
+    sonos.sendMusicAction(app.currentZoneName, action, path);
 }
 
 function browseBack() {
@@ -91,90 +86,65 @@ function browseBack() {
 }
 
 function browseTo(path,nobreadcrumbs) {
-    if (needZone()) return;
-
     if (!nobreadcrumbs) app.musicPathStack.push(app.currentMusicPath);
     app.currentMusicPath = path;
 
     if (sonos.music[app.currentMusicPath]) {
         drawMusic(app.currentMusicPath);
     } else {
-        sonos.sendMusicAction(app.currentZoneId, "Browse", app.currentMusicPath);
+        sonos.sendMusicBrowse(app.currentMusicPath);
     }
 }
 
 function doLink(zone) {
-    sonos.sendAction(app.currentZoneId, "Link", "&link="+zone);
+    sonos.sendAction(app.currentZoneName, "Link", "&link="+zone);
 }
 
 function doUnlink(zone) {
-    sonos.sendAction(app.currentZoneId, "Unlink", "&link="+zone);
+    sonos.sendAction(app.currentZoneName, "Unlink", "&link="+zone);
 }
 
 function drawZones() {
     var str = "";
-    for (i = 0; i<sonos.zones.length; i++) {
+    for (let i = 0; i<sonos.zones.length; i++) {
         var zone = sonos.zones[i];
-
-        if (!zone.zone_linked) {
-            if (i != 0) str+= "</ul>";
-            str+= "<ul onClick=\"setCurrentZone('" + zone.zone_id + "')\">";
-        }
-
-        if (app.currentZoneId == zone.zone_id) str += "<b>";
-
-        str += "<li style='background-image: url(zone_icons/" + zone.zone_icon + ".png);'>" + zone.zone_name;
-
-        if (zone.zone_linked) {
-            str += " <a class=ulink href=\"#\" onClick=\"doUnlink('"+zone.zone_id+"')\">[U]</a>";
-        } else if (app.currentZoneId && app.currentZoneId != zone.zone_id) {
-            str += " <a class=ulink href=\"#\" onClick=\"doLink('"+zone.zone_id+"')\">[L]</a></font>";
-        }
-
+        str += "<ul onClick=\"setCurrentZone('" + zone.name + "')\">";
+        // str += "<li style='background-image: url("+ zone.zone.img+");'>";
+        str += zone.zone.name;
         str += "</li>\n";
-
-        if (app.currentZoneId == zone.zone_id) str += "</b>";
+        str += "</ul>";
     }
-    str += "</ul>";
     updateText("zones", str);
 }
 
 function curZoneInfo() {
-    for (z in sonos.zones) {
+    for (let z in sonos.zones) {
         var zone = sonos.zones[z];
-        if (zone.zone_id != app.currentZoneId) continue;
+        if (zone.name != app.currentZoneName) continue;
         return zone;
     }
 }
 
 function drawControl(zoneId) {
-    if (zoneId != app.currentZoneId) return;
-    var info = curZoneInfo();
+    if (zoneId != app.currentZoneName) return;
+    var player = curZoneInfo();
 
-    var fancyName = info.zone_name;
-    if (info.ZONE_NUMLINKED > 0) fancyName += ' + ' + info.ZONE_NUMLINKED;
-
-    $("a[href=info-container]").text(fancyName);
-    updateText('currentzonename', fancyName);
-    var name = info.active_name;
-    if (!name && !info.active_album && !info.active_artist)
-        name = "<em>Not playing</em>";
-    updateText('song', name);
-    updateText('album', info.active_album);
-    updateText('artist', info.active_artist);
-    updateToggle("pause", "play", info.active_mode == 1);
-    updateToggle("muteoff", "muteon", info.active_muted);
-    $("#volume").simpleSlider("setValue", info.active_volume);
-    var image = info.active_albumart;
+    updateText('currentzonename', player.zone.name);
+    updateText('song', player.av.track);
+    updateText('album', player.av.album);
+    updateText('artist', player.av.artist);
+    updateToggle("pause", "play", player.av.isplaying);
+    updateToggle("muteoff", "muteon", player.render.ismuted);
+    updateText('volume', player.render.volume);
+    var image = player.av.albumart;
     if (!image) image = "tiles/missingaa_lite.svg";
     updateSrc('albumart', image);
     drawQueue(zoneId);
 }
 
 function drawQueue(zoneId) {
-    if (zoneId != app.currentZoneId) return;
-    if (!sonos.queues[zoneId]) return;
-    var queue = sonos.queues[zoneId];
+    if (zoneId != app.currentZoneName) return;
+    var queue = curZoneInfo().queue;
     var cur_track = curZoneInfo().active_track_num;
     var zone_paused = curZoneInfo().active_paused_playback;
     var zone_playing = curZoneInfo().active_playing;
@@ -191,23 +161,25 @@ function drawQueue(zoneId) {
 
     if (queue.length == 0) {
         str.push("<li>The queue is emtpy</li>");
-    } else for (i=0; i < queue.length; i++) {
-        var item = queue[i];
+    } else for (let i=0; i < queue.items.length; i++) {
+        var item = queue.items[i];
         var paused = (cur_track == item.QUEUE_TRACK_NUM) && zone_paused;
         var playing = (cur_track == item.QUEUE_TRACK_NUM) && zone_playing;
 
+        let action;
         if (paused)       action = "doAction('Start');";
         else if (playing) action = "doAction('Pause');"
         else              action = "doQAction('Seek', '" + item.queue_id + "'); doAction('Start');";
         str.push("<li onClick=\"" + action + "\">");
 
+        let img;
         if (paused) img = 'svg/pause.svg';
         else if (playing) img = 'svg/pause.svg';
-        else img = item.QUEUE_ALBUMART;
+        else img = item.albumart;
         str.push("<img class='albumart' src='" + img + "'>");
 
-        str.push("<div><p class='title'>" + item.queue_name + "</p>");
-        str.push("<p class='artist'>" + item.QUEUE_ARTIST + "</p>");
+        str.push("<div><p class='title'>" + item.title + "</p>");
+        str.push("<p class='artist'>" + item.artist + "</p>");
         str.push("</div>");
         str.push("</li>");
     }
@@ -221,48 +193,43 @@ function drawMusic(path) {
 
     // header with path title
     str.push("<ul id='musiclist' data-role='listview' data-autodividers='true'>");
-    if (path != "") {
+    if (! info.istop) {
         str.push("<li class='header'>");
         str.push("<img onClick='browseBack()' src='tiles/back.svg'>");
-        str.push("<div><p id='musicpath'>" + info.music_name + "</p>");
-        if (info.MUSIC_ARTIST) str.push("<p class='artist'>" + info.MUSIC_ARTIST + "</p>");
-        if (info.MUSIC_CLASS == "object.container.album.musicAlbum") {
+        str.push("<div><p id='musicpath'>" + info.title + "</p>");
+        if (info.artist) str.push("<p class='artist'>" + info.artist + "</p>");
+        if (info.isalbum) {
             str.push("<p class='buttons'><a HREF='#' onClick='doMAction(\"Play\", \"" + path + "\");'>Play</A> - <a HREF='#' onClick='doMAction(\"add\", \"" + path + "\");'>Add</A></p>");
         }
         str.push("</div></li>");
 
-        if (info.music_albumart && info.MUSIC_CLASS == "object.container.album.musicAlbum") {
-            str.push("<li class='albumart'><img onerror='this.src=\"tiles/missingaa_lite.svg\";' src='" + info.music_albumart + "'></li>");
+        if (info.albumart && info.isalbum) {
+            str.push("<li class='albumart'><img onerror='this.src=\"tiles/missingaa_lite.svg\";' src='" + info.albumart + "'></li>");
         }
     }
 
     // container items
-    for (i=0; i < info.music_loop.length; i++) {
-        var item = info.music_loop[i];
-        path = decodeURIComponent(item.MUSIC_REALPATH);
+    for (var i=0; i < info.items.length; i++) {
+        var item = info.items[i];
+        path = decodeURIComponent(item.id);
         str.push("<li");
-        if (item.MUSIC_REALCLASS == "object.item.audioItem.audioBroadcast")
+        if (item.isradio)
             str.push(" onClick='doMAction(\"Play\", \"" + path + "\");'>");
         else
             str.push(" onClick='browseTo(\"" + path + "\")'>");
 
-        if (item.music_albumart && ! (info.music_albumart && info.MUSIC_CLASS == "object.container.album.musicAlbum")) {
-            str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.music_albumart) + "'>");
-        } else {
-            str.push("<div class='trackno'>" + i + "</div>");
-        }
-
-        str.push("<div><p class='title'>" + item.music_name + "</p>");
-        if (item.MUSIC_ARTIST && item.MUSIC_ARTIST != info.MUSIC_ARTIST)
-            str.push("<p class='artist'>" + item.MUSIC_ARTIST + "</p>");
-        if (item.MUSIC_DESC)
-            str.push("<p class='description'>" + item.MUSIC_DESC + "</p>");
-        str.push("</div>");
+            if (item.iscontainer) {
+                str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.albumart) + "'>");
+            } else {
+                str.push("<div class='trackno'>" + i + "</div>");
+            }
+            str.push("<div><p class='title'>" + item.title + "</p>");
+                str.push("<p class='artist'>" + item.artist + "</p>");
+                str.push("<p class='description'>" + item.desc + "</p>");
+            str.push("</div>");
         str.push("</li>");
     }
 
     str.push("</ul>");
     updateText("music", str.join(""));
-    // $( '#musiclist' ).listview( 'refresh' ).alphascroll();
-
 }

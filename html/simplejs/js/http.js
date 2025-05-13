@@ -1,13 +1,14 @@
+"use strict";
 
 function httpPost(sURL, sParams) {
-                       
+
     var oURL = new java.net.URL(sURL);
     var oConnection = oURL.openConnection();
 
     oConnection.setDoInput(true);
     oConnection.setDoOutput(true);
-    oConnection.setUseCaches(false);                
-    oConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");                
+    oConnection.setUseCaches(false);
+    oConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
     var oOutput = new java.io.DataOutputStream(oConnection.getOutputStream());
     oOutput.writeBytes(sParams);
@@ -16,31 +17,31 @@ function httpPost(sURL, sParams) {
 
     var sLine = "", sResponseText = "";
 
-    var oInput = new java.io.DataInputStream(oConnection.getInputStream());                                
+    var oInput = new java.io.DataInputStream(oConnection.getInputStream());
     sLine = oInput.readLine();
-    
-    while (sLine != null){                                
+
+    while (sLine != null){
         sResponseText += sLine + "\n";
         sLine = oInput.readLine();
     }
-                                  
-    oInput.close();                                  
 
-    return sResponseText;                         
+    oInput.close();
+
+    return sResponseText;
 }
 
 function addPostParam(sParams, sParamName, sParamValue) {
     if (sParams.length > 0) {
         sParams += "&";
     }
-    return sParams + encodeURIComponent(sParamName) + "=" 
+    return sParams + encodeURIComponent(sParamName) + "="
                    + encodeURIComponent(sParamValue);
 }
 
 function addURLParam(sURL, sParamName, sParamValue) {
     sURL += (sURL.indexOf("?") == -1 ? "?" : "&");
     sURL += encodeURIComponent(sParamName) + "=" + encodeURIComponent(sParamValue);
-    return sURL;   
+    return sURL;
 }
 
 function httpGet(sURL) {
@@ -48,13 +49,13 @@ function httpGet(sURL) {
     var oURL = new java.net.URL(sURL);
     var oStream = oURL.openStream();
     var oReader = new java.io.BufferedReader(new java.io.InputStreamReader(oStream));
-    
+
     var sLine = oReader.readLine();
     while (sLine != null) {
         sResponseText += sLine + "\n";
         sLine = oReader.readLine();
     }
-    
+
     oReader.close();
     return sResponseText;
 }
@@ -70,7 +71,7 @@ Http.get = function (sURL, fnCallback) {
             fnCallback(oRequest.responseText);
         }
     }
-    oRequest.send(null);    
+    oRequest.send(null);
 };
 
 Http.post = function (sURL, sParams, fnCallback) {
@@ -83,5 +84,5 @@ Http.post = function (sURL, sParams, fnCallback) {
             fnCallback(oRequest.responseText);
         }
     }
-    oRequest.send(sParams);    
+    oRequest.send(sParams);
 };

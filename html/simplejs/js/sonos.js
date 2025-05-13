@@ -21,6 +21,7 @@
  *    music at the path location
  *
  */
+"use strict";
 
 var sonos = {};
 
@@ -53,8 +54,12 @@ sonos.sendMusicAction = function(zoneId, action, path) {
     sonos.sendAction(zoneId, action, "&mpath=" + encodeURIComponent(path));
 }
 
-sonos.sendMusicSearch = function(zoneId, str) {
-    sonos._loadData("/api?zone=" + zoneId + "&lastupdate="+sonos._lastUpdate + "&msearch="+str);
+sonos.sendMusicSearch = function(path) {
+    sonos._loadData("/api?lastupdate="+sonos._lastUpdate + "&msearch=" + encodeURIComponent(path));
+}
+
+sonos.sendMusicBrowse = function(path) {
+    sonos._loadData("/api?lastupdate="+sonos._lastUpdate + "&mpath=" + encodeURIComponent(path));
 }
 
 sonos.setVolume = function(zoneId, volume) {
@@ -65,12 +70,13 @@ sonos.setVolume = function(zoneId, volume) {
 sonos._loadData = function(filename, afterFunc) {
     console.log("sonos load: " + filename);
     Http.get(filename, function (data) {
-        all = JSON.parse(data);
+        let all = JSON.parse(data);
         sonos.zones = all.players;
-        sonos.music = all.music;
+        sonos.music[all.music.id] = all.music;
         sonos.queues = all.player.queue;
         sonos._lastUpdate = all.last_update;
         if (afterFunc) eval(afterFunc);
+        drawZones();
    });
 }
 
