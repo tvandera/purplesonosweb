@@ -28,17 +28,8 @@ function updateSrc(name, src) {
 }
 
 function updateToggle(first, second, doFirst) {
-    document.getElementById(first).style.display = (doFirst?"inline":"none");
-    document.getElementById(second).style.display  = (doFirst?"none":"inline");
-}
-
-function mSelectLabel(name) {
-    var labels = [ "currentzone", "nowplaying", "music", "queue" ];
-    for (let i=0; i < labels.length; i++) {
-        var n = labels[i];
-        if (name == n) $('#' + n + "label").css("background", "#666");
-        else $('#' + n + "label").css("background", "#000");
-    }
+    document.getElementById(first).style.display = (doFirst ? "inline" : "none");
+    document.getElementById(second).style.display = (doFirst ? "none" : "inline");
 }
 
 function start() {
@@ -47,6 +38,7 @@ function start() {
     app.rootLastUpdate = 0;
     sonos.start();
     drawZones();
+    browseTo('');
 }
 
 function setCurrentZone(zoneId) {
@@ -85,28 +77,30 @@ function browseBack() {
     browseTo(app.musicPathStack.pop(), true);
 }
 
-function browseTo(path,nobreadcrumbs) {
-    if (!nobreadcrumbs) app.musicPathStack.push(app.currentMusicPath);
+function browseTo(path, nobreadcrumbs) {
+    if (!nobreadcrumbs)
+        app.musicPathStack.push(app.currentMusicPath);
+
     app.currentMusicPath = path;
 
-    if (sonos.music[app.currentMusicPath]) {
-        drawMusic(app.currentMusicPath);
-    } else {
+    if (!sonos.music[app.currentMusicPath]) {
         sonos.sendMusicBrowse(app.currentMusicPath);
     }
+
+    drawMusic(app.currentMusicPath);
 }
 
 function doLink(zone) {
-    sonos.sendAction(app.currentZoneName, "Link", "&link="+zone);
+    sonos.sendAction(app.currentZoneName, "Link", "&link=" + zone);
 }
 
 function doUnlink(zone) {
-    sonos.sendAction(app.currentZoneName, "Unlink", "&link="+zone);
+    sonos.sendAction(app.currentZoneName, "Unlink", "&link=" + zone);
 }
 
 function drawZones() {
     var str = "";
-    for (let i = 0; i<sonos.zones.length; i++) {
+    for (let i = 0; i < sonos.zones.length; i++) {
         var zone = sonos.zones[i];
         str += "<ul onClick=\"setCurrentZone('" + zone.name + "')\">";
         // str += "<li style='background-image: url("+ zone.zone.img+");'>";
@@ -161,16 +155,16 @@ function drawQueue(zoneId) {
 
     if (queue.length == 0) {
         str.push("<li>The queue is emtpy</li>");
-    } else for (let i=0; i < queue.items.length; i++) {
+    } else for (let i = 0; i < queue.items.length; i++) {
         var item = queue.items[i];
         var paused = (cur_track == item.QUEUE_TRACK_NUM) && zone_paused;
         var playing = (cur_track == item.QUEUE_TRACK_NUM) && zone_playing;
 
         let action;
-        if (paused)       action = "doAction('Start');";
+        if (paused) action = "doAction('Start');";
         else if (playing) action = "doAction('Pause');"
-        else              action = "doQAction('Seek', '" + item.queue_id + "'); doAction('Start');";
-        str.push("<li onClick=\"" + action + "\">");
+        else action = "doQAction('Seek', '" + item.id + "'); doAction('Start');";
+        str.push("<li onClick='" + action + "'>");
 
         let img;
         if (paused) img = 'svg/pause.svg';
@@ -193,7 +187,7 @@ function drawMusic(path) {
 
     // header with path title
     str.push("<ul id='musiclist' data-role='listview' data-autodividers='true'>");
-    if (! info.istop) {
+    if (!info.istop) {
         str.push("<li class='header'>");
         str.push("<img onClick='browseBack()' src='tiles/back.svg'>");
         str.push("<div><p id='musicpath'>" + info.title + "</p>");
@@ -203,13 +197,13 @@ function drawMusic(path) {
         }
         str.push("</div></li>");
 
-        if (info.albumart && info.isalbum) {
-            str.push("<li class='albumart'><img onerror='this.src=\"tiles/missingaa_lite.svg\";' src='" + info.albumart + "'></li>");
+        if (info.albumart) {
+            str.push("<li class='albumart'><img src='" + info.albumart + "'></li>");
         }
     }
 
     // container items
-    for (var i=0; i < info.items.length; i++) {
+    for (var i = 0; i < info.items.length; i++) {
         var item = info.items[i];
         path = decodeURIComponent(item.id);
         str.push("<li");
@@ -218,15 +212,15 @@ function drawMusic(path) {
         else
             str.push(" onClick='browseTo(\"" + path + "\")'>");
 
-            if (item.iscontainer) {
-                str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.albumart) + "'>");
-            } else {
-                str.push("<div class='trackno'>" + i + "</div>");
-            }
-            str.push("<div><p class='title'>" + item.title + "</p>");
-                str.push("<p class='artist'>" + item.artist + "</p>");
-                str.push("<p class='description'>" + item.desc + "</p>");
-            str.push("</div>");
+        if (item.iscontainer) {
+            str.push("<img onerror='this.src=\"tiles/missingaa_dark.svg\";' src='" + decodeURIComponent(item.albumart) + "'>");
+        } else {
+            str.push("<div class='trackno'>" + i + "</div>");
+        }
+        str.push("<div><p class='title'>" + item.title + "</p>");
+        str.push("<p class='artist'>" + item.artist + "</p>");
+        str.push("<p class='description'>" + item.desc + "</p>");
+        str.push("</div>");
         str.push("</li>");
     }
 

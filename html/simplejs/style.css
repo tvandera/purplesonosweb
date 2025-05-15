@@ -77,28 +77,6 @@ hr {
   margin: 10px 0;
 }
 
-input[type="text"],
-input[type="submit"] {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 6px;
-  margin-top: 5px;
-}
-
-input[type="text"] {
-  background-color: #3a3a50;
-  color: #ffffff;
-}
-
-input[type="submit"] {
-  background-color: #00bcd4;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-
-
 a {
   color: inherit;
   text-decoration: none;
@@ -110,9 +88,6 @@ a {
   margin: 10px 70px;
 }
 
-#mute {
-  float: left;
-}
 
 #queueicon img {
   float: right;

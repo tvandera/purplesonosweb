@@ -9,27 +9,23 @@
     <SCRIPT language="JavaScript" SRC="js/http.js"></SCRIPT>
     <SCRIPT language="JavaScript" SRC="js/sonos.js"></SCRIPT>
     <SCRIPT language="JavaScript" SRC="js/sampleapp.js"></SCRIPT>
-    <SCRIPT language="JavaScript">
-        app.removegif = "/static/images/x.gif";
-        app.playgif = "/static/images/playing.gif";
-        app.addgif = "/static/images/add.gif";
-
-    </SCRIPT>
 </HEAD>
 
 
 <BODY onLoad="start()">
-    <div id="zonescontainer" style="position: absolute; left: 1px; width: 20%; top: 1px;">
-        <B>Zones:</B>
+    <div id="zonescontainer">
+        <H4>Zones:</H4>
         <div id="zones"></div>
     </div>
 
-    <div id="control" style="position: absolute; left: 20%; width: 33%; top: 1px; height: 200px;">
-        <B><label id="currentzonename"></label></B> Now Playing:<BR>
-        &nbsp; <B>Song:</B> <label id="song"></label><BR>
-        &nbsp; <B>Album:</B> <label id="album"></label><BR>
-        &nbsp; <B>Artist:</B> <label id="artist"></label><BR>
-        &nbsp; <B>Track:</B> <label id="tracknum"></label>/<label id="tracktot"></label><BR>
+    <div id="control">
+        <H4><label id="currentzonename"></label></h4>
+
+        Now Playing:<BR>
+        <B>Song:</B> <label id="song"></label><BR>
+        <B>Album:</B> <label id="album"></label><BR>
+        <B>Artist:</B> <label id="artist"></label><BR>
+        <B>Track:</B> <label id="tracknum"></label>/<label id="tracktot"></label><BR>
         <HR>
         <A HREF="#" id="previous" onClick="doAction('Previous')">Previous</A>
         <A HREF="#" id="play" onClick="doAction('Start');">Play</A>
@@ -51,13 +47,13 @@
         <BR>
     </div>
 
-    <div id="art" style="position: absolute; left: 1px; width: 100px; bottom: 1px;">
+    <div id="art">
         <IMG id="albumart" style="display: none;" HEIGHT=100 WIDTH=100>
     </div>
 
-    <div id="queue" style="position: absolute; left: 20%; width: 33%; top: 200px;">
-        <B>Queue:</B> <A HREF="#" onClick="doAction('RemoveAll')">Remove All</A><BR>
-        <form name="save" action="javascript:doSaveQ();">
+    <div id="queue">
+        <H4>Queue:</H4> <A HREF="#" onClick="doAction('RemoveAll')">Remove All</A><BR>
+        <form name="save" action="doSaveQ();">
             Save Q as:
             <input id="savequeuename" value="" size=16>
             <input value="Save" type=submit>
@@ -65,16 +61,17 @@
         <div id=queuedata>Select a Zone on the left.</div>
     </div>
 
-    <div id="music" style="position: absolute; left: 53%; width: 47%; top: 1px;">
-        <B>Music:</B> <A HREF="#" onClick="sonos.sendAction(app.currentZoneId, 'ReIndex');">Reindex</A><BR>
-        <form name="search" action="javascript:doSearch();">
+    <div id="music">
+        <H4>Music:</H4> <A HREF="#" onClick="sonos.sendAction(app.currentZoneId, 'ReIndex');">Reindex</A><BR>
+        <form name="search" action="doSearch();">
             Perl Expression:
             <input name=msearch id="msearch" value="" onChange="doSearch(1);" onKeyUp="doSearch(1);">
             <input value="Search" type=submit>
         </form>
         <BR>
         <A HREF="#" onClick="browseTo('')">Top</A> <A HREF="#" onClick="browseBack()">Up</A><BR>
-        <B>Location:</B><label id=musicpath></label><BR>
+
+        <B>Location: </B><label id=musicpath></label><BR>
         <div id=rootmusicdata>Loading Music ...</div>
         <div id=musicdata></div>
         <img id="musicalbumart" style="display: none;" onerror="this.style.display='none'" HEIGHT=200 WIDTH=200>
