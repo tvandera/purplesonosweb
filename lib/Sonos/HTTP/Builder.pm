@@ -91,7 +91,7 @@ sub build_zones_data($self) {
 sub build_player_data($self, $player = undef) {
     $player = $self->player() unless $player;
     return {} unless $player;
-    my $is_active = $player == $self->player();
+    my $is_active = $player && $self->player() && $player == $self->player();
     return $player->TO_JSON($is_active);
 }
 
