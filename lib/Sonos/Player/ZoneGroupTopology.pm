@@ -6,7 +6,7 @@ use v5.36;
 use strict;
 use warnings;
 
-use XML::Liberal ();
+use XML::Liberal        ();
 use XML::LibXML::Simple qw( XMLin );
 XML::Liberal->globally_override('LibXML');
 
@@ -15,48 +15,54 @@ use HTML::Entities qw( decode_entities );
 use Types::Serialiser ();
 
 sub info($self) {
-    my $count = 0;
-    my @groups = keys %{$self->{_zonegroups}};
+    my $count  = 0;
+    my @groups = keys %{ $self->{_zonegroups} };
 
-    $self->log("Found " . scalar(@groups) . " zone groups at " . $self->lastUpdateReadable());
+    $self->log( "Found "
+          . scalar(@groups)
+          . " zone groups at "
+          . $self->lastUpdateReadable() );
     for my $coordinator (@groups) {
         my @members = $self->members($coordinator);
-        $self->log("  $count: " . join(", ", map {
-            my $uuid = $_->{UUID};
-            my $name = $_->{ZoneName};
-            my $isCoordinator = $coordinator eq $uuid;
-            $name . ( $isCoordinator ? " [C]" : "" )
-        } @members));
+        $self->log(
+            "  $count: " . join(
+                ", ",
+                map {
+                    my $uuid          = $_->{UUID};
+                    my $name          = $_->{ZoneName};
+                    my $isCoordinator = $coordinator eq $uuid;
+                    $name . ( $isCoordinator ? " [C]" : "" )
+                } @members
+            )
+        );
         $count++;
     }
 }
 
-sub TO_JSON($self, $recurse = 1) {
+sub TO_JSON( $self, $recurse = 1 ) {
     return {
         "last_update" => $self->lastUpdate(),
         "icon"        => $self->icon(),
         "img"         => "icons/zone/" . $self->icon(),
         "name"        => $self->friendlyName(),
         "coordinator" => $self->coordinator()->zoneName(),
-        "is_coord"    => Types::Serialiser::as_bool($self->isCoordinator()),
+        "is_coord"    => Types::Serialiser::as_bool( $self->isCoordinator() ),
         "members"     => [ $self->memberInfo() ],
     };
 }
 
-
 sub friendlyName($self) {
-    my $groupname = $self->coordinator()->friendlyName();
+    my $groupname  = $self->coordinator()->friendlyName();
     my $num_linked = $self->numMembers() - 1;
     $groupname .= " + " . $num_linked if $num_linked;
-    return $groupname
+    return $groupname;
 }
 
 sub UDN($self) {
     return $self->player()->UDN();
 }
 
-sub player($self, $uuid = undef)
-{
+sub player( $self, $uuid = undef ) {
     return $self->SUPER::player() unless $uuid;
     return $self->system()->player($uuid);
 }
@@ -68,56 +74,57 @@ sub haveZoneInfo($self) {
 # flattens values zonegroups
 # returns a map UDN => ZoneGroup
 sub allZones($self) {
-    my @allzones = map { @$_ } (values %{$self->{_zonegroups}});
+    my @allzones = map { @$_ } ( values %{ $self->{_zonegroups} } );
     return { map { $_->{UUID} => $_ } @allzones };
 }
 
 sub coordinator($self) {
-    return $self->player($self->{_mycoordinator});
+    return $self->player( $self->{_mycoordinator} );
 }
 
-sub isCoordinator($self, $uuid = undef) {
-    return unless $self->haveZoneInfo();
+sub isCoordinator( $self, $uuid = undef ) {
+    return               unless $self->haveZoneInfo();
     $uuid = $self->UDN() unless defined $uuid;
 
     return $uuid eq $self->{_mycoordinator};
 }
 
-sub members($self, $uuid = undef) {
-    return unless $self->haveZoneInfo();
+sub members( $self, $uuid = undef ) {
+    return               unless $self->haveZoneInfo();
     $uuid = $self->UDN() unless defined $uuid;
 
-    my ($coordinator, $members) = $self->zoneGroupInfo($uuid);
+    my ( $coordinator, $members ) = $self->zoneGroupInfo($uuid);
     return @$members;
 }
 
-sub memberNames($self, $uuid = undef) {
+sub memberNames( $self, $uuid = undef ) {
     return map { $_->{ZoneName} } $self->members($uuid);
 }
 
-sub memberInfo($self, $uuid = undef) {
+sub memberInfo( $self, $uuid = undef ) {
     return map {
-      my $icon = $self->icon($_->{UUID});
-      {
-        "name" => $_->{ZoneName},
-        "icon" => $icon,
-        "img"  => "icons/zone/" . $icon,
-    } } $self->members($uuid);
+        my $icon = $self->icon( $_->{UUID} );
+        {
+            "name" => $_->{ZoneName},
+            "icon" => $icon,
+            "img"  => "icons/zone/" . $icon,
+        }
+    } $self->members($uuid);
 }
 
-sub numMembers($self, $uuid = undef ) {
+sub numMembers( $self, $uuid = undef ) {
     return scalar $self->members($uuid);
 }
 
-sub zoneName($self, $uuid = undef) {
-    return unless $self->haveZoneInfo();
+sub zoneName( $self, $uuid = undef ) {
+    return               unless $self->haveZoneInfo();
     $uuid = $self->UDN() unless defined $uuid;
 
     return $self->zoneInfo($uuid)->{ZoneName};
 }
 
-sub icon($self, $uuid = undef) {
-    return unless $self->haveZoneInfo();
+sub icon( $self, $uuid = undef ) {
+    return               unless $self->haveZoneInfo();
     $uuid = $self->UDN() unless defined $uuid;
 
     my $icon = $self->zoneInfo($uuid)->{Icon};
@@ -126,8 +133,8 @@ sub icon($self, $uuid = undef) {
 }
 
 # check if $uuid is in ZoneGroup with Coordinator == $coordinator
-sub isInZoneGroup($self, $coordinator, $uuid = undef) {
-    return unless $self->haveZoneInfo();
+sub isInZoneGroup( $self, $coordinator, $uuid = undef ) {
+    return               unless $self->haveZoneInfo();
     $uuid = $self->UDN() unless defined $uuid;
 
     my $info = $self->{_zonegroups}->{$coordinator};
@@ -136,32 +143,32 @@ sub isInZoneGroup($self, $coordinator, $uuid = undef) {
 
 # returns $coordinator and $groupinfo for ZoneGroup that
 # contains player with $uuid
-sub zoneGroupInfo($self, $uuid = undef) {
-    return unless $self->haveZoneInfo();
+sub zoneGroupInfo( $self, $uuid = undef ) {
+    return                         unless $self->haveZoneInfo();
     $uuid = $self->player()->UDN() unless defined $uuid;
 
-    for my $coordinator (keys %{$self->{_zonegroups}}) {
-        next unless $self->isInZoneGroup($coordinator, $uuid);
+    for my $coordinator ( keys %{ $self->{_zonegroups} } ) {
+        next unless $self->isInZoneGroup( $coordinator, $uuid );
         return $coordinator, $self->{_zonegroups}->{$coordinator};
     }
 
     return, undef;
 }
 
-sub zoneInfo($self, $uuid = undef) {
-    return unless $self->haveZoneInfo();
+sub zoneInfo( $self, $uuid = undef ) {
+    return                         unless $self->haveZoneInfo();
     $uuid = $self->player()->UDN() unless defined $uuid;
     return $self->allZones()->{$uuid};
 }
 
 sub numZoneGroups($self) {
-    return scalar keys %{$self->{_zonegroups}};
+    return scalar keys %{ $self->{_zonegroups} };
 }
 
 sub processUpdate {
     my $self = shift;
     $self->processZoneGroupState(@_);
-    $self->SUPER::processUpdate(@_)
+    $self->SUPER::processUpdate(@_);
 }
 
 # called when zonegroups have changed
@@ -181,13 +188,13 @@ sub processZoneGroupState ( $self, $service, %properties ) {
 
     for (@groups) {
         my $coordinator = $_->{Coordinator};
-        my $members = $_->{ZoneGroupMember};
+        my $members     = $_->{ZoneGroupMember};
         $self->{_zonegroups}->{$coordinator} = $members;
         my ($myzoneinfo) = grep { $_->{UUID} eq $self->UDN() } @$members;
         next unless $myzoneinfo;
 
         # it's my zonegroup
-        $self->{_myzoneinfo} = $myzoneinfo;
+        $self->{_myzoneinfo}    = $myzoneinfo;
         $self->{_mycoordinator} = $coordinator;
     }
 }
@@ -221,26 +228,26 @@ sub linkAllZones($self) {
 
 # puts $self and $zone in the same ZoneGroup
 # $self will be coordinator
-sub linkZone($self, $zone) {
+sub linkZone( $self, $zone ) {
     my $player = $self->player();
 
     # No need to do anything
-    return 0 if ($player->zoneGroupTopology()->coordinator() eq $zone);
+    return 0 if ( $player->zoneGroupTopology()->coordinator() eq $zone );
 
-    $player->avTransport()->setURI("x-rincon:" . $zone);
+    $player->avTransport()->setURI( "x-rincon:" . $zone );
     return 1;
 }
 
 # puts $self and $zone in the same ZoneGroup
 # $zone will be coordinator
-sub linkToZone($self, $zone) {
-    my $player = $self->player();
+sub linkToZone( $self, $zone ) {
+    my $player      = $self->player();
     my $coordinator = $self->player($zone);
 
     # No need to do anything
-    return 0 if ($self->coordinator() eq $zone);
+    return 0 if ( $self->coordinator() eq $zone );
 
-    $player->avTransport()->setURI("x-rincon:" . $coordinator->UDN());
+    $player->avTransport()->setURI( "x-rincon:" . $coordinator->UDN() );
     return 1;
 }
 

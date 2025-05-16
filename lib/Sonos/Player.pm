@@ -8,7 +8,6 @@ use List::Util qw( all max );
 
 require UPnP::ControlPoint;
 
-
 use XML::Liberal ();
 XML::Liberal->globally_override('LibXML');
 
@@ -22,22 +21,22 @@ require Sonos::Player::RenderingControl;
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";
 
 use constant SERVICE_NAMES => (
-    "ZoneGroupTopology", # zones
-    "ContentDirectory",  # music library
-    "AVTransport",       # currently playing track
-    "RenderingControl",  # volume etc
-    "Queue",             # queue
+    "ZoneGroupTopology",    # zones
+    "ContentDirectory",     # music library
+    "AVTransport",          # currently playing track
+    "RenderingControl",     # volume etc
+    "Queue",                # queue
 );
 
 sub new {
-    my($self, $upnp, $system, %args) = @_;
-	my $class = ref($self) || $self;
+    my ( $self, $upnp, $system, %args ) = @_;
+    my $class = ref($self) || $self;
 
     $self = bless {
-        _upnp => $upnp,
-        _system => $system,
-        _services => { },
-        _callbacks => [ ],
+        _upnp      => $upnp,
+        _system    => $system,
+        _services  => {},
+        _callbacks => [],
     }, $class;
 
     for my $name (SERVICE_NAMES) {
@@ -49,11 +48,11 @@ sub new {
 }
 
 sub populated($self) {
-    return all { $_->populated() } values %{$self->{_services}};
+    return all { $_->populated() } values %{ $self->{_services} };
 }
 
 sub lastUpdate($self) {
-    my @values = map { $_->lastUpdate() } values %{$self->{_services}};
+    my @values = map { $_->lastUpdate() } values %{ $self->{_services} };
     return max @values;
 }
 
@@ -70,7 +69,6 @@ sub location($self) {
     return $self->getUPnP()->{LOCATION};
 }
 
-
 # "Living room" if defined or
 # "192.168.x.y - Sonos Play:5"
 sub friendlyName($self) {
@@ -82,28 +80,28 @@ sub zoneName($self) {
     return $self->zoneGroupTopology()->zoneName();
 }
 
-
-sub cmp($a, $b) {
+sub cmp( $a, $b ) {
     return
-        # sort by zoneGroup coordinator
-        fc($a->zoneGroupTopology()->coordinator()->friendlyName())
-            cmp
-        fc($b->zoneGroupTopology()->coordinator()->friendlyName())
-        ||
-        # then put coordinator first
-            ($b->zoneGroupTopology()->isCoordinator())
-        ||
-        # then sort by zonename
-            fc($a->friendlyName()) cmp fc($b->friendlyName());
+
+      # sort by zoneGroup coordinator
+      fc( $a->zoneGroupTopology()->coordinator()->friendlyName() ) cmp
+      fc( $b->zoneGroupTopology()->coordinator()->friendlyName() )
+      ||
+
+      # then put coordinator first
+      ( $b->zoneGroupTopology()->isCoordinator() )
+      ||
+
+      # then sort by zonename
+      fc( $a->friendlyName() ) cmp fc( $b->friendlyName() );
 }
 
-
 sub services($self) {
-    return values %{$self->{_services}};
+    return values %{ $self->{_services} };
 }
 
 # Sonos::Service object for given name
-sub getService($self, $name) {
+sub getService( $self, $name ) {
     return $self->{_services}->{$name};
 }
 
@@ -116,8 +114,8 @@ sub getUPnP($self) {
     return $self->{_upnp};
 }
 
-sub log($self, @args) {
-    $self->system()->log($self->friendlyName, @args);
+sub log( $self, @args ) {
+    $self->system()->log( $self->friendlyName, @args );
 }
 
 # -- methods for the different services --
@@ -128,11 +126,10 @@ sub avTransport($self)       { return $self->getService("AVTransport"); }
 sub contentDirectory($self)  { return $self->getService("ContentDirectory"); }
 sub queue($self)             { return $self->getService("Queue"); }
 
-
-sub TO_JSON($self, $isactive = 0) {
+sub TO_JSON( $self, $isactive = 0 ) {
     return {
         "id"          => $self->UDN(),
-        "arg"         => "zone=" . uri_escape_utf8($self->zoneName()) . "&",
+        "arg"         => "zone=" . uri_escape_utf8( $self->zoneName() ) . "&",
         "name"        => $self->zoneName(),
         "isactive"    => Types::Serialiser::as_bool($isactive),
         "last_update" => $self->lastUpdate(),
@@ -140,15 +137,15 @@ sub TO_JSON($self, $isactive = 0) {
         "av"          => $self->avTransport()->TO_JSON(),
         "render"      => $self->renderingControl()->TO_JSON(),
         "queue"       => $self->queue()->TO_JSON()
-    }
+    };
 }
 
-sub onUpdate($self, $callback) {
-    push @{$self->{_callbacks}}, $callback;
+sub onUpdate( $self, $callback ) {
+    push @{ $self->{_callbacks} }, $callback;
 }
 
 sub doCallBacks($self) {
-    $_->($self) for @{$self->{_callbacks}};
+    $_->($self) for @{ $self->{_callbacks} };
     $self->{_callbacks} = [];
 
     # we also have callbacks at system level

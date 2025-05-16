@@ -9,22 +9,19 @@ use base 'Sonos::Player::Service';
 require Sonos::MetaData;
 require Sonos::Player::Queue;
 
-
-
-use XML::Liberal ();
+use XML::Liberal        ();
 use XML::LibXML::Simple qw( XMLin );
 XML::Liberal->globally_override('LibXML');
 
-
 sub info($self) {
-    $self->log($self->shortName, ":");
-    my $top = $self->musicLibrary()->topItem();
+    $self->log( $self->shortName, ":" );
+    my $top        = $self->musicLibrary()->topItem();
     my @containers = $self->musicLibrary()->children($top);
     for (@containers) {
-      my $num = scalar $self->musicLibrary->children($_);
-      my $name = $_->title();
-      my $id = $_->id();
-      $self->log("  $name ($id): $num items");
+        my $num  = scalar $self->musicLibrary->children($_);
+        my $name = $_->title();
+        my $id   = $_->id();
+        $self->log("  $name ($id): $num items");
     }
 }
 
@@ -42,23 +39,24 @@ sub processUpdateIDs ( $self, $service, %properties ) {
     my $music = $self->musicLibrary();
 
     # check if anything was updated
-    foreach my $update_id (keys %properties) {
-        next if ($update_id !~ /UpdateIDs?$/);
+    foreach my $update_id ( keys %properties ) {
+        next if ( $update_id !~ /UpdateIDs?$/ );
 
         my $newvalue = $properties{$update_id};
-        my ($new_location, $new_version) = split /,/, $newvalue;
+        my ( $new_location, $new_version ) = split /,/, $newvalue;
         next unless defined $new_location;
         next unless defined $new_version;
         next unless $new_location =~ /RINCON_/;
 
-        for (Sonos::MetaData::topItems()) {
-            # find items in topItems that have updateid equal to given $updateid and
-            # fetch those
+        for ( Sonos::MetaData::topItems() ) {
+
+        # find items in topItems that have updateid equal to given $updateid and
+        # fetch those
             next unless $_->{update_id} eq $update_id;
 
             my $id = $_->{id};
 
-            my ($existing_location, $existing_version) = $music->version($id);
+            my ( $existing_location, $existing_version ) = $music->version($id);
 
             # call fetch if updated or not in music
             next if $existing_location and $existing_version >= $new_version;
@@ -66,7 +64,7 @@ sub processUpdateIDs ( $self, $service, %properties ) {
             $music->removeChildren($id);
             my @items = $self->fetchByObjectID($id);
 
-            $music->addItems($id, $new_location, $new_version, @items);
+            $music->addItems( $id, $new_location, $new_version, @items );
         }
     }
 }
@@ -79,9 +77,6 @@ sub processUpdate {
 
 }
 
-
-
-
 ###############################################################################
 # objectid is like :
 # - AI: for audio-in
@@ -90,15 +85,19 @@ sub processUpdate {
 # actiontype is
 #  - "BrowseMetadata", or
 #  - "BrowseDirectChildren" (default)
-sub fetchByObjectID( $self, $objectid, $recurse = 0) {
+sub fetchByObjectID( $self, $objectid, $recurse = 0 ) {
     my $start = 0;
-    my @items  = ();
+    my @items = ();
     my $result;
 
-    $self->player()->log("Fetching " . $objectid . "...");
+    $self->player()->log( "Fetching " . $objectid . "..." );
 
     do {
-        $result = $self->controlProxy()->Browse( $objectid, 'BrowseDirectChildren', 'dc:title,res,dc:creator,upnp:artist,upnp:album', $start, 2000, "" );
+        $result =
+          $self->controlProxy()
+          ->Browse( $objectid, 'BrowseDirectChildren',
+            'dc:title,res,dc:creator,upnp:artist,upnp:album',
+            $start, 2000, "" );
 
         return () unless $result->isSuccessful;
 
@@ -112,12 +111,13 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0) {
         );
 
         push( @items, @{ $tree->{item} } ) if ( defined $tree->{item} );
-        push( @items, @{ $tree->{container} } ) if ( defined $tree->{container} );
+        push( @items, @{ $tree->{container} } )
+          if ( defined $tree->{container} );
     } while ( $start < $result->getValue("TotalMatches") );
 
-    @items = map { Sonos::Player::Service::derefHelper($_) }  @items;
+    @items = map { Sonos::Player::Service::derefHelper($_) } @items;
 
-    $self->player()->log(" .  Found " . scalar(@items) . " entries.");
+    $self->player()->log( " .  Found " . scalar(@items) . " entries." );
 
     return @items unless $recurse;
 
@@ -125,7 +125,7 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0) {
     my @subitems = ();
     for (@items) {
         next unless $_->{"upnp:class"} =~ /container/;
-        push @subitems, $self->fetchByObjectID($_->{id});
+        push @subitems, $self->fetchByObjectID( $_->{id} );
     }
 
     return @items, @subitems;
@@ -136,9 +136,10 @@ sub musicLibrary($self) {
 }
 
 ###############################################################################
-sub addRadioStation($self, $name, $station_url) {
-    $station_url = substr( $station_url, 5 ) if ( substr( $station_url, 0, 5 ) eq "http:" );
-    $name    = enc($name);
+sub addRadioStation( $self, $name, $station_url ) {
+    $station_url = substr( $station_url, 5 )
+      if ( substr( $station_url, 0, 5 ) eq "http:" );
+    $name = enc($name);
 
     my $item =
         '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" '
@@ -155,12 +156,12 @@ sub addRadioStation($self, $name, $station_url) {
 
 # add a radio station or play list
 sub createObject( $self, $containerid, $elements ) {
-    return  $self->contentDirProxy->CreateObject( $containerid, $elements );
+    return $self->contentDirProxy->CreateObject( $containerid, $elements );
 }
 
 # remove a playlist
 sub destroyObject( $self, $item ) {
-    $self->contentDirProxy()->DestroyObject($item->id());
+    $self->contentDirProxy()->DestroyObject( $item->id() );
 }
 
 ###############################################################################

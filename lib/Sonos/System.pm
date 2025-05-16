@@ -16,11 +16,9 @@ require Sonos::AlbumArtCache;
 use IO::Async::Handle ();
 
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init(
-    $DEBUG
-);
+Log::Log4perl->easy_init($DEBUG);
 
-use Carp qw( carp );
+use Carp         qw( carp );
 use Data::Dumper ();
 $Data::Dumper::Maxdepth = 4;
 
@@ -31,23 +29,22 @@ sub discover {
     return $self->new(@_);
 }
 
-
 sub new {
-    my($self, $loop, @locations) = @_;
-	my $class = ref($self) || $self;
+    my ( $self, $loop, @locations ) = @_;
+    my $class = ref($self) || $self;
 
     my $cp = UPnP::ControlPoint->new();
     $self = bless {
         _controlpoint => $cp,
-        _players => {}, # UDN => Sonos::Player
-        _musiclibrary => undef, # Sonos::MusicLibrary
-        _aacache => undef, # Sonos::AlbumArtCache
-        _loop => undef, # IO::Async::Loop::Select -> added by addToLoop
-        _callbacks => [ ],
+        _players      => {},     # UDN => Sonos::Player
+        _musiclibrary => undef,  # Sonos::MusicLibrary
+        _aacache      => undef,  # Sonos::AlbumArtCache
+        _loop         => undef,  # IO::Async::Loop::Select -> added by addToLoop
+        _callbacks    => [],
     }, $class;
 
     $self->{_musiclibrary} = Sonos::MusicLibrary->new($self);
-    $self->{_aacache} = Sonos::AlbumArtCache->new($self);
+    $self->{_aacache}      = Sonos::AlbumArtCache->new($self);
 
     $self->addToLoop($loop) if defined $loop;
 
@@ -58,44 +55,44 @@ sub new {
         $self->addPlayer($device) if $device;
     }
 
-    $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) });
-
+    $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) } );
 
     return $self;
 }
 
 sub numPlayers($self) {
-    return scalar keys %{$self->{_players}};
+    return scalar keys %{ $self->{_players} };
 }
 
 sub version($self) {
     return $Sonos::VERSION;
 }
 
-sub TO_JSON($self, $qf) {
+sub TO_JSON( $self, $qf ) {
     my $player_info = {};
-    my $player = 0;
-    if ($qf->{"zone"}) {
-        $player = $self->player($qf->{"zone"});
+    my $player      = 0;
+    if ( $qf->{"zone"} ) {
+        $player      = $self->player( $qf->{"zone"} );
         $player_info = $player->TO_JSON(1);
     }
 
     return {
-       "version"     => $self->version(),
-       "last_update" => $self->lastUpdate(),
-       "players"     => [ map { $_->TO_JSON($player == $_) } $self->players() ],
-       "player"      => $player_info,
-       "music"       => $self->musicLibrary()->TO_JSON($qf),
-    }
+        "version"     => $self->version(),
+        "last_update" => $self->lastUpdate(),
+        "players" => [ map { $_->TO_JSON( $player == $_ ) } $self->players() ],
+        "player"  => $player_info,
+        "music"   => $self->musicLibrary()->TO_JSON($qf),
+    };
 }
 
 sub players($self) {
-    my @players = values %{$self->{_players}};
+    my @players = values %{ $self->{_players} };
     @players = sort { $a->cmp($b) } @players;
     return @players;
 }
 
-sub linkAllZones($self, $coordinator) {
+sub linkAllZones( $self, $coordinator ) {
+
     # take first as coordinator if no coordinator given
     my @players = $self->players();
     $coordinator = shift @players unless $coordinator;
@@ -108,24 +105,23 @@ sub lastUpdate($self) {
 }
 
 sub populated($self) {
-    return
-        ( $self->numPlayers() > 0 and
-         all { $_->populated() } $self->players() );
+    return ( $self->numPlayers() > 0
+          and all { $_->populated() } $self->players() );
 }
 
 sub wait($self) {
-    while (!$self->populated()) {
+    while ( !$self->populated() ) {
         $self->loop()->loop_once();
     }
 
     return $self;
 }
 
-sub player($self, $name_or_uuid) {
-   carp "Need \$name_or_uuid" unless $name_or_uuid;
-   my $player = $self->{_players}->{$name_or_uuid};
-   return $player if $player;
-   ($player) = grep { $_->zoneName() eq $name_or_uuid } $self->players();
+sub player( $self, $name_or_uuid ) {
+    carp "Need \$name_or_uuid" unless $name_or_uuid;
+    my $player = $self->{_players}->{$name_or_uuid};
+    return $player if $player;
+    ($player) = grep { $_->zoneName() eq $name_or_uuid } $self->players();
     return $player;
 }
 
@@ -142,46 +138,47 @@ sub albumArtCache($self) {
 }
 
 sub sockets($self) {
-    return $self->controlPoint()->sockets()
+    return $self->controlPoint()->sockets();
 }
 
 sub loop($self) {
     return $self->{_loop};
 }
 
-sub log($self, $comp, @args) {
-    INFO sprintf("[%12s]: ", $comp), @args;
+sub log( $self, $comp, @args ) {
+    INFO sprintf( "[%12s]: ", $comp ), @args;
 }
 
-sub addToLoop($self, $loop) {
-    carp "No a IO::Async::Loop::Select" unless $loop isa 'IO::Async::Loop::Select';
+sub addToLoop( $self, $loop ) {
+    carp "No a IO::Async::Loop::Select"
+      unless $loop isa 'IO::Async::Loop::Select';
     carp "Already added" if defined $self->{_loop};
 
     $self->{_loop} = $loop;
 
-    for my $socket ($self->sockets()) {
+    for my $socket ( $self->sockets() ) {
         my $handle = IO::Async::Handle->new(
-            handle => $socket,
+            handle        => $socket,
             on_read_ready => sub {
                 $self->controlPoint()->handleOnce($socket);
             },
             on_write_ready => sub { carp },
         );
 
-        $loop->add( $handle );
+        $loop->add($handle);
     }
 }
 
-sub addPlayer($self, $device) {
+sub addPlayer( $self, $device ) {
     my $uuid = $device->{UDN};
     $uuid =~ s/^uuid://g;
 
     return if defined $self->{_players}->{$uuid};
-    $self->{_players}->{$uuid} = Sonos::Player->new($device, $self);
+    $self->{_players}->{$uuid} = Sonos::Player->new( $device, $self );
     INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
 }
 
-sub removePlayer($self, $device) {
+sub removePlayer( $self, $device ) {
     my $uuid = $device->{UDN};
     $uuid =~ s/^uuid://g;
 
@@ -205,11 +202,11 @@ sub _discoveryCallback {
     }
 }
 
-sub onUpdate($self, $callback) {
-    push @{$self->{_callbacks}}, $callback;
+sub onUpdate( $self, $callback ) {
+    push @{ $self->{_callbacks} }, $callback;
 }
 
 sub doCallBacks($self) {
-    $_->($self) for @{$self->{_callbacks}};
+    $_->($self) for @{ $self->{_callbacks} };
     $self->{_callbacks} = [];
 }
