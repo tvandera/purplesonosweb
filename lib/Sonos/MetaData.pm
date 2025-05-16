@@ -3,14 +3,14 @@ package Sonos::MetaData;
 use v5.36;
 use strict;
 use warnings;
-use Carp;
+use Carp qw( carp );
 
-use URI::Escape;
+use URI::Escape qw( uri_escape_utf8 );
 
-require JSON;
-require Types::Serialiser;
-use Digest::SHA qw(sha256_hex);
-use List::MoreUtils qw(zip);
+use JSON ();
+use Types::Serialiser ();
+use Digest::SHA ();
+use List::MoreUtils qw( zip );
 
 use constant NO_PARENT_ID => "NO_PARENT";
 use constant ROOT_ID => "";

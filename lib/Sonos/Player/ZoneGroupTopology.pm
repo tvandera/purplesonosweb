@@ -6,13 +6,13 @@ use v5.36;
 use strict;
 use warnings;
 
-use XML::Liberal;
-use XML::LibXML::Simple qw(XMLin);
+use XML::Liberal ();
+use XML::LibXML::Simple qw( XMLin );
 XML::Liberal->globally_override('LibXML');
 
-use HTML::Entities;
+use HTML::Entities qw( decode_entities );
 
-require Types::Serialiser;
+use Types::Serialiser ();
 
 sub info($self) {
     my $count = 0;

@@ -6,10 +6,10 @@ use warnings;
 
 require Sonos::MetaData;
 
-use List::Util qw(first reduce);
-use Scalar::Util qw(blessed);
-use JSON::XS;
-use File::Slurp;
+use List::Util qw( reduce );
+use Scalar::Util qw( blessed );
+use JSON::XS qw( decode_json encode_json );
+use File::Slurp qw( read_file write_file );
 
 use constant JSON_BASENAME => "content_cache.json";
 

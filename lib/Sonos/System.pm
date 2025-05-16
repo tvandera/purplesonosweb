@@ -4,7 +4,7 @@ use v5.36;
 use strict;
 use warnings;
 
-use List::Util qw(all max);
+use List::Util qw( all max );
 
 require UPnP::ControlPoint;
 
@@ -13,16 +13,16 @@ require Sonos::Player;
 require Sonos::MusicLibrary;
 require Sonos::AlbumArtCache;
 
-require IO::Async::Handle;
-require IO::Async::Loop::Select;
+use IO::Async::Handle ();
+use IO::Async::Loop::Select ();
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init(
     $DEBUG
 );
 
-use Carp;
-use Data::Dumper;
+use Carp qw( carp );
+use Data::Dumper ();
 $Data::Dumper::Maxdepth = 4;
 
 use constant SERVICE_TYPE => "urn:schemas-upnp-org:device:ZonePlayer:1";

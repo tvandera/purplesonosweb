@@ -4,17 +4,17 @@ use v5.36;
 use strict;
 use warnings;
 
-use List::Util qw(all max);
+use List::Util qw( all max );
 
 require UPnP::ControlPoint;
 
 
-use XML::Liberal;
-use XML::LibXML::Simple qw(XMLin);
+use XML::Liberal ();
+use XML::LibXML::Simple ();
 XML::Liberal->globally_override('LibXML');
 
-use HTML::Entities;
-use URI::Escape;
+use HTML::Entities ();
+use URI::Escape qw( uri_escape_utf8 );
 
 require Sonos::Player::ZoneGroupTopology;
 require Sonos::Player::ContentDirectory;

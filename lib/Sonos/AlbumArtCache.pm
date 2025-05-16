@@ -6,19 +6,19 @@ use warnings;
 
 require Sonos::MetaData;
 
-use Try::Tiny;
-use List::Util qw(first reduce);
-use JSON::XS;
-use File::Slurp;
-require URI::WithBase;
-use Digest::SHA qw(sha256_hex);
-use LWP::UserAgent;
+use Try::Tiny qw( catch try );
+use List::Util ();
+use JSON::XS qw( decode_json encode_json );
+use File::Slurp qw( read_file write_file );
+use URI::WithBase ();
+use Digest::SHA qw( sha256_hex );
+use LWP::UserAgent ();
 
 use IO::Scalar;
-require File::MimeInfo::Magic;
-require File::MimeInfo;
+use File::MimeInfo::Magic ();
+use File::MimeInfo ();
 
-require Image::Resize;
+use Image::Resize ();
 
 use constant AA_BASENAME => "albumart_cache";
 use constant JSON_BASENAME => "albumart_cache.json";

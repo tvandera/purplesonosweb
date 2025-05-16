@@ -8,17 +8,17 @@ use warnings;
 
 
 
-use HTML::Entities;
-use URI::Escape;
-use Encode qw(encode decode);
-use URI::WithBase;
-use File::Spec::Functions 'catfile';
-use File::Basename;
-require JSON;
-use IO::Compress::Gzip qw(gzip $GzipError) ;
-use MIME::Types;
+use HTML::Entities ();
+use URI::Escape ();
+use Encode ();
+use URI::WithBase ();
+use File::Spec::Functions ();
+use File::Basename qw( dirname );
+use JSON ();
+use IO::Compress::Gzip ();
+use MIME::Types ();
 
-require Template;
+use Template ();
 
 
 
@@ -58,3 +58,5 @@ sub output($self) {
     $tt->process($self->{_diskpath}, $self->input(), \$output) || die $tt->error(), "\n";
     return $output;
 }
+
+1;

@@ -5,17 +5,17 @@ use strict;
 use warnings;
 
 
-use File::Slurp qw(read_file);
+use File::Slurp qw( read_file );
 
-use Net::Async::HTTP::Server;
-use HTTP::Status ":constants";
-use HTML::Entities;
-use URI::Escape;
-use Encode qw(encode decode);
-use File::Spec::Functions 'catfile';
-use MIME::Types;
-use Scalar::Util::Numeric qw(isint);
-use Carp;
+use Net::Async::HTTP::Server ();
+use HTTP::Status ();
+use HTML::Entities ();
+use URI::Escape ();
+use Encode qw( decode encode );
+use File::Spec::Functions qw( catfile );
+use MIME::Types ();
+use Scalar::Util::Numeric qw( isint );
+use Carp qw( carp );
 
 
 require Sonos::HTTP::Template;

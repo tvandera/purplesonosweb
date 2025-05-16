@@ -8,9 +8,9 @@ use warnings;
 
 require Sonos::MetaData;
 
-use List::Util qw(first);
-use JSON::XS;
-use File::Slurp;
+use List::Util ();
+use JSON::XS ();
+use File::Slurp ();
 
 sub contentDirectory($self) {
     return $self->player()->contentDirectory();
@@ -32,7 +32,7 @@ sub info($self) {
     my $separator =  \' | ';
 
     if (scalar @queue) {
-        use Text::Table;
+        use Text::Table ();
         my @headers = map { $separator, $_ } Sonos::MetaData::displayFields(), $separator;
         my $table = Text::Table->new(@headers);
         $table->add($_->displayValues()) for @queue;

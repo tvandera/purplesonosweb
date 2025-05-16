@@ -11,8 +11,8 @@ require Sonos::Player::Queue;
 
 
 
-use XML::Liberal;
-use XML::LibXML::Simple qw(XMLin);
+use XML::Liberal ();
+use XML::LibXML::Simple qw( XMLin );
 XML::Liberal->globally_override('LibXML');
 
 

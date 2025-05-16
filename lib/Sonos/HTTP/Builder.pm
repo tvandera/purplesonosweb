@@ -5,18 +5,18 @@ use strict;
 use warnings;
 
 
-require IO::Async::Listener;
-require HTTP::Daemon;
-use HTTP::Status ":constants";
-use HTML::Entities;
-use URI::Escape;
-use Encode qw(encode decode);
-use URI::WithBase;
-use URI::Escape;
-use File::Spec::Functions 'catfile';
-require JSON;
-use IO::Compress::Gzip qw(gzip $GzipError) ;
-use MIME::Types;
+use IO::Async::Listener ();
+use HTTP::Daemon ();
+use HTTP::Status ();
+use HTML::Entities ();
+use URI::Escape qw( uri_escape_utf8 );
+use Encode ();
+use URI::WithBase ();
+use URI::Escape qw( uri_escape_utf8 );
+use File::Spec::Functions ();
+use JSON ();
+use IO::Compress::Gzip ();
+use MIME::Types ();
 
 ###############################################################################
 # HTTP
@@ -137,3 +137,5 @@ sub build_all_data($self) {
     $ret->{"url"} = $self->build_url_data();
     return $ret;
 }
+
+1;

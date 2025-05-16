@@ -6,7 +6,7 @@ use v5.36;
 use strict;
 use warnings;
 
-require Types::Serialiser;
+use Types::Serialiser ();
 
 sub info($self) {
     $self->log($self->shortName, ":");

@@ -4,18 +4,18 @@ use v5.36;
 use strict;
 use warnings;
 
-use Carp;
+use Carp qw( carp );
 
 use constant SERVICE_PREFIX => "urn:schemas-upnp-org:service:";
 use constant SERVICE_SUFFIX => ":1";
 
-use IO::Async::Timer::Periodic;
+use IO::Async::Timer::Periodic ();
 
-use XML::Liberal;
-use XML::LibXML::Simple qw(XMLin);
+use XML::Liberal ();
+use XML::LibXML::Simple qw( XMLin );
 XML::Liberal->globally_override('LibXML');
 
-use HTML::Entities;
+use HTML::Entities qw( decode_entities );
 
 
 sub new {
