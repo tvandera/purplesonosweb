@@ -39,8 +39,7 @@ sub new {
     $self->registerHandler( "/hello", sub { $self->sendHello(@_) } );
     $self->registerHandler( "/api",   sub { $self->restAPI(@_) } );
 
-    my $httpserver = Net::Async::HTTP::Server->new(
-        on_request => sub { $self->handleRequest(@_); } );
+    my $httpserver = Net::Async::HTTP::Server->new( on_request => sub { $self->handleRequest(@_); } );
 
     $loop->add($httpserver);
 
@@ -53,9 +52,7 @@ sub new {
         on_listen_error => sub { die "Cannot listen - $_[-1]\n" }
     );
 
-    printf STDERR "Listening on http://%s:%d\n",
-      $httpserver->read_handle->sockhost,
-      $httpserver->read_handle->sockport;
+    printf STDERR "Listening on http://%s:%d\n", $httpserver->read_handle->sockhost, $httpserver->read_handle->sockport;
 
     $self->{_daemon} = $httpserver;
 
@@ -126,15 +123,12 @@ sub validateRequest( $self, $r ) {
         my $what             = $qf{what};
         my @allowed_requests = qw(system music zones zone info queue none all);
         unless ( grep { $what eq $_ } @allowed_requests ) {
-            return $self->sendError( $r, 404,
-                "Request \"$what\" unknown. Known: "
-                  . ( join ", ", @allowed_requests ) );
+            return $self->sendError( $r, 404, "Request \"$what\" unknown. Known: " . ( join ", ", @allowed_requests ) );
         }
 
         my @requires_zone = qw(zone queue);
         if ( ( grep { $what eq $_ } @requires_zone ) && !$player ) {
-            return $self->sendError( $r, 404,
-                "Request \"$what\" requires a zone= argument" );
+            return $self->sendError( $r, 404, "Request \"$what\" requires a zone= argument" );
         }
     }
 
@@ -155,8 +149,7 @@ sub validateAction( $self, $r, $dispatch ) {
     @needs = grep { $_ ne "nozone" } @needs;
 
     for (@needs) {
-        return $self->sendError( $r, 404,
-            "Action \"$action\" requires a $_= argument" )
+        return $self->sendError( $r, 404, "Action \"$action\" requires a $_= argument" )
           unless ( exists $qf{$_} );
     }
 
@@ -193,8 +186,7 @@ sub handleRequest( $self, $server, $r ) {
         $diskpath = $images[0] if scalar @images == 1;
     }
 
-    return $self->sendError( $r, HTTP::Status::RC_NOT_FOUND,
-        "Could not find $diskpath" )
+    return $self->sendError( $r, HTTP::Status::RC_NOT_FOUND, "Could not find $diskpath" )
       unless -e $diskpath;
 
     # File is a directory, redirect for the browser
@@ -255,10 +247,8 @@ sub action {
         "softer"     => [ $render, sub { $render->changeVolume(-1); }, ],
         "louder"     => [ $render, sub { $render->changeVolume(+1); }, ],
         "muchlouder" => [ $render, sub { $render->changeVolume(+5); }, ],
-        "setvolume"  =>
-          [ $render, sub { $render->setVolume( $qf{volume} ); }, "volume" ],
-        "volume" =>
-          [ $render, sub { $render->setVolume( $qf{volume} ); }, "volume" ],
+        "setvolume"  => [ $render, sub { $render->setVolume( $qf{volume} ); }, "volume" ],
+        "volume"     => [ $render, sub { $render->setVolume( $qf{volume} ); }, "volume" ],
 
         "next"     => [ $av, sub { $av->next() } ],
         "previous" => [ $av, sub { $av->previous() } ],
@@ -269,61 +259,17 @@ sub action {
         "shuffleon"  => [ $av, sub { $av->setShuffle(1); } ],
 
         # queue
-        "removeall" => [
-            $av,
-            sub {
-                $av->removeAllTracksFromQueue();
-            }
-        ],
-        "add" => [
-            $av,
-            sub {
-                $av->addToQueue( $qf{mpath}, 1 );
-            },
-            "mpath",
-        ],
-        "play" => [
-            $av,
-            sub {
-                $av->playMusic( $qf{mpath} );
-            },
-            "mpath",
-        ],
-        "deletemusic" => [
-            $av,
-            sub {
-                $contentdir->destroyObject($qitem);
-            },
-            "mpath",
-        ],
-        "save" => [
-            $av,
-            sub {
-                $av->saveQueue( $qf{savename} );
-            },
-            "savename",
-        ],
+        "removeall"   => [ $av, sub { $av->removeAllTracksFromQueue(); } ],
+        "add"         => [ $av, sub { $av->addToQueue( $qf{mpath}, 1 ); },   "mpath", ],
+        "play"        => [ $av, sub { $av->playMusic( $qf{mpath} ); },       "mpath", ],
+        "deletemusic" => [ $av, sub { $contentdir->destroyObject($qitem); }, "mpath", ],
+        "save"        => [ $av, sub { $av->saveQueue( $qf{savename} ); },    "savename", ],
 
-        "remove" => [
-            $av,
-            sub {
-                $av->removeTrackFromQueue( $qitem->id() );
-            },
-            "queue",
-        ],
-        "seek" => [
-            $av,
-            sub {
-                $av->seekInQueue( $qitem->id() );
-            },
-            "queue",
-        ],
+        "remove" => [ $av, sub { $av->removeTrackFromQueue( $qitem->id() ); }, "queue", ],
+        "seek"   => [ $av, sub { $av->seekInQueue( $qitem->id() ); },          "queue", ],
 
         # wait for update, unless already happened
-        "wait" => [
-            $system,  sub { $system->lastUpdate() <= $lastupdate; },
-            'nozone', 'lastupdate'
-        ],
+        "wait" => [ $system, sub { $system->lastUpdate() <= $lastupdate; }, 'nozone', 'lastupdate' ],
 
         # Browse/Search music data
         "browse" => [ undef, sub { return 0; }, "nozone" ],
@@ -332,10 +278,9 @@ sub action {
         # No-op
         "none" => [ undef, sub { return 0; }, "nozone" ],
 
-        "linkall" =>
-          [ $system, sub { $system->linkAllZones($player); }, "nozone" ],
-        "link"   => [ $topo, sub { $topo->linkToZone( $qf{zone} ); }, "link", ],
-        "unlink" => [ $topo, sub { $topo->unlink(); }, "nozone", "link", ],
+        "linkall" => [ $system, sub { $system->linkAllZones($player); }, "nozone" ],
+        "link"    => [ $topo,   sub { $topo->linkToZone( $qf{zone} ); }, "link", ],
+        "unlink"  => [ $topo,   sub { $topo->unlink(); },                "nozone", "link", ],
     };
 
     $self->validateAction( $r, $dispatch ) && return 0;
@@ -357,8 +302,7 @@ sub sendTemplateResponse( $self, $r, $diskpath ) {
     my %qf = $r->query_form;
 
     # One of our templates, now fill in the parts we know
-    my $template =
-      Sonos::HTTP::Template->new( $self->system(), $diskpath, \%qf );
+    my $template       = Sonos::HTTP::Template->new( $self->system(), $diskpath, \%qf );
     my $content_type   = $self->mimeTypeOf($diskpath);
     my $output         = encode( 'utf8', $template->output );
     my $content_length = length $output;
@@ -416,8 +360,7 @@ sub sendFileResponse( $self, $r, $diskpath ) {
 }
 
 sub sendRedirect( $self, $r, $to ) {
-    my $response = HTTP::Response->new( 301, undef,
-        [ "Location" => $to, "Content-Length" => 0 ] );
+    my $response = HTTP::Response->new( 301, undef, [ "Location" => $to, "Content-Length" => 0 ] );
     $r->respond($response);
     $self->log("  redirect to $to");
 
@@ -425,8 +368,7 @@ sub sendRedirect( $self, $r, $to ) {
 }
 
 sub sendError( $self, $r, $code, $message = undef ) {
-    my $response =
-      HTTP::Response->new( $code, $message, [ "Content-Length" => 0 ] );
+    my $response = HTTP::Response->new( $code, $message, [ "Content-Length" => 0 ] );
     $r->respond($response);
     $self->log("  error: $code ($message)");
 

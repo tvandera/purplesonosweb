@@ -18,10 +18,7 @@ sub info($self) {
     my $count  = 0;
     my @groups = keys %{ $self->{_zonegroups} };
 
-    $self->log( "Found "
-          . scalar(@groups)
-          . " zone groups at "
-          . $self->lastUpdateReadable() );
+    $self->log( "Found " . scalar(@groups) . " zone groups at " . $self->lastUpdateReadable() );
     for my $coordinator (@groups) {
         my @members = $self->members($coordinator);
         $self->log(
@@ -175,10 +172,8 @@ sub processUpdate {
 sub processZoneGroupState ( $self, $service, %properties ) {
     return unless $properties{"ZoneGroupState"};
 
-    my $tree = XMLin(
-        decode_entities( $properties{"ZoneGroupState"} ),
-        forcearray => [ "ZoneGroup", "ZoneGroupMember" ]
-    );
+    my $tree =
+      XMLin( decode_entities( $properties{"ZoneGroupState"} ), forcearray => [ "ZoneGroup", "ZoneGroupMember" ] );
 
     my @groups = @{ $tree->{ZoneGroups}->{ZoneGroup} };
 
@@ -207,9 +202,7 @@ sub processThirdPartyMediaServers ( $self, $properties ) {
         "SA_RINCON6_" => "Sirius"
     );
 
-    my $tree =
-      XMLin( decode_entities( $properties->{"ThirdPartyMediaServers"} ),
-        forcearray => ["Service"] );
+    my $tree = XMLin( decode_entities( $properties->{"ThirdPartyMediaServers"} ), forcearray => ["Service"] );
     for my $item ( @{ $tree->{Service} } ) {
         while ( my ( $rincon, $service ) = each(%mapping) ) {
             Sonos::State::addService( $service, $item )

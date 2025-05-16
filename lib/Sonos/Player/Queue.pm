@@ -28,9 +28,8 @@ sub info($self) {
 
     if ( scalar @queue ) {
         use Text::Table ();
-        my @headers = map { $separator, $_ } Sonos::MetaData::displayFields(),
-          $separator;
-        my $table = Text::Table->new(@headers);
+        my @headers = map { $separator, $_ } Sonos::MetaData::displayFields(), $separator;
+        my $table   = Text::Table->new(@headers);
         $table->add( $_->displayValues() ) for @queue;
 
         $self->player()->log( "Queue:\n" . $table->table() );

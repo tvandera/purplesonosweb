@@ -31,7 +31,7 @@ sub new {
     $self->renewSubscription();
 
     my $timer = IO::Async::Timer::Periodic->new(
-        interval => 1800,    # renew subscription every 30 minutes
+        interval => 1800,                                  # renew subscription every 30 minutes
         on_tick  => sub { $self->renewSubscription(); },
     );
     $timer->start;
@@ -58,12 +58,11 @@ sub renewSubscription($self) {
     # if the above failed, try to subscribe again
     if ( !$sub || $sub->expired() ) {
         my $service = $self->getUPnP();
-        $self->{_subscription} =
-          $service->subscribe( sub { $self->processUpdate(@_); } )
+        $self->{_subscription} = $service->subscribe( sub { $self->processUpdate(@_); } )
           or carp( "Could not subscribe to \"" . $self->fullName() . "\"" );
     }
 
-   # add_timeout( time() + $main::RENEW_SUB_TIME, \&sonos_renew_subscriptions );
+    # add_timeout( time() + $main::RENEW_SUB_TIME, \&sonos_renew_subscriptions );
 
     return $self->getSubscription();
 }
@@ -190,8 +189,8 @@ sub derefHelper($elem) {
     my $num = scalar %{$elem};
     return "" if $num == 0;
 
-    return derefHelper( $elem->{val} )  if defined $elem->{val} and $num == 1;
-    return derefHelper( $elem->{item} ) if defined $elem->{item};
+    return derefHelper( $elem->{val} )         if defined $elem->{val} and $num == 1;
+    return derefHelper( $elem->{item} )        if defined $elem->{item};
     return derefHelper( $elem->{"DIDL-Lite"} ) if defined $elem->{"DIDL-Lite"};
 
     while ( my ( $key, $val ) = each %$elem ) {

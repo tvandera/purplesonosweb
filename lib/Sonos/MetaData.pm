@@ -15,19 +15,12 @@ use constant ROOT_ID      => "";
 
 sub topItems() {
     my @table = (
-        [ "update_id", "dc:title", "parentID", "id", "upnp:class",  "icon" ],
-        [ "", "Music Library", NO_PARENT_ID,   "", "container.top", "library" ],
+        [ "update_id", "dc:title",      "parentID",   "id", "upnp:class",    "icon" ],
+        [ "",          "Music Library", NO_PARENT_ID, "",   "container.top", "library" ],
 
-        [
-            "FavoritesUpdateID", "Favorites",
-            "",                  "FV:2",
-            "container.top",     "favorite"
-        ],
+        [ "FavoritesUpdateID", "Favorites", "", "FV:2", "container.top", "favorite" ],
 
-        [
-            "ShareListUpdateID", "Artists", "", "A:ARTIST",
-            "container.top",     "artist"
-        ],
+        [ "ShareListUpdateID", "Artists", "", "A:ARTIST", "container.top", "artist" ],
         [
             "ShareListUpdateID", "Albums", "", "A:ALBUM",
             "container.top",     "album"
@@ -52,17 +45,9 @@ sub topItems() {
         ],
         [ "ShareListUpdateID", "Folders", "", "S:", "container.top", "folder" ],
 
-        [
-            "RadioLocationUpdateID", "Radio",
-            "",                      "R:0/0",
-            "container.top",         "radio"
-        ],
+        [ "RadioLocationUpdateID", "Radio", "", "R:0/0", "container.top", "radio" ],
 
-        [
-            "SavedQueuesUpdateID", "Playlists",
-            "",                    "SQ:",
-            "container.top",       "sonos_playlist"
-        ],
+        [ "SavedQueuesUpdateID", "Playlists", "", "SQ:", "container.top", "sonos_playlist" ],
     );
 
     my @keys = @{ shift @table };

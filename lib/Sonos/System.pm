@@ -36,10 +36,10 @@ sub new {
     my $cp = UPnP::ControlPoint->new();
     $self = bless {
         _controlpoint => $cp,
-        _players      => {},     # UDN => Sonos::Player
-        _musiclibrary => undef,  # Sonos::MusicLibrary
-        _aacache      => undef,  # Sonos::AlbumArtCache
-        _loop         => undef,  # IO::Async::Loop::Select -> added by addToLoop
+        _players      => {},       # UDN => Sonos::Player
+        _musiclibrary => undef,    # Sonos::MusicLibrary
+        _aacache      => undef,    # Sonos::AlbumArtCache
+        _loop         => undef,    # IO::Async::Loop::Select -> added by addToLoop
         _callbacks    => [],
     }, $class;
 
@@ -79,9 +79,9 @@ sub TO_JSON( $self, $qf ) {
     return {
         "version"     => $self->version(),
         "last_update" => $self->lastUpdate(),
-        "players" => [ map { $_->TO_JSON( $player == $_ ) } $self->players() ],
-        "player"  => $player_info,
-        "music"   => $self->musicLibrary()->TO_JSON($qf),
+        "players"     => [ map { $_->TO_JSON( $player == $_ ) } $self->players() ],
+        "player"      => $player_info,
+        "music"       => $self->musicLibrary()->TO_JSON($qf),
     };
 }
 
@@ -105,8 +105,7 @@ sub lastUpdate($self) {
 }
 
 sub populated($self) {
-    return ( $self->numPlayers() > 0
-          and all { $_->populated() } $self->players() );
+    return ( $self->numPlayers() > 0 and all { $_->populated() } $self->players() );
 }
 
 sub wait($self) {

@@ -36,10 +36,7 @@ sub curTransport($self) {
 }
 
 sub metaData($self) {
-    return Sonos::MetaData->new(
-        $self->prop("CurrentTrackMetaData"),
-        $self->prop("AVTransportURIMetaData")
-    );
+    return Sonos::MetaData->new( $self->prop("CurrentTrackMetaData"), $self->prop("AVTransportURIMetaData") );
 }
 
 sub isRadio($self) {
@@ -170,7 +167,7 @@ sub setQueue($self) {
 }
 
 sub addToQueue( $self, $mpath, $queueSlot = 0 ) {
-    my $item = $self->musicLibrary()->item($mpath);
+    my $item     = $self->musicLibrary()->item($mpath);
     my $uri      = $item->content();
     my $metadata = $item->didl();
     return $self->action( "AddURIToQueue", $uri, $metadata, $queueSlot );

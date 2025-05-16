@@ -107,8 +107,7 @@ sub build_url_data($self) {
     my %values = map { $_ => $self->qf($_) } @keys;
 
     my %args     = map { $_ => $self->encode_arg($_) } @keys;
-    my @filtered = grep !/action|rand|mpath|msearch|link/,
-      ( keys %{ $self->qf() } );
+    my @filtered = grep !/action|rand|mpath|msearch|link/, ( keys %{ $self->qf() } );
     $args{"all"} = join "&", map { $self->encode_arg($_) } @filtered;
     return {
         "args"   => {%args},

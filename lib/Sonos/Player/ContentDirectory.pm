@@ -50,8 +50,8 @@ sub processUpdateIDs ( $self, $service, %properties ) {
 
         for ( Sonos::MetaData::topItems() ) {
 
-        # find items in topItems that have updateid equal to given $updateid and
-        # fetch those
+            # find items in topItems that have updateid equal to given $updateid and
+            # fetch those
             next unless $_->{update_id} eq $update_id;
 
             my $id = $_->{id};
@@ -95,8 +95,7 @@ sub fetchByObjectID( $self, $objectid, $recurse = 0 ) {
     do {
         $result =
           $self->controlProxy()
-          ->Browse( $objectid, 'BrowseDirectChildren',
-            'dc:title,res,dc:creator,upnp:artist,upnp:album',
+          ->Browse( $objectid, 'BrowseDirectChildren', 'dc:title,res,dc:creator,upnp:artist,upnp:album',
             $start, 2000, "" );
 
         return () unless $result->isSuccessful;

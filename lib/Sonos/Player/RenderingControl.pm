@@ -13,8 +13,7 @@ sub info($self) {
     for my $channel ( 'Master', 'LF', 'RF' ) {
         my $muted = "";
         $muted = " (muted)" if $self->prop("Mute/$channel");
-        $self->log(
-            "  $channel volume: " . $self->prop("Volume/$channel") . $muted );
+        $self->log( "  $channel volume: " . $self->prop("Volume/$channel") . $muted );
     }
 }
 
