@@ -118,7 +118,11 @@ def main():
     if arg1 in global_cmds:
         return global_info(*sys.argv[1:])
 
-    zone, command, *args = sys.argv[1:]
+    try:
+        zone, command, *args = sys.argv[1:]
+    except:
+        usage("Need a zone and a command")
+
     if command in per_zone:
         return zone_info(zone, command, *args)
     elif command in actions:
