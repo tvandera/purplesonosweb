@@ -404,27 +404,6 @@ sub didl($self) {
 </DIDL-Lite>
 EOT
 
-    my $DEBUG;
-    if ($DEBUG) {
-        require XML::LibXML;
-        require XML::LibXML::PrettyPrint;
-
-        print "\n";
-        print $metadata;
-        print "\n";
-
-        my $document = XML::LibXML->load_xml("string" => $metadata);
-        print $document->toString;
-        print "\n";
-        my $pp = XML::LibXML::PrettyPrint->new(indent_string => "  ");
-        $pp->pretty_print($document); # modified in-place
-        print "\n";
-        print $document->toString;
-        print "\n";
-        print $metadata;
-        print "\n";
-    }
-
     return $metadata;
 }
 
