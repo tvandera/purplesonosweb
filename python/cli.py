@@ -63,8 +63,9 @@ def show_info(what, data):
     }
 
     rows = glom(data, specs[what])
-    assert rows, f"No fields found in {data}"
-    if len(rows) == 1:
+    if len(rows) == 0:
+        print("No results")
+    elif len(rows) == 1:
         pprint(rows[0])
     else:
         print(tabulate(rows, headers="keys"))
