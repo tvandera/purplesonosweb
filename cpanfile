@@ -8,8 +8,7 @@ requires 'List::MoreUtils';
 requires 'File::Slurp';
 requires 'HTML::Entities';
 requires 'HTML::Parser';
-requires 'HTML::Template';
-requires 'HTML::Template::Compiled';
+requires 'Template';
 requires 'HTTP::Daemon';
 requires 'Net::Async::HTTP::Server';
 
