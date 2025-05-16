@@ -8,15 +8,7 @@ use warnings;
 
 
 
-use HTML::Entities ();
-use URI::Escape ();
-use Encode ();
-use URI::WithBase ();
-use File::Spec::Functions ();
 use File::Basename qw( dirname );
-use JSON ();
-use IO::Compress::Gzip ();
-use MIME::Types ();
 
 use Template ();
 

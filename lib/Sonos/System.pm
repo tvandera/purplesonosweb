@@ -14,7 +14,6 @@ require Sonos::MusicLibrary;
 require Sonos::AlbumArtCache;
 
 use IO::Async::Handle ();
-use IO::Async::Loop::Select ();
 
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init(

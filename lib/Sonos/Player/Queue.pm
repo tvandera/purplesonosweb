@@ -8,9 +8,6 @@ use warnings;
 
 require Sonos::MetaData;
 
-use List::Util ();
-use JSON::XS ();
-use File::Slurp ();
 
 sub contentDirectory($self) {
     return $self->player()->contentDirectory();

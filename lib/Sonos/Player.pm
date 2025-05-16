@@ -10,10 +10,8 @@ require UPnP::ControlPoint;
 
 
 use XML::Liberal ();
-use XML::LibXML::Simple ();
 XML::Liberal->globally_override('LibXML');
 
-use HTML::Entities ();
 use URI::Escape qw( uri_escape_utf8 );
 
 require Sonos::Player::ZoneGroupTopology;

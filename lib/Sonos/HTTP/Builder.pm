@@ -5,18 +5,8 @@ use strict;
 use warnings;
 
 
-use IO::Async::Listener ();
-use HTTP::Daemon ();
-use HTTP::Status ();
-use HTML::Entities ();
 use URI::Escape qw( uri_escape_utf8 );
-use Encode ();
-use URI::WithBase ();
-use URI::Escape qw( uri_escape_utf8 );
-use File::Spec::Functions ();
 use JSON ();
-use IO::Compress::Gzip ();
-use MIME::Types ();
 
 ###############################################################################
 # HTTP

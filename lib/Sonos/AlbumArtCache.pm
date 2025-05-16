@@ -7,7 +7,6 @@ use warnings;
 require Sonos::MetaData;
 
 use Try::Tiny qw( catch try );
-use List::Util ();
 use JSON::XS qw( decode_json encode_json );
 use File::Slurp qw( read_file write_file );
 use URI::WithBase ();

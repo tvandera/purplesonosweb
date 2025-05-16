@@ -9,8 +9,6 @@ use File::Slurp qw( read_file );
 
 use Net::Async::HTTP::Server ();
 use HTTP::Status ();
-use HTML::Entities ();
-use URI::Escape ();
 use Encode qw( decode encode );
 use File::Spec::Functions qw( catfile );
 use MIME::Types ();

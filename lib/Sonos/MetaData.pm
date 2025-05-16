@@ -7,9 +7,7 @@ use Carp qw( carp );
 
 use URI::Escape qw( uri_escape_utf8 );
 
-use JSON ();
 use Types::Serialiser ();
-use Digest::SHA ();
 use List::MoreUtils qw( zip );
 
 use constant NO_PARENT_ID => "NO_PARENT";
