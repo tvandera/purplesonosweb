@@ -409,3 +409,5 @@ sub restAPI($self, $r) {
 
     return 1;
 }
+
+1;
