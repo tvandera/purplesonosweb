@@ -307,7 +307,7 @@ sub action {
         "remove" => [
             $av,
             sub {
-                $av->RemoveTrackFromQueue( $qitem->id() );
+                $av->removeTrackFromQueue( $qitem->id() );
             },
             "queue",
         ],
