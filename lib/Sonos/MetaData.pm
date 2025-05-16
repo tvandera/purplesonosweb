@@ -191,7 +191,7 @@ sub arg($self) {
 }
 
 sub TO_JSON($self) {
-    return undef unless ($self->populated());
+    return unless ($self->populated());
     return {
         "id"             => $self->id(),
         "arg"            => $self->arg(),
@@ -229,9 +229,10 @@ sub albumArtURI($self) {
     # return any $aa
     return $aa if $aa;
 
+    # content stream url
     return "/getaa?s=1&u=" . uri_escape_utf8($self->content()) if $self->content();
 
-    return undef;
+    # undef
 }
 
 sub originalTrackNumber($self) { return $self->prop("upnp:originalTrackNumber", "int", -1); }
@@ -308,7 +309,7 @@ sub class($self) {
 sub res($self)      {
     my $resMD = $self->{_data}->{"r:resMD"}->[0];
     carp("Missing r:resMD on Favorite: " . $self->id()) if $self->isFav() and !$resMD;
-    return undef unless $resMD;
+    return unless $resMD;
     carp("Unexpected r:resMD on non-Favorite: " . $self->id()) if !$self->isFav();
     return Sonos::MetaData->new($resMD);
 }
@@ -319,7 +320,7 @@ sub res($self)      {
 # and the `real` class will be in
 #  $item{"r:resMD"}->{"upnp:class"} "object.item.audioItem.audioBroadcast",
 sub resClass($self) {
-    return undef unless $self->isFav();
+    return unless $self->isFav();
     return $self->res()->class();
 }
 

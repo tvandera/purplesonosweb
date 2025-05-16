@@ -219,20 +219,24 @@ sub action {
     $lastupdate = -1 unless isint($lastupdate);
 
     my $system = $self->system();
-    my $player = $self->player($qf{zone}) if $qf{zone};
-    my $av = $player->avTransport() if $player;
-    my $render = $player->renderingControl() if $player;
-    my $contentdir = $player->contentDirectory() if $player;
+    my ($player, $av, $render, $contentdir);
+    $player = $self->player($qf{zone}) if $qf{zone};
+    $av = $player->avTransport() if $player;
+    $render = $player->renderingControl() if $player;
+    $contentdir = $player->contentDirectory() if $player;
 
-    my $link = $self->player($qf{link}) if $qf{link};
-    my $topo = $link->zoneGroupTopology() if $link;
+    my ($link, $topo);
+    $link = $self->player($qf{link}) if $qf{link};
+    $topo = $link->zoneGroupTopology() if $link;
 
     my $music = $self->system()->musicLibrary();
     my $mpath = decode( "UTF-8", $qf{mpath} );
-    my $mitem = $music->item($mpath) if $mpath;
+    my $mitem;
+    $mitem = $music->item($mpath) if $mpath;
 
     my $qpath = decode( "UTF-8", $qf{queue} );
-    my $qitem = $player->queue()->item($qpath) if $qpath and $player;
+    my $qitem;
+    $qitem = $player->queue()->item($qpath) if $qpath and $player;
 
     my $dispatch = {
         "start"      => [ $av, sub { $av->start() } ],

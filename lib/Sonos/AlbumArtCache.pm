@@ -55,7 +55,9 @@ sub load($self) {
 
     for (@items) {
         my ($sha, $mime_type, $filename) = @$_;
-        my $blob = read_file($self->cacheDir() . "/" . $filename) if $filename;
+        my $blob;
+
+        $blob = read_file($self->cacheDir() . "/" . $filename) if $filename;
         $self->{_album_art}->{$sha} = [ $mime_type, $blob, $filename ];
     }
 }
