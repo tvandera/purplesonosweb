@@ -157,7 +157,7 @@ sub playMusic( $self, $mpath ) {
     }
     else {
         $self->removeAllTracksFromQueue();
-        $self->addToQueue($item);
+        $self->addToQueue($mpath);
         $self->setQueue();
     }
 
@@ -169,7 +169,8 @@ sub setQueue($self) {
     $self->setURI( "x-rincon-queue:" . $id . "#0", "" );
 }
 
-sub addToQueue( $self, $item, $queueSlot = 0 ) {
+sub addToQueue( $self, $mpath, $queueSlot = 0 ) {
+    my $item = $self->musicLibrary()->item($mpath);
     my $uri      = $item->content();
     my $metadata = $item->didl();
     return $self->action( "AddURIToQueue", $uri, $metadata, $queueSlot );
