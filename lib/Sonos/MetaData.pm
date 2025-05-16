@@ -228,7 +228,7 @@ sub arg($self) {
 }
 
 sub TO_JSON($self) {
-    return unless ( $self->populated() );
+    return {} unless ( $self->populated() );
     return {
         "id"             => $self->id(),
         "arg"            => $self->arg(),
@@ -270,7 +270,8 @@ sub albumArtURI($self) {
     return "/getaa?s=1&u=" . uri_escape_utf8( $self->content() )
       if $self->content();
 
-    # undef
+    # nothingness
+    return "";
 }
 
 sub originalTrackNumber($self) {
@@ -362,7 +363,7 @@ sub res($self) {
 # and the `real` class will be in
 #  $item{"r:resMD"}->{"upnp:class"} "object.item.audioItem.audioBroadcast",
 sub resClass($self) {
-    return unless $self->isFav();
+    return "" unless $self->isFav();
     return $self->res()->class();
 }
 
