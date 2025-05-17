@@ -6,84 +6,28 @@
 </HEAD>
 
 <BODY>
-	<TABLE BORDER=1>
-		<TR>
-			<TD COLSPAN=2 ALIGN=CENTER><B>SONOS Zone Status</B></TD>
-		</TR>
-		<TR></TR>
-		<TR></TR>
-		<TR></TR>
-		<TR></TR>
+	<H1>SONOS Zone Status</H1>
 
 		[% FOREACH player IN players %]
-		<TR>
-			<TD ALIGN=CENTER><B>[% player.zone.name %]</B><BR>
-				[% player.av.transport_state %]<BR>
+			<H2>[% player.zone.name %]</H2>
+			<UL>
+				<li>
+					State: [% player.av.transport_state %]
+				</li>
 				[% IF player.av.isradio %]
-				<BR>Internet Radio<BR>
+					<li>Internet Radio</li>
+					<li>Station: [% player.av.title %]</li>
+					<li>Information: [% player.av.stream_content  %]</li>
 				[% ELSE %]
-				<BR>[% player.av.track_num %] of [% player.av.track_tot %]<BR>
-				<BR>[% player.av.play_mode %]<BR>
+					<li>Track: [% player.av.track_num %] of [% player.av.track_tot %]</li>
+					<li>Artist: [% player.av.artist %]</li>
+					<li>Album: [% player.av.album %]</li>
 				[% END %]
-				<br>Vol.[% player.render.volume %]
-			</TD>
 
-
-
-			[% IF player.av.isradio %]
-			<td>
-				<Table>
-					<TD>
-						<font size=1>Station:</font><br> [% player.av.title %]
-					</TD>
-					<TD>
-						<font size=1>Information:</font><br>[% player.av.current_transport.stream_content %]
-					</TD>
-				</Table>
-				[% ELSE %]
-			<TD>
-				<Table>
-					<tr>
-						<td>
-							<font size=1>Track:</font>
-						</td>
-						<td>[% player.av.title %]</td>
-					</tr>
-					<tr>
-						<td>
-							<font size=1>Artist:</font>
-						</td>
-						<td>[% player.av.artist %]</td>
-					</tr>
-					<tr>
-						<td>
-							<font size=1>Album:</font>
-						</td>
-						<td>[% player.av.album %]</td>
-					</tr>
-					[% IF player.av.next_track %]
-					<tr>
-						<td></td>
-					</tr>
-					<tr>
-						<td colspan=2>
-							<font size=1>Next: </font><br>
-							[% player.av.next_track.desc %]
-						</td>
-					</tr>
-					[% END %]
-				</table>
-			</TD>
-			[% END %]
-		</TR>
-
-		<TR></TR>
-		<TR></TR>
-		<TR></TR>
-		<TR></TR>
+				<li>Mode: [% player.av.play_mode %]</li>
+				<li>Volume: [% player.render.volume %]%</li>
+			</UL>
 		[% END %]
-
-	</TABLE>
 </BODY>
 
 </HTML>
