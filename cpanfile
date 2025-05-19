@@ -21,6 +21,7 @@ requires 'IO::Compress::Gzip';
 requires 'IO::Handle';
 requires 'IO::Select';
 requires 'IO::Async';
+requires 'IO::Async::Timer::Periodic';
 requires 'JSON';
 requires 'LWP::MediaTypes';
 requires 'LWP::UserAgent';
