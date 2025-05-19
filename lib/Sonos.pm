@@ -35,45 +35,38 @@ our $VERSION = '0.90';
 
 1;
 __END__
-# Below is stub documentation for your module. You'd better edit it!
 
 =head1 NAME
 
-Sonos::Web - Perl extension for blah blah blah
+Sonos Daemon - Web UI, REST API and CLI for your Sonos System
 
 =head1 SYNOPSIS
 
-  use Sonos::Web;
-  blah blah blah
+  sonod --ip localhost --port 9999 <player1> <player2> ....
+
+  Point your web browser to "http://localhost:9999/" to select interface and plugins
 
 =head1 DESCRIPTION
 
-Stub documentation for Sonos::Web, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+Purple Sonos is a very simple controller
+for the Sonos (http://www.sonos.com) Music System,
+although it might work with any UPnP Music System.
 
-Blah blah blah.
+Currently it supports:
+* All Control functions: Play, Pause, Next, Previous
+* All Volume functions: Mute, Louder, Softer
+* Adding/Removing items to the queue
+* Creating, Deleting, Using saved Playlists
+* Selecting Radio Station
+* Simple plugins
 
-=head2 EXPORT
-
-None by default.
-
-
-
-=head1 SEE ALSO
-
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
-
-If you have a mailing list set up for your module, mention it here.
-
-If you have a web site set up for your module, mention it here.
+All the web pages are in the the html directory, and can
+be edited freely.  A very simple template system is used
+to build everything.
 
 =head1 AUTHOR
 
-Tom Vander Aa, E<lt>vanderaa@telenet.beE<gt>
+Tom Vander Aa, E<lt>tom.vanderaa@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -81,6 +74,12 @@ Copyright (C) 2022 by Tom Vander Aa
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.36.0 or,
+at your option, any later version of Perl 5 you may have available.
+
+Copyright (C) 2006 by Andy Wick
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8 or,
 at your option, any later version of Perl 5 you may have available.
 
 
