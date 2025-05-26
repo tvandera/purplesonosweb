@@ -1,0 +1,43 @@
+<div id="music">
+    <ul id='musiclist'>
+        [% IF music.id %]
+            <li class='header'>
+            <img onClick="browse('mpath=[% music.parent.id %]')" src='tiles/back.svg'>
+            <div>
+                <p id='musicpath'>[% music.title %]</p>
+                <p class='artist'>[% music.artist %]</p>
+                [% IF music.iscontainer %]
+                    <p class='buttons'>
+                    <a onclick="play('[% music.arg %]');">Play</A> -
+                    <a onclick="add('[% music.arg %]');">Add</A></p>
+                [% END %]
+            </div>
+            </li>
+        [% END %]
+        [% IF music.isalbum %]
+            [% IF music.albumart %]
+            <li class='albumart'><img width="200" height="200" src="[% music.albumart %]"></li>
+            [% END %]
+        [% END %]
+
+    [% FOREACH item IN music.items %]
+        [% IF item.isradio %]
+            <li onclick="play('[% item.arg %]');">
+        [% ELSE %]
+            <li onclick="browse('[% item.arg %]');">
+        [% END %]
+        [% IF item.issong %]
+            <div class='trackno'>[% item.track_num %]</div>
+        [% ELSE %]
+            <img width="44" height="44" src="[% item.albumart %]">
+        [% END %]
+        <div>
+            <p class='title'>[% item.title %]</p>
+            <p class='artist'>[% item.artist %]</p>
+            <p class='description'>[% item.desc %]</p>
+        </div>
+    </li>
+    [% END %]
+
+</ul>
+</div>
