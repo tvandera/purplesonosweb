@@ -4,6 +4,9 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
+  "runArgs": [
+    "--network=host"
+  ],
   "remoteUser": "vanderaa",
   "workspaceFolder": "/app",
   "mounts": [
