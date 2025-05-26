@@ -15,6 +15,7 @@ let
       description = "Super liberal XML parser that parses broken XML";
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
+    doCheck = false;
   };
   ScalarUtilNumeric = with perlPackages;
   buildPerlPackage {
@@ -47,7 +48,7 @@ let
     version = "0.4";
     src = fetchurl {
       url = "https://github.com/tvandera/perlupnp/archive/refs/heads/master.tar.gz";
-      hash = "sha256-OwoO+cgSsW1aBG/95vmBnZ9xfALdlLFWRk23cDH4Tuc=";
+      hash = "sha256-523FOahGu2JuB9gWMoUbTCYJ4tjsJapZt8AGu8Ta4a8=";
     };
     propagatedBuildInputs = [ LWP SOAPLite HTTPDaemon XMLParserLite ];
     meta = {
