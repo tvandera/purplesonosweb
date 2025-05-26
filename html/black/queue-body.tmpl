@@ -1,0 +1,23 @@
+<div id="queue">
+    <div id="queuedata">
+        <ul>
+            <li class="header">
+                <img width="44" height="44" src="svg/queue.png" />
+                <div>
+                    <p>&nbsp;</p>
+                    <p class="buttons" onclick="removeall()">Remove All</p>
+                </div>
+            </li>
+            [% FOREACH item IN player.queue.items %]
+                <li onclick="seek('[% item.arg %]');">
+                    <img width="44" height="44" class="albumart" src="[% item.albumart %]" />
+                    <div>
+                        <p class="title">[% item.title %]</p>
+                        <p class="artist">[% item.artist %]</p>
+                    </div>
+                    </a>
+                </li>
+            [% END %]
+        </ul>
+    </div>
+</div>
