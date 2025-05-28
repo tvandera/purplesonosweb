@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+   <TITLE>Simple Sonos Web Controller</TITLE>
+</HEAD>
+<BODY>
+
+<h2>Zones</h2>
+
+[% FOREACH item IN players %]
+    [% IF item.isactive %]<B>[% END %]
+    [% UNLESS item.zone.is_coord %]
+       &nbsp; &nbsp; <IMG SRC='[% item.zone.img %]'> [% item.name %]
+      <A HREF="?[% url.args.all %]link=[% item.name %]&action=Unlink">[U]</a>
+    [% ELSE %]
+       <A HREF="?[% item.arg %]"> <IMG SRC='[% item.zone.img %]'> [% item.name %] </A>
+       [% UNLESS item.zone.is_coord %]
+          <A HREF="?[% url.args.all %][% item.zone_arg %]&action=Link">[L]</a>
+       [% END %]
+    [% END %]
+    [% IF item.isactive %]</B>[% END %]
+    <BR>
+[% END %]
+
+[% UNLESS player.isactive %]
+    <p>Select a zone to start</p>
+
+[% ELSE %]
+<HR>
+
+<h2>[% player.zone.name %]</h2>
+
+[% IF player.av.isradio %]
+    &nbsp; <B>Station:</B> [% player.av.title %]<BR>
+    &nbsp; <B>Stream Content:</B> [% player.av.stream_content %]<BR>
+[% ELSE %]
+    &nbsp; <B>Song:</B> [% player.av.title %]<BR>
+    &nbsp; <B>Artist:</B> [% player.av.artist %]<BR>
+    &nbsp; <B>Album:</B> [% player.av.album %]<BR>
+    &nbsp; <B>Track:</B> [% player.av.track_num %]/[% player.av.track_tot %]<BR>
+    [% IF player.av.albumart %]
+        <IMG WIDTH=50 HEIGHT=50 SRC="[% player.av.albumart %]"><BR>
+    [% END %]
+[% END %]
+
+<A HREF="?[% url.args.all %]action=Previous">Previous</A>
+[% IF player.av.playing %]
+<A HREF="?[% url.args.all %]action=Pause">Pause</A>
+[% ELSE %]
+<A HREF="?[% url.args.all %]action=Start">Play</A>
+[% END %]
+<A HREF="?[% url.args.all %]action=Next">Next</A>
+<BR>
+[% IF player.av.shuffle %]
+    <A  HREF="?[% url.args.all %]action=ShuffleOff">Shuffle Off</A>
+[% ELSE %]
+    <A  HREF="?[% url.args.all %]action=ShuffleOn">Shuffle On</A>
+[% END %]
+[% IF player.av.repeat %]
+    <A  HREF="?[% url.args.all %]action=RepeatOff">Repeat Off</A>
+[% ELSE %]
+    <A  HREF="?[% url.args.all %]action=RepeatOn">Repeat On</A>
+[% END %]
+<BR>
+[% IF player.render.muted %]
+    <A HREF="?[% url.args.all %]action=MuteOff">Mute Off</A>
+[% ELSE %]
+    <A HREF="?[% url.args.all %]action=MuteOn">Mute On</A>
+[% END %]
+<A HREF="?[% url.args.all %]action=MuchSofter">--</A>
+<A HREF="?[% url.args.all %]action=Softer">-</A>
+[% player.render.volume %]
+<A HREF="?[% url.args.all %]action=Louder">+</A>
+<A HREF="?[% url.args.all %]action=MuchLouder">++</A>
+
+<HR>
+    <h2>Queue</h2>
+
+    [% IF player.queue.items.size > 0 %]
+        <A HREF="?[% url.args.all %]action=RemoveAll">Remove All</A>
+        <BR>
+        <FORM METHOD="get">
+            Save Q as:
+            <INPUT NAME=savename VALUE="">
+            <INPUT NAME=action VALUE="Save" TYPE=HIDDEN>
+            <INPUT NAME=zone VALUE="[% player.name %]" TYPE=HIDDEN>
+            <INPUT VALUE="Save" TYPE=submit>
+        </FORM>
+        [% FOREACH item IN player.queue.items %]
+            <IMG SRC="[% item.albumart %]">
+            <A HREF="?[% item.arg %]action=Remove"><IMG BORDER=0 SRC=/static/images/x.gif></A>
+            <A HREF="?[% item.arg %]action=Seek">[% item.title %]</A>
+            <BR>
+        [% END %]
+    [% ELSE %]
+        The queue is empty
+    [% END %]
+
+<HR>
+
+
+<h2>Music</h2>
+    [% UNLESS music.istop %]
+    <A HREF="?[% url.args.all %]mpath=/">Top</A>
+    <A HREF="?[% player.arg %]mpath=[% music.parent.arg %]">Up</A>
+    [% END %]
+    <P>
+    <FORM ACTION="?[% url.args.all %]" METHOD="get">
+        Perl Expression:
+        <INPUT NAME=msearch VALUE="[% url.values.msearch %]">
+        <INPUT VALUE="Search" TYPE=submit>
+    </FORM>
+
+    [% FOREACH item IN music.items %]
+    <IMG BORDER=0 SRC=[% item.albumart %]>
+    [% UNLESS item.isroot %]
+        <A  HREF="?[% url.args.all %][% item.arg %]action=add"><IMG SRC=/static/images/add.gif></A>
+        <A  HREF="?[% url.args.all %][% item.arg %]action=Play"><IMG SRC=/static/images/playing.gif></A>
+    [% END %]
+    [% UNLESS item.iscontainer %]
+        [% item.title %]
+    [% ELSE %]
+    <A HREF="?[% url.args.all %][% item.arg %]action=Browse">[% item.title %]</A>
+    [% END %]
+    <BR>
+    [% END %]
+
+[% END %]
+
+</BODY>
+</HTML>
