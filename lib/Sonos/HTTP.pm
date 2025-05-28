@@ -212,8 +212,8 @@ sub action {
 
     return $do_after->() unless $action;
 
-    my $lastupdate = $qf{lastupdate};
-    $lastupdate = -1 unless isint($lastupdate);
+    my $last_update = $qf{last_update};
+    $last_update = -1 unless isint($last_update);
 
     my $system = $self->system();
     my ( $player, $av, $render, $contentdir );
@@ -269,7 +269,7 @@ sub action {
         "seek"   => [ $av, sub { $av->seekInQueue( $qitem->id() ); },          "queue", ],
 
         # wait for update, unless already happened
-        "wait" => [ $system, sub { $system->lastUpdate() <= $lastupdate; }, 'nozone', 'lastupdate' ],
+        "wait" => [ $system, sub { $system->lastUpdate() <= $last_update; }, 'nozone', 'last_update' ],
 
         # Browse/Search music data
         "browse" => [ undef, sub { return 0; }, "nozone" ],

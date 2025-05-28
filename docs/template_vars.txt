@@ -3,7 +3,7 @@ First attempt of a document for all the variables for use in a html file
 * Music Related:
 MUSIC_ERROR            Error/Warning about music results
 MUSIC_SEARCH           What was searched for
-MUSIC_UPDATED          Updated compared to the lastupdate parameter
+MUSIC_UPDATED          Updated compared to the last_update parameter
 MUSIC_LASTUPDATE       When the last update was
 MUSIC_PATH             Path to the container of the results
 MUSIC_LOOP             Loop through the music results
@@ -22,7 +22,7 @@ ALL_QUEUE_LOOP         Loop through all the Queues
   QUEUE_ZONE           Name of the Zone
   QUEUE_ZONEID         ID of the Zone
   QUEUE_LASTUPDATE     Last Upate of the ID
-  QUEUE_UPDATED        Is this queue updated compared to the lastupdate paramater
+  QUEUE_UPDATED        Is this queue updated compared to the last_update paramater
   QUEUE_LOOP           Loop of items for the zone
     QUEUE_IMG          playing or paused
     QUEUE_NAME         Title of Item
@@ -33,7 +33,7 @@ If a zone parameter is present, this is for that zone:
 QUEUE_ZONE           Name of the Zone
 QUEUE_ZONEID         ID of the Zone
 QUEUE_LASTUPDATE     Last Upate of the ID
-QUEUE_UPDATED        Is this queue updated compared to the lastupdate paramater
+QUEUE_UPDATED        Is this queue updated compared to the last_update paramater
 QUEUE_LOOP           Loop of items for the zone
   QUEUE_IMG          playing or paused
   QUEUE_NAME         Title of Item

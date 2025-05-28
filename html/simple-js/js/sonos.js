@@ -55,11 +55,11 @@ sonos.sendMusicAction = function(zoneId, action, path) {
 }
 
 sonos.sendMusicSearch = function(path) {
-    sonos._loadData("/api?lastupdate="+sonos._lastUpdate + "&msearch=" + encodeURIComponent(path));
+    sonos._loadData("/api?last_update="+sonos._lastUpdate + "&msearch=" + encodeURIComponent(path));
 }
 
 sonos.sendMusicBrowse = function(path) {
-    sonos._loadData("/api?lastupdate="+sonos._lastUpdate + "&mpath=" + encodeURIComponent(path));
+    sonos._loadData("/api?last_update="+sonos._lastUpdate + "&mpath=" + encodeURIComponent(path));
 }
 
 sonos.setVolume = function(zoneId, volume) {
@@ -81,7 +81,7 @@ sonos._loadData = function(filename, afterFunc) {
 }
 
 sonos._doFetch = function() {
-    sonos._loadData("/api?action=Wait&lastupdate="+sonos._lastUpdate, "sonos._fetch();");
+    sonos._loadData("/api?action=Wait&last_update="+sonos._lastUpdate, "sonos._fetch();");
 }
 
 sonos._fetch = function() {

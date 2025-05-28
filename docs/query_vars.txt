@@ -56,7 +56,7 @@ action: any of
         "Link"
         "Unlink"
 
-lastupdate:
+last_update:
     - timestamp the client was last updated
     - used to know what update to send to the client
 

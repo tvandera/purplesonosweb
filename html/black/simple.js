@@ -99,7 +99,7 @@ function update() {
 function send(cmd, what = "none", onload = null) {
     var nowait = onload ? "0" : "1";
 
-    var url = '/api?what=' + what + '&nowait=' + nowait + '&' + zone_arg + 'action=' + cmd + '&lastupdate=' + last_update;
+    var url = '/api?what=' + what + '&nowait=' + nowait + '&' + zone_arg + 'action=' + cmd + '&last_update=' + last_update;
     var r = new XMLHttpRequest();
     r.open("GET", url, true);
     if (onload) {
