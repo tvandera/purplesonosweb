@@ -12,18 +12,18 @@
 </div>
 
 <div id="control">
-    <img onclick="send('Previous');" width="44" height="44" src="svg/prev.svg" id="previous">
-    <img onclick="send('Pause');" width="44" height="44" src="svg/pause.svg" id="pause"
+    <img onclick="send('Previous');" class="icon" src="svg/prev.svg" id="previous">
+    <img onclick="send('Pause');" class="icon" src="svg/pause.svg" id="pause"
       [% UNLESS player.av.transport_state == 'PLAYING' %]
             style="display: none;"
       [% END %]
     >
-    <img onclick="send('Start');" width="44" height="44" src="svg/play.svg" id="play"
+    <img onclick="send('Start');" class="icon" src="svg/play.svg" id="play"
       [% IF player.av.transport_state == 'PLAYING' %]
             style="display: none;"
       [% END %]
     >
-    <img onclick="send('Next');" width="44" height="44" src="svg/next.svg" id="next">
+    <img onclick="send('Next');" class="icon" src="svg/next.svg" id="next">
 </div>
 
 <div id="queueicon">
@@ -31,12 +31,12 @@
 </div>
 
 <div id="mute">
-    <img onclick="send('MuteOn');" width="44" height="44" src="svg/mute_off.svg" id="muteon"
+    <img onclick="send('MuteOn');" class="icon" src="svg/mute_off.svg" id="muteon"
       [% IF player.render.muted %]
             style="display: none;"
       [% END %]
     >
-    <img onclick="send('MuteOff');" width="44" height="44" src="svg/mute_on.svg" id="muteoff"
+    <img onclick="send('MuteOff');" class="icon" src="svg/mute_on.svg" id="muteoff"
       [% UNLESS player.render.muted %]
             style="display: none;"
       [% END %]
@@ -44,9 +44,9 @@
 </div>
 
 <div id="volumes">
-   <img onclick="softer();" width="44" height="44" src="svg/minus.svg" id="muchsofter">
+   <img onclick="softer();" class="icon" src="svg/minus.svg" id="muchsofter">
     <label id="volume">[% player.render.volume %]%</label>
-    <img onclick="louder();" width="44" height="44" src="svg/plus.svg" id="muchlouder">
+    <img onclick="louder();" class="icon" src="svg/plus.svg" id="muchlouder">
 </div>
 [% END %]
 </div>
