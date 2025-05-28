@@ -4,23 +4,29 @@ a {
 }
 
 #control,
-#volumes
-{
+#volumes {
     width: 100%;
     margin: 10px 70px;
 }
 
 #mute {
-   float: left;
+    float: left;
 }
 
 #queueicon img {
-  float: right;
+    float: right;
+}
+
+#container {
+    display: flex;
+}
+
+#container div {
+    flex: 1;
 }
 
 #control img,
-#volumes img
-{
+#volumes img {
     height: 44px;
     vertical-align: middle;
     display: inline-block;
@@ -48,21 +54,21 @@ h4#nowplayinglabel {
 
 #current-track-info label,
 #albumart {
-	display: inline-block;
-	vertical-align: top;
-        margin: 5px;
-        width: 100%;
-	overflow: hidden;
+    display: inline-block;
+    vertical-align: top;
+    margin: 5px;
+    width: 100%;
+    overflow: hidden;
 }
 
 #current-track-info label {
-	height: 4em;
+    height: 4em;
 }
 
 
 #albumart {
-        width: 200px;
-	margin: 10px 30px;
+    width: 200px;
+    margin: 10px 30px;
 }
 
 #zones div.normal {
@@ -87,11 +93,10 @@ h4#nowplayinglabel {
 }
 
 #zones div.zoneinfo img,
-#zones div.zoneinfo span
-{
-  display: inline-block;
-  vertical-align: middle;
-  line-height: normal; 
+#zones div.zoneinfo span {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
 }
 
 #zones ul {
@@ -100,81 +105,76 @@ h4#nowplayinglabel {
 
 #zones ul li {
     list-style: none;
-    background-image: url(images/ic_bedroom.png);
     background-repeat: no-repeat;
     line-height: 30px;
     padding-left: 40px;
 }
 
 #pages li {
-        display: inline;
-    }
+    display: inline;
+}
 
 #music ul,
 #queuedata ul {
-	margin: 2px;
-        padding: 2px;
-        background: #333;
+    margin: 2px;
+    padding: 2px;
+    background: #333;
 }
 
 #music li,
 #queuedata li {
-	list-style: none;
-	margin: 0;
-	padding: 2px;
-        border-bottom-width: 1px;
-        border-bottom-style: dotted;
-        border-bottom-color: #999;
+    list-style: none;
+    margin: 0;
+    padding: 2px;
+    border-bottom-width: 1px;
+    border-bottom-style: dotted;
+    border-bottom-color: #999;
 
 }
 
 #music li.albumart img,
-#queuedata li.albumart img
-{
+#queuedata li.albumart img {
     height: 200px;
     width: 200px;
 }
 
 #music li img,
-#queuedata li img
-{
-	width: 40px;
-	height: 40px;
-	vertical-align: top;
-	display: inline-block;
+#queuedata li img {
+    width: 40px;
+    height: 40px;
+    vertical-align: top;
+    display: inline-block;
 }
 
 #music li .trackno,
-#queuedata li .trackno
-{
-	width: 40px;
-        text-align: center
-	display: inline-block;
+#queuedata li .trackno {
+    width: 40px;
+    text-align: center display: inline-block;
 }
+
 #music li div,
 #queuedata li div {
-        width: calc(100% - 55px);
-	display: inline-block;
-	overflow: hidden;
-        margin: 2px;
+    width: calc(100% - 55px);
+    display: inline-block;
+    overflow: hidden;
+    margin: 2px;
 }
 
 #music li div p,
 #queuedata li div p {
-	margin: 0;
-	line-height: 18px;
-	font-size: 13px;
-	overflow: hidden;
-	width: 100%;
-	white-space: nowrap;
+    margin: 0;
+    line-height: 18px;
+    font-size: 13px;
+    overflow: hidden;
+    width: 100%;
+    white-space: nowrap;
 }
 
 #music li div p.artist,
 #queuedata li div p.artist,
 #music li div p.description,
-#queuedata li div p.description
-{
-	color: #aaa;
+#queuedata li div p.description {
+    color: #aaa;
 }
 
 #music li div p.buttons,
@@ -184,14 +184,14 @@ h4#nowplayinglabel {
 }
 
 #music li.header {
-        background: #fff;
-        color: #000;
-        font-size: 18px;
-	width: 100%;
+    background: #fff;
+    color: #000;
+    font-size: 18px;
+    width: 100%;
 }
 
 li.header div {
-	width: 230px;
+    width: 230px;
 }
 
 p#musicpath {
@@ -199,9 +199,8 @@ p#musicpath {
 }
 
 body {
-        width: 300px;
-	background: #000;
-	color: #fff;
-	font-family: "PT Sans", Arial, sans-serif;
-        font-size: 15px;
+    background: #000;
+    color: #fff;
+    font-family: "PT Sans", Arial, sans-serif;
+    font-size: 15px;
 }
