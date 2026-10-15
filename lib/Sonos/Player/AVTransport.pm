@@ -223,7 +223,7 @@ sub setShuffle( $self, $on_or_off ) {
     );
     $self->switchPlayMode(%switch_shuffle);
 
-    return !$self->isShuffle() == $on_or_off;
+    return $self->isShuffle() != $on_or_off;
 }
 
 sub shuffleOff($self) { $self->setShuffle(0); }
