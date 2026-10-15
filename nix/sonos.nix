@@ -30,6 +30,34 @@ let
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
+  LV = with perlPackages;
+  buildPerlPackage {
+    pname = "LV";
+    version = "0.006";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/T/TO/TOBYINK/LV-0.006.tar.gz";
+      hash = "sha256-+ojC1K8LESbUZAHmNVplSW0DPPwqapRGUwEaY4rfp1w=";
+    };
+    meta = {
+      description = "Lvalue subroutines";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+  JSONPath = with perlPackages;
+  buildPerlPackage {
+    pname = "JSON-Path";
+    version = "1.0.6";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/P/PO/POPEFELIX/JSON-Path-1.0.6.tar.gz";
+      hash = "sha256-s28/rpFZDLIKbFT4DGvmsrLWypIkeiowqrc9iGRwAv8=";
+    };
+    propagatedBuildInputs = [ CarpAssert ExporterTiny JSONMaybeXS LV Readonly TryTiny ];
+    meta = {
+      description = "Search nested Perl data structures using JSONPath";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+    doCheck = false;
+  };
   ImageResize = with perlPackages;
   buildPerlPackage {
     pname = "Image-Resize";
@@ -47,8 +75,8 @@ let
     pname = "UPnP-ControlPoint";
     version = "0.4";
     src = fetchurl {
-      url = "https://github.com/tvandera/perlupnp/archive/refs/heads/master.tar.gz";
-      hash = "sha256-523FOahGu2JuB9gWMoUbTCYJ4tjsJapZt8AGu8Ta4a8=";
+      url = "https://github.com/tvandera/perlupnp/releases/download/v0.4/UPnP-ControlPoint-0.4.tar.gz";
+      hash = "sha256-HTFzD0Ac78/d5pcetAtk//ChPQmi6oD1dn7hHlABUKk=";
     };
     propagatedBuildInputs = [ LWP SOAPLite HTTPDaemon XMLParserLite ];
     meta = {
@@ -68,6 +96,7 @@ perlPackages.buildPerlPackage rec {
       IO IOAsync JSON LWPMediaTypes LWP MIMEBase64 MIMETypes FileMimeInfo SOAPLite
       Socket TimeHiRes URI XMLSimple XMLLiberal XMLLibXMLSimple JSONXS
       TextTable IOStringy ScalarUtilNumeric UPnPControlPoint
+      JSONPath TryTiny TypesSerialiser HTTPMessage
   ];
   meta = {
     description = "Sonos Daemon with a REST API, Web UI and CLI";
