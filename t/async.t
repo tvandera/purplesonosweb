@@ -1,31 +1,20 @@
 use strict;
 use warnings;
 
-use Carp;
+use IO::Async::Loop::Select;
+use Test::More tests => 3;
 
-require IO::Async::Handle;
-require IO::Async::Timer::Periodic;
-require IO::Async::Loop::Select;
-
-require Sonos::System;
-
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
-use Data::Dumper;
+BEGIN { use_ok('Sonos::System') };
 
 my $loop = IO::Async::Loop::Select->new;
-my $client = Sonos::System->new($loop);
+my $system = bless {
+   _controlpoint => bless({}, 'Local::ControlPoint'),
+   _players      => {},
+}, 'Sonos::System';
 
-my $timer = IO::Async::Timer::Periodic->new(
-   interval => 5,
+$system->addToLoop($loop);
+is($system->loop(), $loop, 'attaches the system to the async loop');
+is($system->numPlayers(), 0, 'starts without discovered players');
 
-   on_tick => sub {
-        $loop->stop;
-   },
-);
-
-$timer->start;
-
-$loop->add($timer);
-
-$loop->run;
+package Local::ControlPoint;
+sub sockets { return; }

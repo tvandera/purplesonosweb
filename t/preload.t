@@ -5,10 +5,12 @@ use warnings;
 use Test::More;
 use File::Temp qw( tempdir );
 use Cwd qw( getcwd );
+use Log::Log4perl qw(:easy);
 use JSON::XS qw( decode_json );
 use File::Slurp qw( read_file );
 
 use Sonos::System;
+Log::Log4perl->easy_init($OFF);
 
 my $original_dir = getcwd();
 my $cache_dir = tempdir( CLEANUP => 1 );
