@@ -91,7 +91,7 @@ h4#nowplayinglabel {
 {
   display: inline-block;
   vertical-align: middle;
-  line-height: normal; 
+  line-height: normal;
 }
 
 #zones ul {
@@ -100,7 +100,6 @@ h4#nowplayinglabel {
 
 #zones ul li {
     list-style: none;
-    background-image: url(images/ic_bedroom.png);
     background-repeat: no-repeat;
     line-height: 30px;
     padding-left: 40px;
