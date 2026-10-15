@@ -21,6 +21,16 @@ To install this module type the following:
    make test
    make install
 
+PLAYER DISCOVERY CACHE
+
+On the first run, players are found through UPnP discovery. Their device
+description URLs are saved by player UUID in location_cache.json in the
+working directory, alongside the music library and album art caches.
+Later runs preload these URLs and continue normal network discovery.
+Rediscovery updates changed URLs. Failed startup preloads are removed from
+the cache; temporary device removals during normal operation remain cached.
+Delete location_cache.json to start discovery without saved locations.
+
 DEPENDENCIES
 
 This module requires these other modules and libraries:

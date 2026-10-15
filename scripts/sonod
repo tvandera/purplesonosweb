@@ -21,13 +21,8 @@ binmode STDERR, ":encoding(UTF-8)";
 use Data::Dumper;
 
 
-my @locations = (
-    'http://192.168.2.101:1400/xml/device_description.xml',
-    'http://192.168.2.199:1400/xml/device_description.xml',
-);
-
 my $loop = IO::Async::Loop::Select->new;
-my $system = Sonos::System->discover($loop, @locations);
+my $system = Sonos::System->discover($loop);
 my $daemon = Sonos::HTTP->new($loop, $system, LocalAddr => '0.0.0.0', LocalPort => 9999);
 
 $SIG{INT} = sub {

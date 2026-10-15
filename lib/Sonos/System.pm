@@ -12,6 +12,7 @@ require Sonos;
 require Sonos::Player;
 require Sonos::MusicLibrary;
 require Sonos::AlbumArtCache;
+require Sonos::LocationCache;
 
 use IO::Async::Handle ();
 
@@ -39,20 +40,27 @@ sub new {
         _players      => {},       # UDN => Sonos::Player
         _musiclibrary => undef,    # Sonos::MusicLibrary
         _aacache      => undef,    # Sonos::AlbumArtCache
+        _locationcache => undef,
         _loop         => undef,    # IO::Async::Loop::Select -> added by addToLoop
         _callbacks    => [],
     }, $class;
 
     $self->{_musiclibrary} = Sonos::MusicLibrary->new($self);
     $self->{_aacache}      = Sonos::AlbumArtCache->new($self);
+    $self->{_locationcache} = Sonos::LocationCache->new();
 
     $self->addToLoop($loop) if defined $loop;
 
     INFO "Sonos v" . $self->version() . " starting\n";
 
-    for (@locations) {
-        my $device = $cp->addByLocation($_);
+    my $device;
+    for my $location ( $self->locationCache()->locations(), @locations ) {
+        $device = undef;
+        $device = $cp->addByLocation($location);
         $self->addPlayer($device) if $device;
+    }
+    continue {
+        $self->locationCache()->remove($location) unless $device;
     }
 
     $cp->searchByType( SERVICE_TYPE, sub { $self->_discoveryCallback(@_) } );
@@ -136,6 +144,10 @@ sub albumArtCache($self) {
     return $self->{_aacache};
 }
 
+sub locationCache($self) {
+    return $self->{_locationcache};
+}
+
 sub sockets($self) {
     return $self->controlPoint()->sockets();
 }
@@ -172,6 +184,7 @@ sub addPlayer( $self, $device ) {
     my $uuid = $device->{UDN};
     $uuid =~ s/^uuid://g;
 
+    $self->locationCache()->add( $uuid, $device->{LOCATION} );
     return if defined $self->{_players}->{$uuid};
     $self->{_players}->{$uuid} = Sonos::Player->new( $device, $self );
     INFO "Added device: $device->{FRIENDLYNAME} ($device->{LOCATION})";
