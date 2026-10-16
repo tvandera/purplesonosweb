@@ -23,9 +23,12 @@ a {
 
 #queueicon img {
     float: none;
+    width: 40px;
+    height: 40px;
 }
 
 #control img,
+#mute img,
 #volumes img
 {
     width: clamp(32px, 8vw, 44px);
@@ -190,6 +193,17 @@ h4#nowplayinglabel {
   display: inline-block;
   vertical-align: middle;
   line-height: normal;
+}
+
+#zones div.normal > img,
+#zones div.active > img {
+        width: 44px;
+        height: 44px;
+}
+
+#zones div.zoneinfo img {
+        width: 22px;
+        height: 22px;
 }
 
 #zones ul {
