@@ -1,0 +1,39 @@
+FROM debian/eol:jessie
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN printf 'deb http://archive.debian.org/debian jessie main\n' > /etc/apt/sources.list \
+    && printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99archive \
+    && apt-get update \
+    && apt-get install --yes --force-yes --no-install-recommends \
+    ca-certificates \
+    dbus-x11 \
+    epiphany-browser \
+    glib-networking \
+    libproxy1 \
+    libglib2.0-bin \
+    fonts-liberation \
+    lxde-core \
+    lxterminal \
+    netcat-openbsd \
+    x11vnc \
+    xauth \
+    xfonts-base \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --shell /bin/bash legacy \
+    && mkdir -p /home/legacy/.config \
+    && chown -R legacy:legacy /home/legacy
+
+COPY legacy-browser-entrypoint.sh /usr/local/bin/legacy-browser-entrypoint
+RUN chmod 0755 /usr/local/bin/legacy-browser-entrypoint
+
+ENV HOME=/home/legacy
+ENV DISPLAY=:0
+
+EXPOSE 5900
+HEALTHCHECK --interval=2s --timeout=1s --start-period=5s --retries=15 \
+    CMD nc -z -w 1 127.0.0.1 5900 || exit 1
+
+USER legacy
+ENTRYPOINT ["/usr/local/bin/legacy-browser-entrypoint"]
