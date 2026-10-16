@@ -44,8 +44,8 @@ a {
 
 #onepage {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.8fr) minmax(0, 1fr);
-    grid-template-areas: "library playing queue";
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.8fr);
+    grid-template-areas: "library playing";
     align-items: start;
     gap: 12px;
 }
@@ -89,18 +89,36 @@ a {
     grid-column: 1 / -1;
     grid-row: 4;
     justify-self: end;
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
 }
 
 #queue {
-    grid-area: queue;
+    display: none;
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    width: min(360px, calc(100vw - 24px));
+    max-height: min(70vh, 560px);
+    overflow-y: auto;
+    z-index: 1000;
+    border: 1px solid #777;
+    background: #222;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+#queue.open {
+    display: block;
 }
 
 @media (max-width: 760px) {
     #onepage {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas:
-            "library playing"
-            "queue queue";
+            "library playing";
     }
 }
 
@@ -109,8 +127,7 @@ a {
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
             "library"
-            "playing"
-            "queue";
+            "playing";
     }
 }
 

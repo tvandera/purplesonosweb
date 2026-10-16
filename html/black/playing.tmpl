@@ -23,9 +23,9 @@
             <img onclick="louder();" src="svg/plus.svg" id="muchlouder">
         </div>
 
-        <div id="queueicon">
-            <img src="svg/queue.png" onclick="goto('queue');" id="queueicon">
-        </div>
+        <button type="button" id="queueicon" onclick="toggleQueue();" aria-label="Toggle queue">
+            <img src="svg/queue.png" alt="">
+        </button>
 
     </section>
 [% ELSE %]

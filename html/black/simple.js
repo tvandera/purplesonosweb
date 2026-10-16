@@ -67,6 +67,11 @@ function goto(base, extra) {
     if (section) section.scrollIntoView();
 }
 
+function toggleQueue() {
+    var queue = document.getElementById("queue");
+    if (queue) queue.classList.toggle("open");
+}
+
 
 function browse(music_arg) {
     window.location.href = "index.html?" + zone_arg + music_arg + "&action=Browse";
