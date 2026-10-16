@@ -1,29 +1,29 @@
 <div id="zones" class="onepage-zones">
-[% FOREACH item IN players %]
- [% IF item.zone.is_coord && item.isactive %]
- <div class="active">
-   <div class="zone-layout">
-     <ul>
-      [% FOREACH member IN item.zone.members %]
-         <li style="background-image: url('[% member.img %]');">
-           [% member.name %]
-         </li>
-      [% END %]
-     </ul>
-     <div class="zone-controls">
-       <select aria-label="Change zone" onchange="zone(this.value)">
-         [% FOREACH choice IN players %]
-           [% IF choice.zone.is_coord %]
-           <option value="[% choice.name %]" [% IF choice.isactive %]selected[% END %]>[% choice.zone.name %]</option>
-           [% END %]
-         [% END %]
-       </select>
-       [% IF item.zone.members.size > 1 %]
-       <img class="zone-link-action" onclick="goto('zones', 'action=Unlink&link=[% item.name %]');" width="44" height="44" src="svg/unlink.svg" alt="Unlink zone">
-       [% END %]
-     </div>
-   </div>
- </div>
- [% END %]
-[% END %]
+    [% FOREACH item IN players %]
+        [% IF item.zone.is_coord && item.isactive %]
+            <div class="active">
+                <div class="zone-layout">
+                    <ul>
+                        [% FOREACH member IN item.zone.members %]
+                            <li style="background-image: url('[% member.img %]');">
+                                [% member.name %]
+                            </li>
+                        [% END %]
+                    </ul>
+                    <div class="zone-controls">
+                        <select aria-label="Change zone" onchange="zone(this.value)">
+                            [% FOREACH choice IN players %]
+                                [% IF choice.zone.is_coord %]
+                                <option value="[% choice.name %]" [% IF choice.isactive %]selected[% END %]>[% choice.zone.name %]</option>
+                                [% END %]
+                            [% END %]
+                        </select>
+                        [% IF item.zone.members.size > 1 %]
+                            <img class="zone-link-action" onclick="goto('zones', 'action=Unlink&link=[% item.name %]');" width="44" height="44" src="svg/unlink.svg" alt="Unlink zone">
+                        [% END %]
+                    </div>
+                </div>
+            </div>
+        [% END %]
+    [% END %]
 </div>

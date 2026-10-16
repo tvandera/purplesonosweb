@@ -1,21 +1,24 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<link rel="apple-touch-icon" href="favicon.png">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable = no" />
-<title>Web SONOS Controller</title>
-<style>
-   [% INCLUDE style.css %]
-</style>
-<script>
-var zone_arg = "[% url.args.zone %]";
-var music_arg = "[% url.args.mpath %]";
-var last_update = "[% last_update %]";
-</script>
-<script language="javascript">
-   [% INCLUDE simple.js %]
-</script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable = no" />
+    <title>Web SONOS Controller</title>
+    <style>
+        [% INCLUDE style.css %]
+
+    </style>
+    <script>
+        var zone_arg = "[% url.args.zone %]";
+        var music_arg = "[% url.args.mpath %]";
+        var last_update = "[% last_update %]";
+
+    </script>
+    <script language="javascript">
+        [% INCLUDE simple.js %]
+
+    </script>
 </head>
 <body onload='update();'>
