@@ -1,15 +1,12 @@
 [% INCLUDE header.tmpl %]
 
-<nav id="top-labels">
-    <h4><a href="#zones">ZONES</a></h4>
-    <h4><a href="#playing">NOW PLAYING</a></h4>
-    <h4><a href="#music">MUSIC</a></h4>
-    <h4><a href="#queue">QUEUE</a></h4>
-</nav>
-
-[% INCLUDE "zones-body.tmpl" %]
-[% INCLUDE "playing-body.tmpl" %]
-[% INCLUDE "music-body.tmpl" %]
-[% INCLUDE "queue-body.tmpl" %]
+<main id="onepage">
+    <div id="library-column">
+        [% INCLUDE "zones-onepage-body.tmpl" %]
+        [% INCLUDE "music-body.tmpl" %]
+    </div>
+    [% INCLUDE "playing-body.tmpl" %]
+    [% INCLUDE "queue-body.tmpl" %]
+</main>
 
 [% INCLUDE footer.tmpl %]

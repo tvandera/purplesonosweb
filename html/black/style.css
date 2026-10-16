@@ -3,32 +3,89 @@ a {
     text-decoration: none;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 #control,
 #volumes
 {
-    width: 100%;
-    margin: 10px 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 18px);
+    margin: 10px 0;
 }
 
 #mute {
-   float: left;
+    display: flex;
 }
 
 #queueicon img {
-  float: right;
+    float: none;
 }
 
 #control img,
 #volumes img
 {
-    height: 44px;
+    width: clamp(32px, 8vw, 44px);
+    height: auto;
     vertical-align: middle;
     display: inline-block;
 }
 
-div#top-labels {
-    width: 100%;
+#top-labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
     background: #333;
+}
+
+#onepage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.8fr) minmax(0, 1fr);
+    grid-template-areas: "library playing queue";
+    align-items: start;
+    gap: 12px;
+}
+
+#onepage > * {
+    min-width: 0;
+}
+
+#library-column {
+    grid-area: library;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#playing {
+    grid-area: playing;
+}
+
+#queue {
+    grid-area: queue;
+}
+
+@media (max-width: 760px) {
+    #onepage {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "library playing"
+            "queue queue";
+    }
+}
+
+@media (max-width: 540px) {
+    #onepage {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "library"
+            "playing"
+            "queue";
+    }
 }
 
 
@@ -48,21 +105,28 @@ h4#nowplayinglabel {
 
 #current-track-info label,
 #albumart {
-	display: inline-block;
-	vertical-align: top;
-        margin: 5px;
-        width: 100%;
-	overflow: hidden;
+    display: inline-block;
+    vertical-align: top;
+    margin: 5px;
+    overflow: hidden;
 }
 
 #current-track-info label {
-	height: 4em;
+    height: 4em;
+    min-width: 0;
+    width: auto;
 }
 
+#current-track-info {
+    display: flex;
+    align-items: center;
+}
 
 #albumart {
-        width: 200px;
-	margin: 10px 30px;
+    width: min(35vw, 200px);
+    height: auto;
+    flex: 0 1 auto;
+    margin: 10px clamp(8px, 3vw, 30px);
 }
 
 #zones div.normal {
@@ -77,6 +141,40 @@ h4#nowplayinglabel {
     margin: 20px;
     border-style: dotted;
     border-width: 1px;
+}
+
+#zones.onepage-zones > div.active {
+    padding: 2px;
+    margin: 2px;
+}
+
+#zones.onepage-zones .zone-layout,
+#zones.onepage-zones .zone-controls {
+    display: flex;
+    align-items: center;
+}
+
+#zones.onepage-zones .zone-layout {
+    justify-content: space-between;
+    gap: 8px;
+}
+
+#zones.onepage-zones .zone-layout ul {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
+#zones.onepage-zones .zone-controls {
+    flex: 0 1 auto;
+    justify-content: flex-end;
+    gap: 4px;
+    min-width: 0;
+}
+
+#zones.onepage-zones .zone-controls select {
+    width: min(11rem, 40vw);
+    min-width: 0;
 }
 
 #zones div.zoneinfo {
@@ -96,6 +194,27 @@ h4#nowplayinglabel {
 
 #zones ul {
     padding: 5px;
+}
+
+#zones select {
+    max-width: calc(100% - 50px);
+    padding: 6px;
+    background: #222;
+    color: #fff;
+    border: 1px solid #777;
+    font: inherit;
+}
+
+#zones .zone-link-action {
+    float: right;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+}
+
+#zones.onepage-zones .zone-link-action {
+    float: none;
+    flex: 0 0 32px;
 }
 
 #zones ul li {
@@ -130,32 +249,40 @@ h4#nowplayinglabel {
 #music li.albumart img,
 #queuedata li.albumart img
 {
-    height: 200px;
-    width: 200px;
+    width: min(60vw, 200px);
+    height: auto;
 }
 
 #music li img,
 #queuedata li img
 {
-	width: 40px;
-	height: 40px;
-	vertical-align: top;
-	display: inline-block;
+    width: clamp(32px, 8vw, 40px);
+    height: auto;
+    flex: 0 0 auto;
+    vertical-align: top;
+    display: inline-block;
 }
 
 #music li .trackno,
 #queuedata li .trackno
 {
-	width: 40px;
-        text-align: center
-	display: inline-block;
+    flex: 0 0 2.5rem;
+    text-align: center;
+    display: inline-block;
 }
 #music li div,
 #queuedata li div {
-        width: calc(100% - 55px);
-	display: inline-block;
-	overflow: hidden;
-        margin: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: inline-block;
+    overflow: hidden;
+    margin: 2px;
+}
+
+#music li:not(.albumart),
+#queuedata li:not(.albumart) {
+    display: flex;
+    align-items: flex-start;
 }
 
 #music li div p,
@@ -190,7 +317,8 @@ h4#nowplayinglabel {
 }
 
 li.header div {
-	width: 230px;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 p#musicpath {
@@ -198,9 +326,11 @@ p#musicpath {
 }
 
 body {
-        width: 300px;
-	background: #000;
-	color: #fff;
-	font-family: "PT Sans", Arial, sans-serif;
-        font-size: 15px;
+    width: 100%;
+    margin: 0;
+    padding: 8px;
+    background: #000;
+    color: #fff;
+    font-family: "PT Sans", Arial, sans-serif;
+    font-size: 15px;
 }
