@@ -75,6 +75,14 @@ function zone(name) {
     window.location.href = "index.html?zone=" + name + "&" + music_arg;
 }
 
+function initialize() {
+    if (!zone_arg && default_zone_arg) {
+        window.location.replace("index.html?" + default_zone_arg + music_arg);
+        return;
+    }
+    update();
+}
+
 var zone_info = null;
 
 function update() {
