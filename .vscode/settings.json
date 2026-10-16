@@ -1,5 +1,14 @@
 {
     "perlnavigator.perlPath": "/home/vanderaa/perl5/perlbrew/perls/perl-5.40.2/bin/perl",
     "perlnavigator.includePaths": [ "$workspaceFolder/lib" ],
-    "perlnavigator.perlcriticProfile": "$workspacefolder/.perlcriticrc"
+    "perlnavigator.perlcriticProfile": "$workspacefolder/.perlcriticrc",
+    "files.associations": {
+        "*.tmpl": "tt"
+    },
+
+    "[tt]": {
+        "editor.defaultFormatter": "muhamaddiaz.tt",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4
+    }
 }
