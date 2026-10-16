@@ -80,6 +80,33 @@ a {
     overscroll-behavior: contain;
 }
 
+#music-shortcuts {
+    display: flex;
+    flex: 0 0 auto;
+    background: #333;
+    border-top: 1px solid #777;
+}
+
+#music-shortcuts a {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
+    text-align: center;
+}
+
+#music-shortcuts img {
+    width: 22px;
+    height: 22px;
+}
+
+#music-shortcuts a + a {
+    border-left: 1px solid #777;
+}
+
 #playing {
     grid-area: playing;
     display: grid;
@@ -111,6 +138,14 @@ a {
     grid-column: 1 / -1;
     grid-row: 4;
     justify-self: end;
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+#queuedata .queue-toggle {
     border: 0;
     padding: 0;
     background: none;
