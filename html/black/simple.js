@@ -32,7 +32,7 @@ function updateToggle(first, second, doFirst) {
 }
 
 function drawControl() {
-    if (page() != "playing") return;
+    if (page() != "playing" && page() != "index") return;
 
     var info = "";
 
@@ -70,19 +70,35 @@ function drawControl() {
 
 
 function goto(base, extra) {
+    if (page() == "index") {
+        if (typeof extra !== 'undefined') {
+            window.location.href = 'index.html?' + zone_arg + music_arg + extra;
+        } else {
+            var section = document.getElementById(base);
+            if (section) section.scrollIntoView();
+        }
+        return;
+    }
+
     var url = base + '.html?' + zone_arg + music_arg;
     if (typeof extra !== 'undefined') url += extra;
     window.location.href = url;
 }
 
 
-function browse(music_arg) { window.location.href = 'music.html?' + zone_arg + music_arg + "&action=Browse"; }
-function zone(name) { window.location.href = 'playing.html?zone=' + name + "&" + music_arg; }
+function browse(music_arg) {
+    var destination = page() == "index" ? "index.html?" : "music.html?";
+    window.location.href = destination + zone_arg + music_arg + "&action=Browse";
+}
+function zone(name) {
+    var destination = page() == "index" ? "index.html?" : "playing.html?";
+    window.location.href = destination + "zone=" + name + "&" + music_arg;
+}
 
 var zone_info = null;
 
 function update() {
-    if (page() != "playing") return;
+    if ((page() != "playing" && page() != "index") || !zone_arg) return;
 
     cmd = zone_info ? "Wait" : "None";
     r = send(
@@ -114,8 +130,12 @@ function sendAndGo(cmd, next) {
     r = send(cmd, "none", function() { goto(next); });
 }
 
-function removeall() { window.location.href = "queue.html?" + zone_arg + "action=RemoveAll&" + music_arg; }
-function seek(to) { window.location.href = "queue.html?" + zone_arg + "action=Seek&" + music_arg + to; }
+function queueAction(action, extra) {
+    var destination = page() == "index" ? "index.html?" : "queue.html?";
+    window.location.href = destination + zone_arg + "action=" + action + "&" + music_arg + (extra || "");
+}
+function removeall() { queueAction("RemoveAll"); }
+function seek(to) { queueAction("Seek", to); }
 function play(music_arg) { sendAndGo("play&" + music_arg, "playing");  }
 function add(music_arg) { sendAndGo("add&" + music_arg, "playing"); }
 

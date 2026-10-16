@@ -1,14 +1,15 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<link rel="apple-touch-icon" href="favicon.png">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta http-equiv="refresh" content="3000;URL=index.html?" />
-<title>Web SONOS Controller</title>
-</head>
-<frameset cols="100%">
-  <frame src="zones.html"></frame>
-</frameset>
-</html>
+[% INCLUDE header.tmpl %]
+
+<nav id="top-labels">
+    <h4><a href="#zones">ZONES</a></h4>
+    <h4><a href="#playing">NOW PLAYING</a></h4>
+    <h4><a href="#music">MUSIC</a></h4>
+    <h4><a href="#queue">QUEUE</a></h4>
+</nav>
+
+[% INCLUDE "zones-body.tmpl" %]
+[% INCLUDE "playing-body.tmpl" %]
+[% INCLUDE "music-body.tmpl" %]
+[% INCLUDE "queue-body.tmpl" %]
+
+[% INCLUDE footer.tmpl %]
