@@ -44,14 +44,24 @@ a {
 
 #onepage {
     display: grid;
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
     grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.8fr);
-    grid-template-areas: "library playing";
-    align-items: start;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+        "zones zones"
+        "library playing";
+    align-items: stretch;
     gap: 12px;
 }
 
 #onepage > * {
     min-width: 0;
+    min-height: 0;
+}
+
+#zones {
+    grid-area: zones;
 }
 
 #library-column {
@@ -59,15 +69,27 @@ a {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#music {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 #playing {
     grid-area: playing;
     display: grid;
     grid-template-columns: minmax(0, 1fr) max-content max-content minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
     justify-content: center;
     align-items: center;
     column-gap: clamp(4px, 1vw, 12px);
+    min-height: 0;
+    overflow: hidden;
 }
 
 #current-track-info,
@@ -118,16 +140,27 @@ a {
     #onepage {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas:
+            "zones zones"
             "library playing";
     }
 }
 
 @media (max-width: 540px) {
     #onepage {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas:
-            "library"
-            "playing";
+            "zones zones"
+            "library playing";
+    }
+
+    #control,
+    #volumes {
+        gap: 4px;
+    }
+
+    #control img,
+    #volumes img {
+        width: clamp(24px, 8vw, 32px);
     }
 }
 
@@ -165,12 +198,19 @@ h4#nowplayinglabel {
     display: flex;
     flex-direction: column;
     align-items: center;
+    align-self: stretch;
+    min-height: 0;
 }
 
 #albumart {
-    width: min(35vw, 200px);
-    height: auto;
-    flex: 0 1 auto;
+    width: auto;
+    aspect-ratio: 1;
+    height: 0;
+    max-width: min(100%, 640px);
+    max-height: 100%;
+    object-fit: contain;
+    flex: 1 1 0;
+    min-height: 0;
     margin: 10px auto;
 }
 
@@ -324,6 +364,10 @@ h4#nowplayinglabel {
     margin: 2px;
 }
 
+#music li div {
+    padding: 4px 8px;
+}
+
 #music li:not(.albumart),
 #queuedata li:not(.albumart) {
     display: flex;
@@ -372,6 +416,7 @@ p#musicpath {
 
 body {
     width: 100%;
+    overflow: hidden;
     margin: 0;
     padding: 8px;
     background: #000;
