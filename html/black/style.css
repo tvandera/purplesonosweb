@@ -63,6 +63,32 @@ a {
 
 #playing {
     grid-area: playing;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content max-content minmax(0, 1fr);
+    justify-content: center;
+    align-items: center;
+    column-gap: clamp(4px, 1vw, 12px);
+}
+
+#current-track-info,
+#control {
+    grid-column: 1 / -1;
+}
+
+#mute {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+#volumes {
+    grid-column: 3;
+    grid-row: 3;
+}
+
+#queueicon {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    justify-self: end;
 }
 
 #queue {
@@ -114,11 +140,13 @@ h4#nowplayinglabel {
 #current-track-info label {
     height: 4em;
     min-width: 0;
-    width: auto;
+    width: 100%;
+    text-align: center;
 }
 
 #current-track-info {
     display: flex;
+    flex-direction: column;
     align-items: center;
 }
 
@@ -126,7 +154,7 @@ h4#nowplayinglabel {
     width: min(35vw, 200px);
     height: auto;
     flex: 0 1 auto;
-    margin: 10px clamp(8px, 3vw, 30px);
+    margin: 10px auto;
 }
 
 #zones div.normal {

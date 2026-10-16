@@ -1,7 +1,7 @@
 <section id="playing">
     [% IF url.values.zone %]
         <div id="current-track-info">
-        <img class="albumart" id="albumart" [% IF player.av.albumart %] src="[% player.av.albumart %]" [% ELSE %] src="tiles/missingaa_lite.svg" [% END %]><br>
+        <img class="albumart" id="albumart" [% IF player.av.albumart %] src="[% player.av.albumart %]" [% ELSE %] src="tiles/missingaa_lite.svg" [% END %]>
             <label id="info"></label>
         </div>
 
@@ -10,10 +10,6 @@
         <img onclick="send('Pause');" src="svg/pause.svg" id="pause" [% UNLESS player.av.transport_state == 'PLAYING' %] style="display: none;" [% END %]>
         <img onclick="send('Start');" src="svg/play.svg" id="play" [% IF player.av.transport_state == 'PLAYING' %] style="display: none;" [% END %]>
             <img onclick="send('Next');" src="svg/next.svg" id="next">
-        </div>
-
-        <div id="queueicon">
-            <img src="svg/queue.png" onclick="goto('queue');">
         </div>
 
         <div id="mute">
@@ -26,6 +22,11 @@
             <label id="volume">[% player.render.volume %]%</label>
             <img onclick="louder();" src="svg/plus.svg" id="muchlouder">
         </div>
+
+        <div id="queueicon">
+            <img src="svg/queue.png" onclick="goto('queue');" id="queueicon">
+        </div>
+
     </section>
 [% ELSE %]
     <p>Select a zone to show playback controls.</p>
