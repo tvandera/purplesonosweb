@@ -1,13 +1,3 @@
-function page() {
-    var path = window.location.pathname;
-    var findex = path.lastIndexOf("/") + 1;
-    var filename = path.substr(findex);
-    var bindex = filename.lastIndexOf(".");
-    var basename = filename.substr(0, bindex);
-    return basename;
-}
-
-
 function updateText(name, text) {
     var element = document.getElementById(name);
     if (element && (!element.innerHTML || element.innerHTML != text)) {
@@ -32,8 +22,6 @@ function updateToggle(first, second, doFirst) {
 }
 
 function drawControl() {
-    if (page() != "playing" && page() != "index") return;
-
     var info = "";
 
     if (zone_info.av.title) {
@@ -70,35 +58,27 @@ function drawControl() {
 
 
 function goto(base, extra) {
-    if (page() == "index") {
-        if (typeof extra !== 'undefined') {
-            window.location.href = 'index.html?' + zone_arg + music_arg + extra;
-        } else {
-            var section = document.getElementById(base);
-            if (section) section.scrollIntoView();
-        }
+    if (typeof extra !== 'undefined') {
+        window.location.href = 'index.html?' + zone_arg + music_arg + extra;
         return;
     }
 
-    var url = base + '.html?' + zone_arg + music_arg;
-    if (typeof extra !== 'undefined') url += extra;
-    window.location.href = url;
+    var section = document.getElementById(base);
+    if (section) section.scrollIntoView();
 }
 
 
 function browse(music_arg) {
-    var destination = page() == "index" ? "index.html?" : "music.html?";
-    window.location.href = destination + zone_arg + music_arg + "&action=Browse";
+    window.location.href = "index.html?" + zone_arg + music_arg + "&action=Browse";
 }
 function zone(name) {
-    var destination = page() == "index" ? "index.html?" : "playing.html?";
-    window.location.href = destination + "zone=" + name + "&" + music_arg;
+    window.location.href = "index.html?zone=" + name + "&" + music_arg;
 }
 
 var zone_info = null;
 
 function update() {
-    if ((page() != "playing" && page() != "index") || !zone_arg) return;
+    if (!zone_arg) return;
 
     cmd = zone_info ? "Wait" : "None";
     r = send(
@@ -131,8 +111,7 @@ function sendAndGo(cmd, next) {
 }
 
 function queueAction(action, extra) {
-    var destination = page() == "index" ? "index.html?" : "queue.html?";
-    window.location.href = destination + zone_arg + "action=" + action + "&" + music_arg + (extra || "");
+    window.location.href = "index.html?" + zone_arg + "action=" + action + "&" + music_arg + (extra || "");
 }
 function removeall() { queueAction("RemoveAll"); }
 function seek(to) { queueAction("Seek", to); }
