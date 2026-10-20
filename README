@@ -21,6 +21,17 @@ To install this module type the following:
    make test
    make install
 
+SIMULATOR INTEGRATION TESTS
+
+The test suite includes an integration test against FrankenSonos' fsonos-sim.
+Both Nix shells provide the packaged `fsonos` executable and its `fsonos-sim`
+alias, and set FSONOS_SIM_BIN for the integration test. The package pins the
+upstream source and nightly toolchain. Outside Nix, build its `fsonos`
+executable with `cd /path/to/frankensonos && cargo build --release --features
+sim`, then put it on PATH or set FSONOS_SIM_BIN to its path. The simulator test
+is skipped when the executable is unavailable; it starts and stops its own
+local virtual system and does not require Sonos hardware.
+
 PLAYER DISCOVERY CACHE
 
 On the first run, players are found through UPnP discovery. Their device
