@@ -105,14 +105,18 @@ function update() {
     );
 }
 
-function send(cmd, what = "none", onload = null) {
+function send(cmd, what, onload) {
+    if (typeof what === "undefined") what = "none";
+    if (typeof onload === "undefined") onload = null;
     var nowait = onload ? "0" : "1";
 
     var url = '/api?what=' + what + '&nowait=' + nowait + '&' + zone_arg + 'action=' + cmd + '&lastupdate=' + last_update;
     var r = new XMLHttpRequest();
     r.open("GET", url, true);
     if (onload) {
-        r.onload = onload;
+        r.onreadystatechange = function () {
+            if (r.readyState === 4) onload.call(r);
+        };
     }
 
     r.send();

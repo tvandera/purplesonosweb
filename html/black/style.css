@@ -459,3 +459,204 @@ body {
     font-family: "PT Sans", Arial, sans-serif;
     font-size: 15px;
 }
+
+/* Keep the page navigable on WebViews without CSS Grid or newer sizing functions. */
+body {
+    overflow: auto;
+}
+
+#onepage {
+    display: block;
+    height: auto;
+    min-height: calc(100vh - 16px);
+}
+
+#onepage:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+#zones {
+    width: 100%;
+}
+
+#library-column {
+    display: block;
+    float: left;
+    width: 50%;
+    overflow: visible;
+    padding-right: 6px;
+}
+
+#music {
+    max-height: 45vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#music-shortcuts {
+    margin-bottom: 12px;
+}
+
+#playing {
+    display: block;
+    float: right;
+    width: 50%;
+    overflow: visible;
+    padding-left: 6px;
+}
+
+#current-track-info {
+    display: block;
+    text-align: center;
+}
+
+#current-track-info label {
+    display: block;
+    height: auto;
+    min-height: 4em;
+}
+
+#albumart {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 50vh;
+    margin: 10px auto;
+}
+
+#control,
+#volumes {
+    gap: 0;
+}
+
+#control img,
+#volumes img {
+    width: 32px;
+    height: 32px;
+    margin: 0 4px;
+}
+
+#queue {
+    width: calc(100vw - 24px);
+    max-width: 360px;
+    max-height: 70vh;
+}
+
+#zones.onepage-zones .zone-controls select {
+    width: 40vw;
+    max-width: 11rem;
+}
+
+#music li.albumart img,
+#queuedata li.albumart img {
+    width: 200px;
+    max-width: 60vw;
+}
+
+#music li img,
+#queuedata li img {
+    width: 40px;
+}
+
+@supports (display: grid) {
+    body {
+        overflow: hidden;
+    }
+
+    #onepage {
+        display: grid;
+        height: calc(100vh - 16px);
+        height: calc(100dvh - 16px);
+    }
+
+    #onepage:after {
+        display: none;
+    }
+
+    #zones {
+        width: auto;
+    }
+
+    #library-column {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        float: none;
+        min-height: 0;
+        overflow: hidden;
+        width: auto;
+        padding: 0;
+    }
+
+    #music {
+        flex: 1 1 auto;
+        max-height: none;
+        min-height: 0;
+    }
+
+    #music-shortcuts {
+        margin-bottom: 0;
+    }
+
+    #playing {
+        display: grid;
+        float: none;
+        overflow: hidden;
+        width: auto;
+        padding: 0;
+    }
+
+    #current-track-info {
+        display: flex;
+        text-align: inherit;
+    }
+
+    #current-track-info label {
+        height: 4em;
+        min-height: 0;
+    }
+
+    #albumart {
+        aspect-ratio: 1;
+        height: 0;
+        max-width: min(100%, 640px);
+        max-height: 100%;
+        object-fit: contain;
+        flex: 1 1 0;
+    }
+
+    #control img,
+    #volumes img {
+        height: auto;
+        margin: 0;
+    }
+
+    #music li.albumart img,
+    #queuedata li.albumart img {
+        max-width: min(60vw, 200px);
+    }
+
+    #music li img,
+    #queuedata li img {
+        height: auto;
+    }
+
+    #queue {
+        max-height: min(70vh, 560px);
+    }
+}
+
+@supports (width: clamp(1px, 2px, 3px)) {
+    #control img,
+    #volumes img {
+        width: clamp(32px, 8vw, 44px);
+    }
+
+    #music li img,
+    #queuedata li img {
+        width: clamp(32px, 8vw, 40px);
+    }
+}
