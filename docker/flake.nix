@@ -21,6 +21,7 @@
             curl
             docker-client
             docker-compose
+            gh
             gnumake
             qemu
           ];
