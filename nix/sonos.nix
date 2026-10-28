@@ -73,10 +73,10 @@ let
   UPnPControlPoint = with perlPackages;
   buildPerlPackage {
     pname = "UPnP-ControlPoint";
-    version = "0.4";
+    version = "0.5";
     src = fetchurl {
-      url = "https://github.com/tvandera/perlupnp/releases/download/v0.4/UPnP-ControlPoint-0.4.tar.gz";
-      hash = "sha256-HTFzD0Ac78/d5pcetAtk//ChPQmi6oD1dn7hHlABUKk=";
+      url = "https://github.com/tvandera/perlupnp/archive/refs/tags/v0.5.tar.gz";
+      hash = "sha256-H17s591u1uoSr+dN/aBrdFWDHWpvJ4lNrr2cDhNpMTI=";
     };
     propagatedBuildInputs = [ LWP SOAPLite HTTPDaemon XMLParserLite ];
     meta = {

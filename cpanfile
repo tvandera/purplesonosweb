@@ -12,8 +12,8 @@ requires 'Template';
 requires 'HTTP::Daemon';
 requires 'Net::Async::HTTP::Server';
 
-requires 'UPnP::ControlPoint', '0.4',
-    url => 'https://github.com/tvandera/perlupnp/releases/download/v0.4/UPnP-ControlPoint-0.4.tar.gz';
+requires 'UPnP::ControlPoint', '0.5',
+    url => 'https://github.com/tvandera/perlupnp/archive/refs/tags/v0.5.tar.gz';
 
 requires 'Image::Resize';
 requires 'IO::Compress::Gzip';

@@ -32,7 +32,7 @@ WriteMakefile(
         'Text::Table'                => 0,
         'Try::Tiny'                  => 0,
         'Types::Serialiser'          => 0,
-        'UPnP::ControlPoint'         => '0.4',
+        'UPnP::ControlPoint'         => '0.5',
         'URI::Escape'                => 0,
         'XML::LibXML::Simple'        => 0,
         'XML::Liberal'               => 0,
