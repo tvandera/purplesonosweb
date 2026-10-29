@@ -6,6 +6,7 @@ use warnings;
 
 use File::Slurp qw( read_file );
 
+use File::Basename           qw( dirname );
 use Net::Async::HTTP::Server ();
 use HTTP::Status             ();
 use Encode                   qw( decode encode );
@@ -76,7 +77,7 @@ sub mimeTypeOf( $self, $p ) {
 }
 
 sub diskpath( $self, $path ) {
-    return catfile( "html", $path );
+    return catfile( dirname(__FILE__), "..", "..", "html", $path );
 }
 
 sub log( $self, @args ) {
