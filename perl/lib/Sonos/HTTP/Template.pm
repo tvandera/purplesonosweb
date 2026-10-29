@@ -25,6 +25,7 @@ sub new {
     my $tt = $self->{_template} = Template->new(
         {
             # STRICT => 1,
+            ABSOLUTE     => 1,
             RELATIVE     => 1,
             INCLUDE_PATH => [ '.', dirname($diskpath) ],
 
