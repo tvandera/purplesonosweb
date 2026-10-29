@@ -14,6 +14,7 @@ Log::Log4perl->easy_init($OFF);
 
 my $original_dir = getcwd();
 my $cache_dir = tempdir( CLEANUP => 1 );
+local $ENV{XDG_CACHE_HOME} = "$cache_dir/xdg-cache";
 chdir $cache_dir or die "Cannot enter $cache_dir: $!";
 END { chdir $original_dir if defined $original_dir }
 
@@ -44,7 +45,7 @@ my $device = {
 
     $system->_discoveryCallback( undef, $device, 'deviceAdded' );
     is_deeply(
-        decode_json( read_file('location_cache.json') ),
+        decode_json( read_file( Sonos::LocationCache->new()->cacheFilename() ) ),
         { 'test-player' => $device->{LOCATION} },
         'Discovery persists the player location',
     );

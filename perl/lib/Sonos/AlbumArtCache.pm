@@ -9,6 +9,7 @@ require Sonos::MetaData;
 use Try::Tiny      qw( catch try );
 use JSON::XS       qw( decode_json encode_json );
 use File::Slurp    qw( read_file write_file );
+use Sonos::CachePath qw( cache_dir cache_file );
 use URI::WithBase  ();
 use Digest::SHA    qw( sha256_hex );
 use LWP::UserAgent ();
@@ -39,12 +40,14 @@ sub new {
 }
 
 sub cacheDir($self) {
-    mkdir AA_BASENAME unless -f AA_BASENAME;
-    return AA_BASENAME;
+    my $dir = cache_dir();
+    my $album_art_dir = $dir . "/" . AA_BASENAME;
+    mkdir $album_art_dir unless -d $album_art_dir;
+    return $album_art_dir;
 }
 
 sub cacheFilename($self) {
-    return JSON_BASENAME;
+    return cache_file(JSON_BASENAME);
 }
 
 sub load($self) {

@@ -6,6 +6,7 @@ use warnings;
 
 use JSON::XS    qw( decode_json encode_json );
 use File::Slurp qw( read_file write_file );
+use Sonos::CachePath qw( cache_file );
 
 use constant JSON_BASENAME => "location_cache.json";
 
@@ -17,7 +18,7 @@ sub new {
 }
 
 sub cacheFilename($self) {
-    return JSON_BASENAME;
+    return cache_file(JSON_BASENAME);
 }
 
 sub load($self) {

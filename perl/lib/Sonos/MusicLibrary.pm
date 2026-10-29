@@ -10,6 +10,7 @@ use List::Util   qw( reduce );
 use Scalar::Util qw( blessed );
 use JSON::XS     qw( decode_json encode_json );
 use File::Slurp  qw( read_file write_file );
+use Sonos::CachePath qw( cache_file );
 
 use constant JSON_BASENAME => "content_cache.json";
 
@@ -33,7 +34,7 @@ sub new {
 }
 
 sub cacheFileName($self) {
-    return JSON_BASENAME;
+    return cache_file(JSON_BASENAME);
 }
 
 sub load($self) {
