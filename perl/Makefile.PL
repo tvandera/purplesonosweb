@@ -1,9 +1,40 @@
 use 5.036000;
 use ExtUtils::MakeMaker;
+use File::Find qw( find );
+
+my %install_files;
+find(
+    sub {
+        return unless -f $_;
+
+        my $source = $File::Find::name;
+        my $relative = $source;
+        my $destination;
+
+        if ( $relative =~ s{^lib/}{} ) {
+            $destination = '$(INST_LIB)/' . $relative;
+        }
+        $install_files{$source} = $destination if defined $destination;
+    },
+    qw( lib ),
+);
+
+sub MY::postamble {
+    return <<'MAKE_FRAG';
+install :: install_html
+
+install_html:
+	$(NOECHO) $(MKPATH) $(INSTALLSITELIB)/../html
+	$(NOECHO) cp -R html/. $(INSTALLSITELIB)/../html/
+
+MAKE_FRAG
+}
 
 WriteMakefile(
     NAME              => 'Sonos',
     VERSION_FROM      => 'lib/Sonos.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
+    PM                => \%install_files,
+    EXE_FILES         => [ sort glob 'scripts/*' ],
     PREREQ_PM         => {
         'File::MimeInfo::Magic'      => 0,
         'File::Slurp'                => 0,
