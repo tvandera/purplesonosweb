@@ -15,7 +15,7 @@ FROM perl:slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libgd3 locales && \
-    echo 'en_US.UTF-8 UTF-8' >>/etc/locale.gen && \
+    echo en_US.UTF-8 >>/etc/locale.gen && \
     locale-gen && \
     rm -rf /var/lib/apt/lists/* && \
     useradd --system --create-home --shell /usr/sbin/nologin sonos
