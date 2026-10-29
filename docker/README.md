@@ -10,8 +10,8 @@ Building for a Raspberry Pi from a non-ARM machine needs `docker buildx` with QE
 
 ## Files
 
-- `Dockerfile`: multi-stage production image. The build context is the repo root.
-- `Dockerfile.dockerignore`: keeps caches, `blib`, `.git` etc. out of the build context.
+- `Dockerfile`: multi-stage production image, built with `../perl/` as its context.
+- `Dockerfile.dockerignore`: keeps build output and tests out of the image context.
 - `docker-compose.yml`: builds and runs the image with host networking.
 
 ## Make targets

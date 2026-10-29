@@ -28,17 +28,17 @@ SONOS_REGISTRY_IMAGE ?= ghcr.io/tvandera/purplesonosweb
 
 # Builds for the local machine's architecture.
 build:
-	docker build --file Dockerfile --tag $(SONOS_IMAGE):$(SONOS_TAG) ..
+	docker build --file Dockerfile --tag $(SONOS_IMAGE):$(SONOS_TAG) ../perl
 
 # Needs docker buildx (and qemu binfmt emulation when not building on arm).
 build-pi:
 	docker buildx build --platform $(PI_PLATFORM) --file Dockerfile \
-		--tag $(SONOS_IMAGE):$(SONOS_TAG) --load ..
+		--tag $(SONOS_IMAGE):$(SONOS_TAG) --load ../perl
 
 # Requires `docker login ghcr.io` with a token that has write:packages.
 push:
 	docker buildx build --platform $(PI_PLATFORM) --file Dockerfile \
-		--tag $(SONOS_REGISTRY_IMAGE):$(SONOS_TAG) --push ..
+		--tag $(SONOS_REGISTRY_IMAGE):$(SONOS_TAG) --push ../perl
 
 save-pi: build-pi
 	docker save --output $(SONOS_TAR) $(SONOS_IMAGE):$(SONOS_TAG)
