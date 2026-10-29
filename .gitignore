@@ -32,11 +32,14 @@ inc/
 
 # ExtUtils::MakeMaker
 /blib/
+/perl/blib/
 /_eumm/
 /*.gz
 /Makefile
+/perl/Makefile
 /Makefile.old
 /MANIFEST.bak
 /pm_to_blib
+/perl/pm_to_blib
 /*.zip
 .direnv

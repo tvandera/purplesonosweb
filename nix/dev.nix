@@ -13,7 +13,7 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    export PERL5LIB="$PWD/lib''${PERL5LIB:+:$PERL5LIB}"
+    export PERL5LIB="$PWD/perl/lib''${PERL5LIB:+:$PERL5LIB}"
     echo "Perl dev shell with Sonos dependencies"
   '';
 }

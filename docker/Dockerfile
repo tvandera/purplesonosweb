@@ -7,7 +7,7 @@ RUN apt-get update && \
     cpanm --notest Carton
 
 WORKDIR /app
-COPY cpanfile /app/
+COPY perl/cpanfile /app/
 RUN --mount=type=cache,target=/root/.cpanm \
     carton install --deployment 2>/dev/null || carton install
 
@@ -26,10 +26,10 @@ ENV LANG=en_US.UTF-8 \
 
 WORKDIR /app
 COPY --from=build /app/local /app/local
-COPY lib /app/lib
+COPY perl/lib /app/lib
 COPY html /app/html
-COPY scripts /app/scripts
-COPY cpanfile /app/
+COPY perl/scripts /app/scripts
+COPY perl/cpanfile /app/
 
 RUN chown -R sonos:sonos /app
 USER sonos

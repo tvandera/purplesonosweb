@@ -1,6 +1,6 @@
 # Docker
 
-Production container for the Sonos web app (`scripts/sonod`, port 9999), plus a legacy-browser test VM.
+Production container for the Sonos web app (`perl/scripts/sonod`, port 9999), plus a legacy-browser test VM.
 
 ## Setup
 

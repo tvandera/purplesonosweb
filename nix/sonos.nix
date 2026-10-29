@@ -88,7 +88,7 @@ in
 perlPackages.buildPerlPackage rec {
   pname = "Sonos";
   version = "0.90";
-  src = ./..;
+  src = ../perl;
   propagatedBuildInputs = with perlPackages; [
       Carp DataDumper DigestSHA Encode LogLog4perl ListMoreUtils FileSlurp FileBaseDir
       HTMLParser TemplateToolkit HTTPDaemon NetAsyncHTTPServer IOCompress

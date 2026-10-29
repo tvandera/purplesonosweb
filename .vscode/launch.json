@@ -8,7 +8,7 @@
             "type": "perl",
             "request": "launch",
             "name": "daemon",
-            "program": "${workspaceFolder}/scripts/daemon.pl",
+            "program": "${workspaceFolder}/perl/scripts/sonod",
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false,
             "reloadModules": true
@@ -17,7 +17,7 @@
             "type": "perl",
             "request": "launch",
             "name": "cli",
-            "program": "${workspaceFolder}/scripts/cli.pl",
+            "program": "${workspaceFolder}/perl/scripts/cli.pl",
             "cwd": "${workspaceFolder}",
             "args": [ "Kitchen", "queue" ],
             "stopOnEntry": false,
